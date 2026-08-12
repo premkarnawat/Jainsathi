@@ -109,7 +109,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         <div className="lg:col-span-3 relative flex items-center justify-center py-4">
           <div className="relative w-full max-w-sm rounded-3xl overflow-hidden border-2 border-[#D6A24A]/40 shadow-2xl bg-gradient-to-b from-[#6E1231] to-[#100A18]">
             <img
-              src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=700&q=80"
+              src="/mock.jpg"
               alt="Jain Couple in Indian Wedding Attire"
               className="w-full h-[420px] object-cover object-center transform hover:scale-105 transition-transform duration-700"
             />
@@ -217,6 +217,26 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 <span>{otpSent ? 'OTP Sent!' : 'Send OTP'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
+
+              {/* Or Continue With Separator */}
+              <div className="flex items-center my-3">
+                <div className="flex-grow border-t border-[#D6A24A]/20"></div>
+                <span className="px-3 text-[10px] text-[#F3D59B]/60 uppercase tracking-wider">or continue with</span>
+                <div className="flex-grow border-t border-[#D6A24A]/20"></div>
+              </div>
+
+              {/* Social Login Buttons */}
+              <div className="flex justify-center gap-4">
+                <button type="button" className="w-10 h-10 rounded-full bg-white/5 border border-[#D6A24A]/20 flex items-center justify-center hover:bg-white/10 transition-colors">
+                  <span className="text-[#FFF9F1] font-bold text-sm">G</span>
+                </button>
+                <button type="button" className="w-10 h-10 rounded-full bg-white/5 border border-[#D6A24A]/20 flex items-center justify-center hover:bg-white/10 transition-colors">
+                  <span className="text-[#FFF9F1] font-bold text-sm">A</span>
+                </button>
+                <button type="button" className="w-10 h-10 rounded-full bg-white/5 border border-[#D6A24A]/20 flex items-center justify-center hover:bg-white/10 transition-colors">
+                  <span className="text-[#FFF9F1] text-xs">✉</span>
+                </button>
+              </div>
 
               {/* Already a member */}
               <p className="text-center text-xs text-[#F3D59B]/80 pt-2">
