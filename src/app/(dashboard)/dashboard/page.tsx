@@ -80,6 +80,7 @@ const LOGGED_IN_USER: CandidateProfile = {
   currentState: 'Maharashtra',
   currentCity: 'Mumbai',
   languagesKnown: ['English', 'Hindi'],
+  hobbies: ['Fitness', 'Technology'],
   completionPercentage: 88,
   isActive: true,
   isDiscoverable: true,
