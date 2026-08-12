@@ -1,0 +1,90 @@
+{
+  "brand": {
+    "name": "JainSaathi",
+    "tagline": "Find Your Jain Saathi.",
+    "subheading": "Trusted Jain Matrimony Platform for Meaningful Relationships"
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "features": "Features",
+    "howItWorks": "How It Works",
+    "successStories": "Success Stories",
+    "pricing": "Pricing",
+    "help": "Help",
+    "login": "Login",
+    "register": "Create Profile",
+    "dashboard": "Dashboard",
+    "matches": "Matches",
+    "search": "Search",
+    "interests": "Interests",
+    "connections": "Connections",
+    "biodata": "Biodata",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "hero": {
+    "findYour": "Find Your",
+    "jainSaathi": "Jain Saathi",
+    "ctaPrimary": "Create Your Profile",
+    "ctaSecondary": "Explore Matches",
+    "trustBadge": "Trusted by Thousands of Jain Families",
+    "verifiedCount": "2,500+ Verified Jain Profiles",
+    "joinHeading": "Join JainSaathi",
+    "joinSubheading": "Create your account and find meaningful Jain matches.",
+    "lookingFor": "I'm looking for",
+    "bride": "Bride",
+    "groom": "Groom",
+    "fullName": "Full Name",
+    "mobileNumber": "Mobile Number",
+    "sendOtp": "Send OTP",
+    "alreadyMember": "Already a member? Login"
+  },
+  "trust": {
+    "profilesCreated": "Profiles Created",
+    "successfulMatches": "Successful Matches",
+    "happyFamilies": "Happy Families",
+    "jainCommunities": "Jain Communities",
+    "dedicatedSupport": "Dedicated Support"
+  },
+  "wizard": {
+    "heading": "Create Your Profile in Simple Steps",
+    "step1": "Basic Details",
+    "step2": "Religion & Community",
+    "step3": "Education & Career",
+    "step4": "Family Details",
+    "step5": "Lifestyle",
+    "step6": "Partner Preferences",
+    "next": "Next",
+    "back": "Back",
+    "finish": "Finish & Select Plan"
+  },
+  "matching": {
+    "compatible": "Compatible",
+    "whyMatch": "Why You Match",
+    "communityMatch": "Jain community preferences match",
+    "educationMatch": "Education preferences match",
+    "locationMatch": "Location preferences match",
+    "lifestyleMatch": "Lifestyle preferences match",
+    "interested": "Interested",
+    "decline": "Decline",
+    "accept": "Accept",
+    "shortlist": "Shortlist"
+  },
+  "biodata": {
+    "heading": "Digital Jain Biodata",
+    "subheading": "Generate beautiful Jain matrimony PDF biodata or upload your existing document.",
+    "downloadPdf": "Download PDF",
+    "shareBiodata": "Share Biodata"
+  },
+  "footer": {
+    "secure": "Secure & Private",
+    "secureSub": "Your data is 100% safe",
+    "verification": "Manual Verification",
+    "verificationSub": "Every profile verified",
+    "smartMatching": "Smart Matching",
+    "smartMatchingSub": "Technology with tradition",
+    "trusted": "Trusted by Families",
+    "trustedSub": "Backed by Jain values"
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "brand": {
+    "name": "जैनसाथी",
+    "tagline": "अपना जैन साथी पाएं।",
+    "subheading": "सार्थक संबंधों के लिए विश्वसनीय जैन वैवाहिक मंच"
+  },
+  "nav": {
+    "home": "होम",
+    "about": "हमारे बारे में",
+    "features": "विशेषताएं",
+    "howItWorks": "यह कैसे काम करता है",
+    "successStories": "सफलता की कहानियां",
+    "pricing": "मूल्य निर्धारण",
+    "help": "सहायता",
+    "login": "लॉग इन",
+    "register": "प्रोफाइल बनाएं",
+    "dashboard": "डैशबोर्ड",
+    "matches": "मैचेस",
+    "search": "खोजें",
+    "interests": "रुचियां",
+    "connections": "कनेक्शंस",
+    "biodata": "बायोडाटा",
+    "profile": "प्रोफाइल",
+    "settings": "सेटिंग्स"
+  },
+  "hero": {
+    "findYour": "अपना खोजें",
+    "jainSaathi": "जैन साथी",
+    "ctaPrimary": "अपनी प्रोफाइल बनाएं",
+    "ctaSecondary": "मैचेस देखें",
+    "trustBadge": "हजारों जैन परिवारों द्वारा विश्वसनीय",
+    "verifiedCount": "2,500+ सत्यापित जैन प्रोफाइल",
+    "joinHeading": "जैनसाथी से जुड़ें",
+    "joinSubheading": "खाता बनाएं और उपयुक्त जैन मैचेस पाएं।",
+    "lookingFor": "मैं खोज रहा/रही हूं",
+    "bride": "वधू",
+    "groom": "वर",
+    "fullName": "पूरा नाम",
+    "mobileNumber": "मोबाइल नंबर",
+    "sendOtp": "ओटीपी भेजें",
+    "alreadyMember": "पहले से सदस्य हैं? लॉगिन करें"
+  },
+  "trust": {
+    "profilesCreated": "प्रोफाइल बनाई गईं",
+    "successfulMatches": "सफल मैचेस",
+    "happyFamilies": "खुशहाल परिवार",
+    "jainCommunities": "जैन समुदाय",
+    "dedicatedSupport": "24/7 सहायता"
+  },
+  "wizard": {
+    "heading": "सरल चरणों में अपनी प्रोफाइल बनाएं",
+    "step1": "मूल विवरण",
+    "step2": "धर्म और समुदाय",
+    "step3": "शिक्षा और करियर",
+    "step4": "पारिवारिक विवरण",
+    "step5": "जीवन शैली",
+    "step6": "साझीदार प्राथमिकताएं",
+    "next": "आगे बढ़ें",
+    "back": "पीछे जाएं",
+    "finish": "पूरा करें और प्लान चुनें"
+  },
+  "matching": {
+    "compatible": "संगत",
+    "whyMatch": "मैच क्यों है",
+    "communityMatch": "जैन समुदाय प्राथमिकताएं मेल खाती हैं",
+    "educationMatch": "शिक्षा प्राथमिकताएं मेल खाती हैं",
+    "locationMatch": "स्थान प्राथमिकताएं मेल खाती हैं",
+    "lifestyleMatch": "जीवन शैली मेल खाती है",
+    "interested": "रुचि दिखाई",
+    "decline": "अस्वीकार करें",
+    "accept": "स्वीकार करें",
+    "shortlist": "शॉर्टलिस्ट"
+  },
+  "biodata": {
+    "heading": "डिजिटल जैन बायोडाटा",
+    "subheading": "सुंदर जैन विवाह पीडीएफ बायोडाटा बनाएं या मौजूदा दस्तावेज अपलोड करें।",
+    "downloadPdf": "पीडीएफ डाउनलोड करें",
+    "shareBiodata": "बायोडाटा साझा करें"
+  },
+  "footer": {
+    "secure": "सुरक्षित और निजी",
+    "secureSub": "आपका डेटा 100% सुरक्षित है",
+    "verification": "मैनुअल सत्यापन",
+    "verificationSub": "प्रत्येक प्रोफाइल सत्यापित",
+    "smartMatching": "स्मार्ट मैचिंग",
+    "smartMatchingSub": "परंपरा के साथ तकनीक",
+    "trusted": "परिवारों द्वारा विश्वसनीय",
+    "trustedSub": "जैन मूल्यों द्वारा समर्थित"
+  }
+}
