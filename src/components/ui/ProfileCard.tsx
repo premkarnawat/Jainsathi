@@ -1,6 +1,6 @@
 import React from 'react';
 import { CandidateProfile } from '@/types';
-import { Heart, X, Bookmark, CheckCircle2, ShieldCheck, MapPin, Briefcase, GraduationCap } from 'lucide-[#6E1231]' ? 'lucide-react' : 'lucide-react';
+import { Heart, X, Bookmark, MapPin, Briefcase, GraduationCap } from 'lucide-react';
 
 interface ProfileCardProps {
   profile: CandidateProfile;
