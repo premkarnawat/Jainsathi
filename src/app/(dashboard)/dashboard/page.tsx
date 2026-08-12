@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { CandidateProfile } from '@/types';
 import { JainSaathiLogo } from '@/components/ui/JainSaathiLogo';
