@@ -234,40 +234,202 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          {/* Sidebar Navigation links */}
-          <nav className="space-y-1.5 text-xs max-h-[50vh] overflow-y-auto pr-1">
-            {[
-              { label: 'Home', icon: '🏠' },
-              { label: 'Recommended', icon: '💕' },
-              { label: 'Search Matches', icon: '🔍' },
-              { label: 'Featured Profiles', icon: '⭐' },
-              { label: 'Interests Received', icon: '📩' },
-              { label: 'Saved Profiles', icon: '🔖' },
-              { label: 'Messages', icon: '💬' },
-              { label: 'My Profile', icon: '👤' },
-              { label: 'Partner Preferences', icon: '⚙️' },
-              { label: 'Biodata', icon: '📄' },
-              { label: 'Subscription', icon: '👑' },
-              { label: 'Notifications', icon: '🔔' },
-              { label: 'Privacy Center', icon: '🔒' },
-              { label: 'Settings', icon: '🛠️' },
-            ].map((link) => (
-              <button
-                key={link.label}
-                onClick={() => {
-                  setActiveMenu(link.label);
-                  if (link.label === 'Home') setSelectedCandidate(null);
-                }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${
-                  activeMenu === link.label
-                    ? 'bg-[#9E183A] text-white shadow-md'
-                    : 'text-[#F3D59B]/85 hover:bg-white/5'
-                }`}
-              >
-                <span>{link.icon}</span>
-                <span>{link.label}</span>
-              </button>
-            ))}
+          {/* Navigation Links */}
+          <nav className="space-y-1 text-xs max-h-[50vh] overflow-y-auto pr-1">
+            <button
+              onClick={() => { setActiveMenu('Home'); setSelectedCandidate(null); }}
+              className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-semibold transition-all ${
+                activeMenu === 'Home' ? 'bg-[#9E183A] text-white shadow-md' : 'text-[#F3D59B]/85 hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span>🏠</span>
+                <span>Home</span>
+              </div>
+            </button>
+
+            <button
+              onClick={() => { setActiveMenu('Recommended'); }}
+              className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-semibold transition-all ${
+                activeMenu === 'Recommended' ? 'bg-[#9E183A] text-white shadow-md' : 'text-[#F3D59B]/85 hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span>💕</span>
+                <span>Recommended</span>
+              </div>
+            </button>
+
+            <button
+              onClick={() => { setActiveMenu('Search Matches'); }}
+              className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-semibold transition-all ${
+                activeMenu === 'Search Matches' ? 'bg-[#9E183A] text-white shadow-md' : 'text-[#F3D59B]/85 hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span>🔍</span>
+                <span>Search Matches</span>
+              </div>
+            </button>
+
+            <button
+              onClick={() => { setActiveMenu('Featured Profiles'); }}
+              className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-semibold transition-all ${
+                activeMenu === 'Featured Profiles' ? 'bg-[#9E183A] text-white shadow-md' : 'text-[#F3D59B]/85 hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span>⭐</span>
+                <span>Featured Profiles</span>
+              </div>
+            </button>
+
+            {/* Interests Section with Submenu */}
+            <div className="space-y-1">
+              <div className="flex items-center gap-3 px-4 py-2 text-[#FFF9F1] font-semibold">
+                <span>📩</span>
+                <span>Interests</span>
+              </div>
+              <div className="pl-8 space-y-1 text-[11px]">
+                <button
+                  onClick={() => { setActiveMenu('Received'); }}
+                  className={`w-full flex items-center justify-between py-1.5 px-3 rounded-lg ${
+                    activeMenu === 'Received' ? 'text-white font-bold bg-white/10' : 'text-[#F3D59B]/70 hover:text-white'
+                  }`}
+                >
+                  <span>Received</span>
+                  <span className="bg-[#9E183A] text-white text-[9px] font-bold px-1.5 rounded-full">12</span>
+                </button>
+                <button
+                  onClick={() => { setActiveMenu('Sent'); }}
+                  className={`w-full flex items-center justify-between py-1.5 px-3 rounded-lg ${
+                    activeMenu === 'Sent' ? 'text-white font-bold bg-white/10' : 'text-[#F3D59B]/70 hover:text-white'
+                  }`}
+                >
+                  <span>Sent</span>
+                  <span className="bg-[#D6A24A] text-[#100A18] text-[9px] font-bold px-1.5 rounded-full">8</span>
+                </button>
+                <button
+                  onClick={() => { setActiveMenu('Accepted'); }}
+                  className={`w-full flex items-center justify-between py-1.5 px-3 rounded-lg ${
+                    activeMenu === 'Accepted' ? 'text-white font-bold bg-white/10' : 'text-[#F3D59B]/70 hover:text-white'
+                  }`}
+                >
+                  <span>Accepted</span>
+                  <span className="bg-emerald-600 text-white text-[9px] font-bold px-1.5 rounded-full">6</span>
+                </button>
+              </div>
+            </div>
+
+            <button
+              onClick={() => { setActiveMenu('Saved Profiles'); }}
+              className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-semibold transition-all ${
+                activeMenu === 'Saved Profiles' ? 'bg-[#9E183A] text-white shadow-md' : 'text-[#F3D59B]/85 hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span>🔖</span>
+                <span>Saved Profiles</span>
+              </div>
+            </button>
+
+            <button
+              onClick={() => { setActiveMenu('Messages'); }}
+              className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-semibold transition-all ${
+                activeMenu === 'Messages' ? 'bg-[#9E183A] text-white shadow-md' : 'text-[#F3D59B]/85 hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span>💬</span>
+                <span>Messages</span>
+              </div>
+              <span className="bg-[#9E183A] text-white text-[9px] font-bold px-1.5 rounded-full">5</span>
+            </button>
+
+            <button
+              onClick={() => { setActiveMenu('My Profile'); }}
+              className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-semibold transition-all ${
+                activeMenu === 'My Profile' ? 'bg-[#9E183A] text-white shadow-md' : 'text-[#F3D59B]/85 hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span>👤</span>
+                <span>My Profile</span>
+              </div>
+            </button>
+
+            <button
+              onClick={() => { setActiveMenu('Partner Preferences'); }}
+              className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-semibold transition-all ${
+                activeMenu === 'Partner Preferences' ? 'bg-[#9E183A] text-white shadow-md' : 'text-[#F3D59B]/85 hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span>⚙️</span>
+                <span>Partner Preferences</span>
+              </div>
+            </button>
+
+            <button
+              onClick={() => { setActiveMenu('Biodata'); }}
+              className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-semibold transition-all ${
+                activeMenu === 'Biodata' ? 'bg-[#9E183A] text-white shadow-md' : 'text-[#F3D59B]/85 hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span>📄</span>
+                <span>Biodata</span>
+              </div>
+            </button>
+
+            <button
+              onClick={() => { setActiveMenu('Subscription'); }}
+              className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-semibold transition-all ${
+                activeMenu === 'Subscription' ? 'bg-[#9E183A] text-white shadow-md' : 'text-[#F3D59B]/85 hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span>👑</span>
+                <span>Subscription</span>
+              </div>
+            </button>
+
+            <button
+              onClick={() => { setActiveMenu('Notifications'); }}
+              className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-semibold transition-all ${
+                activeMenu === 'Notifications' ? 'bg-[#9E183A] text-white shadow-md' : 'text-[#F3D59B]/85 hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span>🔔</span>
+                <span>Notifications</span>
+              </div>
+              <span className="bg-[#9E183A] text-white text-[9px] font-bold px-1.5 rounded-full">3</span>
+            </button>
+
+            <button
+              onClick={() => { setActiveMenu('Privacy Center'); }}
+              className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-semibold transition-all ${
+                activeMenu === 'Privacy Center' ? 'bg-[#9E183A] text-white shadow-md' : 'text-[#F3D59B]/85 hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span>🔒</span>
+                <span>Privacy Center</span>
+              </div>
+            </button>
+
+            <button
+              onClick={() => { setActiveMenu('Settings'); }}
+              className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-semibold transition-all ${
+                activeMenu === 'Settings' ? 'bg-[#9E183A] text-white shadow-md' : 'text-[#F3D59B]/85 hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span>🛠️</span>
+                <span>Settings</span>
+              </div>
+            </button>
           </nav>
         </div>
 
