@@ -1,51 +1,63 @@
 import React from 'react';
-import { UserCheck, Sparkles, HeartHandshake, Building2, Headset } from 'lucide-react';
+import { ShieldCheck, Lock, Sparkles, HeartHandshake } from 'lucide-react';
 
 export const TrustStrip: React.FC = () => {
   return (
-    <section className="bg-[#FFF9F1] border-y border-[#D6A24A]/25 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-6 text-center">
-        
-        <div className="flex flex-col items-center space-y-1.5 p-3 rounded-2xl transition-all hover:bg-white/60">
-          <div className="w-12 h-12 rounded-full bg-[#F8E8EA] border border-[#9E183A]/20 flex items-center justify-center text-[#9E183A] shadow-sm">
-            <UserCheck className="w-6 h-6" />
-          </div>
-          <span className="font-serif text-2xl font-bold text-[#6E1231]">50K+</span>
-          <span className="text-xs text-[#756B70] font-medium">Profiles Created</span>
+    <section className="bg-[#FFF9F1] py-16 px-4 sm:px-6 lg:px-8 border-b border-[#D6A24A]/25">
+      <div className="max-w-7xl mx-auto space-y-12">
+        {/* Title */}
+        <div className="text-center">
+          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#100A18] tracking-tight">
+            Built Around Trust, Family & Jain Values
+          </h2>
         </div>
 
-        <div className="flex flex-col items-center space-y-1.5 p-3 rounded-2xl transition-all hover:bg-white/60">
-          <div className="w-12 h-12 rounded-full bg-[#F8E8EA] border border-[#9E183A]/20 flex items-center justify-center text-[#9E183A] shadow-sm">
-            <Sparkles className="w-6 h-6" />
+        {/* 4 Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {/* Card 1 */}
+          <div className="bg-white border border-[#D6A24A]/25 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-[#D6A24A]/55">
+            <div className="w-10 h-10 rounded-full bg-[#3E8B68]/10 text-[#3E8B68] flex items-center justify-center mb-4">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <h3 className="font-serif font-bold text-lg text-[#100A18] mb-2">Verified Profiles</h3>
+            <p className="text-xs text-[#756B70] leading-relaxed font-medium">
+              Every profile is verified for authenticity and trust.
+            </p>
           </div>
-          <span className="font-serif text-2xl font-bold text-[#6E1231]">10K+</span>
-          <span className="text-xs text-[#756B70] font-medium">Successful Matches</span>
-        </div>
 
-        <div className="flex flex-col items-center space-y-1.5 p-3 rounded-2xl transition-all hover:bg-white/60">
-          <div className="w-12 h-12 rounded-full bg-[#F8E8EA] border border-[#9E183A]/20 flex items-center justify-center text-[#9E183A] shadow-sm">
-            <HeartHandshake className="w-6 h-6" />
+          {/* Card 2 */}
+          <div className="bg-white border border-[#D6A24A]/25 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-[#D6A24A]/55">
+            <div className="w-10 h-10 rounded-full bg-[#6E1231]/10 text-[#6E1231] flex items-center justify-center mb-4">
+              <Lock className="w-5 h-5" />
+            </div>
+            <h3 className="font-serif font-bold text-lg text-[#100A18] mb-2">Privacy Protected</h3>
+            <p className="text-xs text-[#756B70] leading-relaxed font-medium">
+              Your information is safe and always in your control.
+            </p>
           </div>
-          <span className="font-serif text-2xl font-bold text-[#6E1231]">25K+</span>
-          <span className="text-xs text-[#756B70] font-medium">Happy Families</span>
-        </div>
 
-        <div className="flex flex-col items-center space-y-1.5 p-3 rounded-2xl transition-all hover:bg-white/60">
-          <div className="w-12 h-12 rounded-full bg-[#F8E8EA] border border-[#9E183A]/20 flex items-center justify-center text-[#9E183A] shadow-sm">
-            <Building2 className="w-6 h-6" />
+          {/* Card 3 */}
+          <div className="bg-white border border-[#D6A24A]/25 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-[#D6A24A]/55">
+            <div className="w-10 h-10 rounded-full bg-[#D6A24A]/10 text-[#D6A24A] flex items-center justify-center mb-4">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <h3 className="font-serif font-bold text-lg text-[#100A18] mb-2">Smart Compatibility</h3>
+            <p className="text-xs text-[#756B70] leading-relaxed font-medium">
+              Matches based on preferences, values and lifestyle.
+            </p>
           </div>
-          <span className="font-serif text-2xl font-bold text-[#6E1231]">15+</span>
-          <span className="text-xs text-[#756B70] font-medium">Jain Communities</span>
-        </div>
 
-        <div className="col-span-2 md:col-span-1 flex flex-col items-center space-y-1.5 p-3 rounded-2xl transition-all hover:bg-white/60">
-          <div className="w-12 h-12 rounded-full bg-[#F8E8EA] border border-[#9E183A]/20 flex items-center justify-center text-[#9E183A] shadow-sm">
-            <Headset className="w-6 h-6" />
+          {/* Card 4 */}
+          <div className="bg-white border border-[#D6A24A]/25 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-[#D6A24A]/55">
+            <div className="w-10 h-10 rounded-full bg-amber-500/10 text-amber-600 flex items-center justify-center mb-4">
+              <HeartHandshake className="w-5 h-5" />
+            </div>
+            <h3 className="font-serif font-bold text-lg text-[#100A18] mb-2">Family Friendly</h3>
+            <p className="text-xs text-[#756B70] leading-relaxed font-medium">
+              Designed for individuals, parents and guardians.
+            </p>
           </div>
-          <span className="font-serif text-2xl font-bold text-[#6E1231]">24/7</span>
-          <span className="text-xs text-[#756B70] font-medium">Dedicated Support</span>
         </div>
-
       </div>
     </section>
   );

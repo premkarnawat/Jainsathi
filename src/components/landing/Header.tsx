@@ -23,24 +23,30 @@ export const Header: React.FC<HeaderProps> = ({
         <JainSaathiLogo variant="dark" size="md" />
 
         {/* Center: Navigation Links (Desktop) */}
-        <nav className="hidden md:flex items-center space-x-8 text-sm font-medium text-[#FFF9F1]/80">
-          <a href="#home" className="text-[#F3D59B] border-b-2 border-[#D6A24A] pb-1 font-semibold">Home</a>
-          <a href="#about" className="hover:text-[#F3D59B] transition-colors">About Us</a>
-          <a href="#features" className="hover:text-[#F3D59B] transition-colors">Features</a>
+        <nav className="hidden md:flex items-center space-x-6 text-[13px] font-semibold text-[#FFF9F1]/80">
+          <a href="#home" className="text-[#F3D59B] border-b-2 border-[#D6A24A] pb-1">Home</a>
+          <a href="#howitworks" className="hover:text-[#F3D59B] transition-colors">How It Works</a>
+          <a href="#whyjainsaathi" className="hover:text-[#F3D59B] transition-colors">Why JainSaathi</a>
+          <a href="#matches" className="hover:text-[#F3D59B] transition-colors">Matches</a>
           <a href="#stories" className="hover:text-[#F3D59B] transition-colors">Success Stories</a>
           <a href="#pricing" className="hover:text-[#F3D59B] transition-colors">Pricing</a>
-          <a href="#help" className="hover:text-[#F3D59B] transition-colors">Help</a>
+          <a href="#safety" className="hover:text-[#F3D59B] transition-colors">Safety</a>
         </nav>
 
-        {/* Right: Language Switcher & Auth Buttons */}
-        <div className="flex items-center space-x-4">
-          <LanguageSwitcher currentLang={currentLang} onLanguageChange={onLanguageChange} variant="dark" />
-          
+        {/* Right: Auth Buttons */}
+        <div className="flex items-center space-x-6">
           <button
             onClick={onLoginClick}
-            className="btn-ruby py-2 px-5 text-xs rounded-full shadow-lg"
+            className="text-[13px] font-semibold text-[#F3D59B] hover:text-[#FFF9F1] transition-colors"
           >
-            Login / Register
+            Login
+          </button>
+          
+          <button
+            onClick={onRegisterClick}
+            className="bg-[#9E183A] text-white text-[13px] font-semibold px-5 py-2.5 rounded-full border border-[#D6A24A]/40 shadow-md hover:bg-[#80122E] transition-all"
+          >
+            Create Profile
           </button>
         </div>
       </div>

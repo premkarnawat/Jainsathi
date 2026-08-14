@@ -5,6 +5,7 @@ import { Header } from '@/components/landing/Header';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { TrustStrip } from '@/components/landing/TrustStrip';
 import { HowItWorks } from '@/components/landing/HowItWorks';
+import { SuccessStories } from '@/components/landing/SuccessStories';
 import { MatchingBiodataSection } from '@/components/landing/MatchingBiodataSection';
 import { Footer } from '@/components/landing/Footer';
 import { ProfileWizard } from '@/components/wizard/ProfileWizard';
@@ -33,6 +34,8 @@ export default function LandingPage() {
             <TrustStrip />
 
             <HowItWorks />
+
+            <SuccessStories />
 
             <MatchingBiodataSection />
           </main>

@@ -1,179 +1,77 @@
 import React from 'react';
-import { ChevronRight } from 'lucide-react';
 
 export const HowItWorks: React.FC = () => {
+  const steps = [
+    {
+      id: '01',
+      title: 'Create Profile',
+      desc: 'Create your profile or let your parents create for you.',
+    },
+    {
+      id: '02',
+      title: 'Tell Us About You',
+      desc: 'Fill in your details, Jain identity and lifestyle.',
+    },
+    {
+      id: '03',
+      title: 'Set Preferences',
+      desc: 'Set your partner preferences and expectations.',
+    },
+    {
+      id: '04',
+      title: 'Discover Matches',
+      desc: 'Get matched with compatible Jain profiles.',
+    },
+    {
+      id: '05',
+      title: 'Express Interest',
+      desc: 'Show interest in profiles you like.',
+    },
+    {
+      id: '06',
+      title: 'Connect & Plan',
+      desc: 'After mutual acceptance, connect and start your journey.',
+    },
+  ];
+
   return (
-    <section id="howitworks" className="py-20 bg-[#F8F1E8] px-4 sm:px-6 lg:px-8 border-b border-[#D6A24A]/20">
-      <div className="max-w-7xl mx-auto space-y-12">
+    <section id="howitworks" className="py-20 bg-[#FFF9F1] px-4 sm:px-6 lg:px-8 border-b border-[#D6A24A]/25">
+      <div className="max-w-7xl mx-auto space-y-16">
         
         {/* Section Header */}
         <div className="text-center space-y-3">
-          <span className="text-xs font-semibold tracking-widest uppercase text-[#9E183A] bg-[#F8E8EA] px-3 py-1 rounded-full border border-[#9E183A]/20">
-            SIMPLE & GUIDED PROCESS
-          </span>
-          <h2 className="font-serif text-4xl sm:text-5xl font-bold text-[#241A20]">
-            Create Your Profile in <span className="text-[#6E1231]">Simple Steps</span>
+          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#100A18]">
+            How JainSaathi Works
           </h2>
-          <p className="text-sm text-[#756B70] max-w-xl mx-auto">
-            Our step-by-step profile wizard makes it easy for candidates and parents to share essential Jain identity, family values, and partner criteria.
+          <p className="text-xs font-semibold tracking-wider text-[#9E183A] uppercase">
+            A simple journey to meaningful connections
           </p>
         </div>
 
-        {/* 6 Step Cards Grid matching reference UI */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          
-          {/* STEP 1: Basic Details */}
-          <div className="bg-[#FFF9F1] border border-[#D6A24A]/30 rounded-2xl p-4 shadow-md flex flex-col justify-between relative overflow-hidden">
-            <div className="absolute top-2 right-3 font-serif font-bold text-3xl text-[#6E1231]/10">01</div>
-            <div>
-              <div className="w-7 h-7 rounded-full bg-[#9E183A] text-white flex items-center justify-center text-xs font-bold mb-2">1</div>
-              <h3 className="font-serif font-bold text-base text-[#241A20]">Basic Details</h3>
-              <p className="text-[11px] text-[#756B70] mb-3">Tell us about yourself</p>
-              
-              <div className="space-y-2 text-[11px]">
-                <div>
-                  <span className="block text-[10px] text-gray-500 mb-0.5">Full Name</span>
-                  <div className="bg-white border border-gray-200 rounded px-2 py-1 text-gray-700">Enter your name</div>
+        {/* Timeline Layout */}
+        <div className="relative">
+          {/* Connecting Line */}
+          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-[#6E1231]/10 via-[#D6A24A]/30 to-[#6E1231]/10 -translate-y-1/2 hidden lg:block" />
+
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-8 relative z-10">
+            {steps.map((step, index) => (
+              <div key={step.id} className="flex flex-col items-center text-center space-y-4 group">
+                {/* Step Circle Badge */}
+                <div className="w-14 h-14 rounded-full bg-[#FFF9F1] border-2 border-[#D6A24A]/40 flex items-center justify-center font-serif text-lg font-bold text-[#6E1231] shadow-md group-hover:border-[#9E183A] group-hover:scale-105 transition-all duration-300">
+                  {step.id}
                 </div>
-                <div>
-                  <span className="block text-[10px] text-gray-500 mb-0.5">Gender</span>
-                  <div className="grid grid-cols-2 gap-1">
-                    <span className="bg-gray-100 text-gray-600 rounded px-1 py-0.5 text-center text-[10px]">Male</span>
-                    <span className="bg-[#9E183A] text-white rounded px-1 py-0.5 text-center text-[10px] font-bold">Female</span>
-                  </div>
+
+                <div className="space-y-1.5">
+                  <h3 className="font-serif font-bold text-base text-[#100A18] group-hover:text-[#6E1231] transition-colors">
+                    {step.title}
+                  </h3>
+                  <p className="text-[11px] text-[#756B70] leading-relaxed max-w-[160px] mx-auto font-medium">
+                    {step.desc}
+                  </p>
                 </div>
               </div>
-            </div>
-            <button className="btn-ruby py-1.5 px-3 text-[11px] w-full rounded-lg mt-4 flex items-center justify-center gap-1">
-              <span>Next</span> <ChevronRight className="w-3 h-3" />
-            </button>
+            ))}
           </div>
-
-          {/* STEP 2: Religion & Community */}
-          <div className="bg-[#FFF9F1] border border-[#D6A24A]/30 rounded-2xl p-4 shadow-md flex flex-col justify-between relative overflow-hidden">
-            <div className="absolute top-2 right-3 font-serif font-bold text-3xl text-[#6E1231]/10">02</div>
-            <div>
-              <div className="w-7 h-7 rounded-full bg-[#9E183A] text-white flex items-center justify-center text-xs font-bold mb-2">2</div>
-              <h3 className="font-serif font-bold text-base text-[#241A20]">Religion & Community</h3>
-              <p className="text-[11px] text-[#756B70] mb-3">Your Jain identity</p>
-
-              <div className="space-y-2 text-[11px]">
-                <div>
-                  <span className="block text-[10px] text-gray-500 mb-0.5">Sect</span>
-                  <div className="bg-white border border-gray-200 rounded px-2 py-1 text-gray-700 font-medium">Shwetambar</div>
-                </div>
-                <div>
-                  <span className="block text-[10px] text-gray-500 mb-0.5">Community</span>
-                  <div className="bg-white border border-gray-200 rounded px-2 py-1 text-gray-700 font-medium">Oswal</div>
-                </div>
-              </div>
-            </div>
-            <button className="btn-ruby py-1.5 px-3 text-[11px] w-full rounded-lg mt-4 flex items-center justify-center gap-1">
-              <span>Next</span> <ChevronRight className="w-3 h-3" />
-            </button>
-          </div>
-
-          {/* STEP 3: Education & Career */}
-          <div className="bg-[#FFF9F1] border border-[#D6A24A]/30 rounded-2xl p-4 shadow-md flex flex-col justify-between relative overflow-hidden">
-            <div className="absolute top-2 right-3 font-serif font-bold text-3xl text-[#6E1231]/10">03</div>
-            <div>
-              <div className="w-7 h-7 rounded-full bg-[#9E183A] text-white flex items-center justify-center text-xs font-bold mb-2">3</div>
-              <h3 className="font-serif font-bold text-base text-[#241A20]">Education & Career</h3>
-              <p className="text-[11px] text-[#756B70] mb-3">Tell us about education</p>
-
-              <div className="space-y-2 text-[11px]">
-                <div>
-                  <span className="block text-[10px] text-gray-500 mb-0.5">Education</span>
-                  <div className="bg-white border border-gray-200 rounded px-2 py-1 text-gray-700 truncate">Select education</div>
-                </div>
-                <div>
-                  <span className="block text-[10px] text-gray-500 mb-0.5">Profession</span>
-                  <div className="bg-white border border-gray-200 rounded px-2 py-1 text-gray-700 truncate">Select profession</div>
-                </div>
-              </div>
-            </div>
-            <button className="btn-ruby py-1.5 px-3 text-[11px] w-full rounded-lg mt-4 flex items-center justify-center gap-1">
-              <span>Next</span> <ChevronRight className="w-3 h-3" />
-            </button>
-          </div>
-
-          {/* STEP 4: Family Details */}
-          <div className="bg-[#FFF9F1] border border-[#D6A24A]/30 rounded-2xl p-4 shadow-md flex flex-col justify-between relative overflow-hidden">
-            <div className="absolute top-2 right-3 font-serif font-bold text-3xl text-[#6E1231]/10">04</div>
-            <div>
-              <div className="w-7 h-7 rounded-full bg-[#9E183A] text-white flex items-center justify-center text-xs font-bold mb-2">4</div>
-              <h3 className="font-serif font-bold text-base text-[#241A20]">Family Details</h3>
-              <p className="text-[11px] text-[#756B70] mb-3">Tell us about family</p>
-
-              <div className="space-y-2 text-[11px]">
-                <div>
-                  <span className="block text-[10px] text-gray-500 mb-0.5">Father's Occupation</span>
-                  <div className="bg-white border border-gray-200 rounded px-2 py-1 text-gray-700">Select occupation</div>
-                </div>
-                <div>
-                  <span className="block text-[10px] text-gray-500 mb-0.5">Family Type</span>
-                  <div className="bg-white border border-gray-200 rounded px-2 py-1 text-gray-700">Select type</div>
-                </div>
-              </div>
-            </div>
-            <button className="btn-ruby py-1.5 px-3 text-[11px] w-full rounded-lg mt-4 flex items-center justify-center gap-1">
-              <span>Next</span> <ChevronRight className="w-3 h-3" />
-            </button>
-          </div>
-
-          {/* STEP 5: Lifestyle */}
-          <div className="bg-[#FFF9F1] border border-[#D6A24A]/30 rounded-2xl p-4 shadow-md flex flex-col justify-between relative overflow-hidden">
-            <div className="absolute top-2 right-3 font-serif font-bold text-3xl text-[#6E1231]/10">05</div>
-            <div>
-              <div className="w-7 h-7 rounded-full bg-[#9E183A] text-white flex items-center justify-center text-xs font-bold mb-2">5</div>
-              <h3 className="font-serif font-bold text-base text-[#241A20]">Lifestyle</h3>
-              <p className="text-[11px] text-[#756B70] mb-3">Your preferences</p>
-
-              <div className="space-y-2 text-[11px]">
-                <div>
-                  <span className="block text-[10px] text-gray-500 mb-0.5">Eating Habits</span>
-                  <div className="bg-white border border-gray-200 rounded px-2 py-1 text-gray-700">Strict Jain</div>
-                </div>
-                <div>
-                  <span className="block text-[10px] text-gray-500 mb-0.5">Manglik</span>
-                  <div className="bg-white border border-gray-200 rounded px-2 py-1 text-gray-700">Non-Manglik</div>
-                </div>
-              </div>
-            </div>
-            <button className="btn-ruby py-1.5 px-3 text-[11px] w-full rounded-lg mt-4 flex items-center justify-center gap-1">
-              <span>Next</span> <ChevronRight className="w-3 h-3" />
-            </button>
-          </div>
-
-          {/* STEP 6: Partner Preferences */}
-          <div className="bg-[#FFF9F1] border border-[#D6A24A]/30 rounded-2xl p-4 shadow-md flex flex-col justify-between relative overflow-hidden">
-            <div className="absolute top-2 right-3 font-serif font-bold text-3xl text-[#6E1231]/10">06</div>
-            <div>
-              <div className="w-7 h-7 rounded-full bg-[#9E183A] text-white flex items-center justify-center text-xs font-bold mb-2">6</div>
-              <h3 className="font-serif font-bold text-base text-[#241A20]">Partner Preferences</h3>
-              <p className="text-[11px] text-[#756B70] mb-3">Tell us expectations</p>
-
-              <div className="space-y-2 text-[11px]">
-                <div>
-                  <div className="flex justify-between text-[10px] text-gray-500 mb-1">
-                    <span>Age Range</span>
-                    <span className="font-bold text-[#6E1231]">22 - 30</span>
-                  </div>
-                  <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
-                    <div className="bg-[#9E183A] h-full w-2/3 ml-4"></div>
-                  </div>
-                </div>
-                <div>
-                  <span className="block text-[10px] text-gray-500 mb-0.5">Community</span>
-                  <div className="bg-white border border-gray-200 rounded px-2 py-1 text-gray-700">Select community</div>
-                </div>
-              </div>
-            </div>
-            <button className="btn-ruby py-1.5 px-3 text-[11px] w-full rounded-lg mt-4 flex items-center justify-center gap-1 font-bold">
-              <span>Finish</span>
-            </button>
-          </div>
-
         </div>
 
       </div>
