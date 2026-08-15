@@ -27,8 +27,15 @@ export function useCandidateProfile(userId?: string) {
         .from('candidate_profiles')
         .select(`
           *,
+          users (email, phone),
           jain_identities (*),
-          photos (*)
+          photos (*),
+          education_records (*),
+          employment_records (*),
+          family_members (*),
+          lifestyle_profiles (*),
+          profile_privacies (*),
+          biodatas (*)
         `)
         .eq('user_id', currentUserId)
         .single();
@@ -87,9 +94,17 @@ export function useCandidateProfile(userId?: string) {
           lastName: profileData.last_name,
           currentCity: profileData.current_city,
           currentState: profileData.current_state,
+          email: profileData.users?.email,
+          phone: profileData.users?.phone,
           jainIdentity: profileData.jain_identities?.[0] || null,
+          lifestyle: profileData.lifestyle_profiles?.[0] || null,
+          privacy: profileData.profile_privacies?.[0] || null,
+          biodata: profileData.biodatas?.[0] || null,
+          education: profileData.education_records || [],
+          employment: profileData.employment_records || [],
+          family: profileData.family_members || [],
+          photos: profileData.photos || [],
           completionPercentage,
-          // Calculate membership tier from subscription or fallback to Free
           membershipTier: subData?.plan?.name || 'Free Member',
           isVerified: profileData.verification_status === 'verified',
           verificationStatus: profileData.verification_status || 'pending'

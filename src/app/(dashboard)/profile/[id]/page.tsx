@@ -3,12 +3,22 @@
 import React, { useState, useEffect } from 'react';
 import { 
   CheckCircle, MapPin, Heart, Bookmark, AlertCircle, FileText, Download,
-  Lock, ArrowLeft, MoreHorizontal, User, Briefcase, GraduationCap,
-  Users, Coffee
+  Lock, ArrowLeft, MoreHorizontal, User, Users
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { useCandidateProfile } from '@/hooks/useCandidateProfile';
 import { useRouter } from 'next/navigation';
+import { 
+  PersonalDetails, 
+  JainIdentity, 
+  EducationSection, 
+  CareerSection, 
+  FamilySection, 
+  LocationSection, 
+  LifestyleSection, 
+  ContactSection, 
+  BiodataSection 
+} from '@/components/profile/ProfileSections';
 
 export default function CandidateProfileView({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -32,11 +42,14 @@ export default function CandidateProfileView({ params }: { params: { id: string 
           .from('candidate_profiles')
           .select(`
             *,
+            users (email, phone),
             jain_identities(*),
             education_records(*),
             employment_records(*),
             lifestyle_profiles(*),
             family_members(*),
+            profile_privacies(*),
+            biodatas(*),
             photos(*)
           `)
           .eq('id', params.id)
@@ -46,7 +59,6 @@ export default function CandidateProfileView({ params }: { params: { id: string 
         setCandidate(candData);
 
         // 2. Fetch Relationship Status
-        // Check mutual connection
         const { data: connData } = await supabase
           .from('connections')
           .select('*')
@@ -102,15 +114,8 @@ export default function CandidateProfileView({ params }: { params: { id: string 
     }
   }, [loggedInUser, params.id, authLoading]);
 
-
-  const calculateAge = (dob: string) => {
-    if (!dob) return 'N/A';
-    const diff = Date.now() - new Date(dob).getTime();
-    return Math.abs(new Date(diff).getUTCFullYear() - 1970);
-  };
-
   const handleInterest = async () => {
-    if (!loggedInUser || relationshipStatus !== 'none') return;
+    if (!loggedInUser) return;
     try {
       await supabase.from('interest_requests').insert({
         sender_id: loggedInUser.id,
@@ -118,35 +123,60 @@ export default function CandidateProfileView({ params }: { params: { id: string 
         status: 'pending'
       });
       setRelationshipStatus('interest_sent');
-    } catch(err) {}
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleAccept = async () => {
     if (!loggedInUser) return;
     try {
-      const { data: request } = await supabase
-        .from('interest_requests')
-        .select('id')
+      await supabase.from('interest_requests')
+        .update({ status: 'accepted' })
         .eq('sender_id', params.id)
-        .eq('receiver_id', loggedInUser.id)
-        .eq('status', 'pending')
-        .single();
+        .eq('receiver_id', loggedInUser.id);
+        
+      // Connection row creates via DB trigger or insert manually
+      await supabase.from('connections').insert({
+        candidate_a: params.id,
+        candidate_b: loggedInUser.id
+      });
+      
+      setRelationshipStatus('connected');
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-      if (request) {
-        await supabase.from('interest_requests').update({ status: 'accepted' }).eq('id', request.id);
-        await supabase.from('connections').insert({
-          candidate_a: params.id,
-          candidate_b: loggedInUser.id,
-          interest_request_id: request.id
+  const handleSave = async () => {
+    if (!loggedInUser) return;
+    try {
+      if (isSaved) {
+        await supabase.from('saved_profiles').delete()
+          .eq('candidate_id', loggedInUser.id)
+          .eq('saved_candidate_id', params.id);
+        setIsSaved(false);
+      } else {
+        await supabase.from('saved_profiles').insert({
+          candidate_id: loggedInUser.id,
+          saved_candidate_id: params.id
         });
-        setRelationshipStatus('connected');
+        setIsSaved(true);
       }
-    } catch(err) {}
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const calculateAge = (dob: string) => {
+    if (!dob) return 'N/A';
+    const diff = Date.now() - new Date(dob).getTime();
+    return Math.abs(new Date(diff).getUTCFullYear() - 1970);
   };
 
   if (loading || authLoading) {
     return (
-      <div className="flex justify-center items-center py-20 min-h-screen">
+      <div className="flex justify-center py-20">
         <div className="w-8 h-8 border-4 border-[#C99A3D] border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -164,13 +194,9 @@ export default function CandidateProfileView({ params }: { params: { id: string 
   }
 
   const isConnected = relationshipStatus === 'connected';
-  const jain = candidate.jain_identities?.[0] || {};
-  const edu = candidate.education_records || [];
-  const emp = candidate.employment_records?.[0] || {};
-  const lifestyle = candidate.lifestyle_profiles?.[0] || {};
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in duration-500 pb-20">
+    <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500 pb-20">
       
       {/* Top Nav Back button */}
       <button onClick={() => router.back()} className="flex items-center gap-2 text-xs font-bold text-[#75666D] hover:text-[#241B20] transition-colors">
@@ -179,84 +205,79 @@ export default function CandidateProfileView({ params }: { params: { id: string 
 
       {/* Profile Header Card */}
       <div className="bg-[#FFFDFB] border border-[#EBD9DC] rounded-[32px] overflow-hidden shadow-sm relative">
-        <div className="h-48 bg-gradient-to-r from-[#F7E5EA] to-[#FFF8F7] relative">
+        <div className="h-48 bg-gradient-to-r from-[#F7E5EA] via-[#FFF8F7] to-[#FDF9F4] relative">
           <div className="absolute top-4 right-4 flex gap-2">
+            <button onClick={handleSave} className={`w-10 h-10 backdrop-blur-md rounded-full flex items-center justify-center transition-colors ${isSaved ? 'bg-[#8F0038] text-white border border-[#8F0038]' : 'bg-white/50 text-[#8F0038] hover:bg-white'}`}>
+              <Bookmark className="w-5 h-5" fill={isSaved ? "currentColor" : "none"} />
+            </button>
             <button className="w-10 h-10 bg-white/50 backdrop-blur-md rounded-full flex items-center justify-center text-[#8F0038] hover:bg-white transition-colors">
               <MoreHorizontal className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        <div className="px-8 pb-8 relative">
-          {/* Avatar floating */}
-          <div className="absolute -top-20 left-8">
-            <div className="w-40 h-40 rounded-full border-4 border-[#FFFDFB] bg-[#F7E5EA] shadow-md overflow-hidden relative">
+        <div className="px-6 md:px-10 pb-10 relative">
+          <div className="absolute -top-24 left-6 md:left-10">
+            <div className="w-40 h-40 md:w-48 md:h-48 rounded-[32px] border-4 border-[#FFFDFB] bg-[#F7E5EA] shadow-xl overflow-hidden relative group">
               {candidate.photos?.[0]?.url ? (
                 <img src={candidate.photos[0].url} alt="" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <User className="w-16 h-16 text-[#75666D] opacity-40" />
+                  <User className="w-16 h-16 md:w-20 md:h-20 text-[#75666D] opacity-40" />
                 </div>
               )}
             </div>
           </div>
 
-          <div className="pt-24 space-y-4">
-            <div className="space-y-1">
+          <div className="pt-24 md:pt-28 flex flex-col md:flex-row md:items-start justify-between gap-6">
+            <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <h1 className="font-serif font-bold text-3xl text-[#241B20]">
-                  {candidate.first_name} {candidate.last_name}, {calculateAge(candidate.date_of_birth)}
+                <h1 className="font-serif font-bold text-3xl md:text-4xl text-[#241B20]">
+                  {candidate.first_name} {candidate.last_name}
                 </h1>
                 {candidate.verification_status === 'verified' && (
-                  <CheckCircle className="w-5 h-5 text-[#C99A3D] fill-current shrink-0" />
+                  <CheckCircle className="w-7 h-7 text-[#C99A3D] fill-current shrink-0" />
                 )}
               </div>
-              <p className="text-sm font-semibold text-[#75666D] flex items-center gap-1.5">
+              <p className="text-sm md:text-base font-semibold text-[#75666D] flex items-center gap-1.5">
                 <MapPin className="w-4 h-4 text-[#8F0038]" />
                 {candidate.current_city}, {candidate.current_state}
               </p>
-              {candidate.managed_by && candidate.managed_by !== 'self' && (
-                <p className="text-[10px] font-bold text-[#C99A3D] uppercase tracking-wider mt-2">
-                  Profile managed by {candidate.managed_by}
-                </p>
-              )}
-            </div>
-
-            {/* Quick Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-4 border-t border-b border-[#EBD9DC]/50">
-              <div className="space-y-1">
-                <p className="text-[10px] uppercase font-bold text-[#75666D]">Height</p>
-                <p className="text-sm font-bold text-[#241B20]">{candidate.height_cm} cm</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-[10px] uppercase font-bold text-[#75666D]">Marital Status</p>
-                <p className="text-sm font-bold text-[#241B20] capitalize">{candidate.marital_status?.replace('_', ' ')}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-[10px] uppercase font-bold text-[#75666D]">Sect</p>
-                <p className="text-sm font-bold text-[#241B20]">{jain.sect || 'Not specified'}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-[10px] uppercase font-bold text-[#75666D]">Community</p>
-                <p className="text-sm font-bold text-[#241B20]">{jain.community || 'Not specified'}</p>
+              
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                {candidate.date_of_birth && (
+                  <span className="text-xs font-bold text-[#8F0038] bg-[#F7E5EA]/60 px-3 py-1.5 rounded-lg border border-[#EBD9DC]/50">
+                    {calculateAge(candidate.date_of_birth)} Years
+                  </span>
+                )}
+                {candidate.height_cm && (
+                  <span className="text-xs font-bold text-[#75666D] bg-[#FFFDFB] px-3 py-1.5 rounded-lg border border-[#EBD9DC] tracking-wide">
+                    {candidate.height_cm} cm
+                  </span>
+                )}
+                {candidate.jain_identities?.[0]?.sect && (
+                  <span className="text-xs font-bold text-[#75666D] bg-[#FFFDFB] px-3 py-1.5 rounded-lg border border-[#EBD9DC] uppercase tracking-wide">
+                    {candidate.jain_identities[0].sect}
+                  </span>
+                )}
               </div>
             </div>
 
             {/* Action Bar based on relationship status */}
-            <div className="flex flex-wrap gap-3 pt-2">
+            <div className="flex flex-col gap-3 min-w-[200px]">
               {relationshipStatus === 'none' && (
-                <button onClick={handleInterest} className="px-8 py-3.5 bg-[#8F0038] hover:bg-[#72002E] text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-sm transition-colors">
+                <button onClick={handleInterest} className="px-8 py-3.5 bg-[#8F0038] hover:bg-[#72002E] text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-colors">
                   <Heart className="w-4 h-4" /> Interested
                 </button>
               )}
               {relationshipStatus === 'interest_sent' && (
-                <button className="px-8 py-3.5 bg-[#F7E5EA] text-[#8F0038] font-bold rounded-xl text-xs flex items-center gap-2 border border-[#8F0038]/20" disabled>
+                <button className="px-8 py-3.5 bg-[#F7E5EA] text-[#8F0038] font-bold rounded-xl text-xs flex items-center justify-center gap-2 border border-[#8F0038]/20" disabled>
                   <CheckCircle className="w-4 h-4" /> Interest Sent
                 </button>
               )}
               {relationshipStatus === 'interest_received' && (
                 <>
-                  <button onClick={handleAccept} className="px-8 py-3.5 bg-[#8F0038] hover:bg-[#72002E] text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-sm transition-colors">
+                  <button onClick={handleAccept} className="px-8 py-3.5 bg-[#8F0038] hover:bg-[#72002E] text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-colors">
                     <CheckCircle className="w-4 h-4" /> Accept Interest
                   </button>
                   <button className="px-8 py-3.5 border border-[#EBD9DC] bg-white text-[#75666D] font-bold rounded-xl text-xs hover:bg-gray-50 transition-colors">
@@ -265,134 +286,85 @@ export default function CandidateProfileView({ params }: { params: { id: string 
                 </>
               )}
               {relationshipStatus === 'connected' && (
-                <button className="px-8 py-3.5 bg-[#FDF9F4] border border-[#C99A3D] text-[#C99A3D] font-bold rounded-xl text-xs flex items-center gap-2 shadow-sm">
+                <button className="px-8 py-3.5 bg-[#FDF9F4] border border-[#C99A3D] text-[#C99A3D] font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm">
                   <Users className="w-4 h-4" /> Connected
                 </button>
               )}
-
-              {/* Biodata PDF Download (Only if mutually accepted) */}
-              <button 
-                className={`px-8 py-3.5 font-bold rounded-xl text-xs flex items-center gap-2 transition-colors border ${
-                  isConnected 
-                    ? 'bg-[#FFFDFB] text-[#8F0038] border-[#8F0038] hover:bg-[#F7E5EA]/20' 
-                    : 'bg-[#F9F9F9] text-[#A0A0A0] border-[#E0E0E0] cursor-not-allowed'
-                }`}
-                disabled={!isConnected}
-              >
-                {isConnected ? <Download className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-                {isConnected ? 'Download Biodata PDF' : 'Biodata Locked'}
-              </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Digital Matrimonial Sections */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
-        {/* About */}
-        {candidate.about_me && (
-          <div className="col-span-1 md:col-span-2 bg-[#FFFDFB] border border-[#EBD9DC] p-6 rounded-[24px] shadow-sm space-y-3">
-            <h3 className="font-serif font-bold text-xl text-[#8F0038]">About {candidate.first_name}</h3>
-            <p className="text-sm font-semibold text-[#75666D] leading-relaxed">
-              {candidate.about_me}
-            </p>
-          </div>
-        )}
-
-        {/* Jain Identity */}
-        <div className="bg-[#FFFDFB] border border-[#EBD9DC] p-6 rounded-[24px] shadow-sm space-y-4">
-          <h3 className="font-serif font-bold text-xl text-[#8F0038] flex items-center gap-2 border-b border-[#EBD9DC]/50 pb-3">
-            <User className="w-5 h-5 text-[#C99A3D]" />
-            Jain Identity
-          </h3>
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between">
-              <span className="text-[#75666D] font-bold">Sect</span>
-              <span className="font-bold text-[#241B20]">{jain.sect || '-'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[#75666D] font-bold">Community</span>
-              <span className="font-bold text-[#241B20]">{jain.community || '-'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[#75666D] font-bold">Sub-Community</span>
-              <span className="font-bold text-[#241B20]">{jain.sub_community || '-'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[#75666D] font-bold">Gotra / Sakha</span>
-              <span className="font-bold text-[#241B20]">{jain.saka_gotra || '-'}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Education & Career */}
-        <div className="bg-[#FFFDFB] border border-[#EBD9DC] p-6 rounded-[24px] shadow-sm space-y-4">
-          <h3 className="font-serif font-bold text-xl text-[#8F0038] flex items-center gap-2 border-b border-[#EBD9DC]/50 pb-3">
-            <GraduationCap className="w-5 h-5 text-[#C99A3D]" />
-            Education & Career
-          </h3>
-          <div className="space-y-4 text-sm">
-            {edu.length > 0 ? edu.map((e: any, i: number) => (
-              <div key={i} className="space-y-0.5">
-                <span className="text-[#75666D] font-bold text-[10px] uppercase">Education</span>
-                <p className="font-bold text-[#241B20]">{e.degree_name} ({e.specialization})</p>
-                <p className="text-xs font-semibold text-[#75666D]">{e.institution}</p>
-              </div>
-            )) : (
-              <p className="text-xs text-[#75666D] italic">Education details not specified</p>
-            )}
-
-            <div className="pt-2 border-t border-[#EBD9DC]/30">
-              <span className="text-[#75666D] font-bold text-[10px] uppercase block mb-1">Career</span>
-              {emp.company_name ? (
-                <>
-                  <p className="font-bold text-[#241B20]">{emp.designation}</p>
-                  <p className="text-xs font-semibold text-[#75666D]">{emp.company_name} • {emp.work_city}</p>
-                  {isConnected ? (
-                     <p className="text-xs font-bold text-[#C99A3D] mt-1">{emp.annual_income_lakhs} LPA</p>
-                  ) : (
-                    <div className="flex items-center gap-1 mt-1 text-[10px] font-bold text-[#A0A0A0] bg-[#F9F9F9] inline-flex px-2 py-1 rounded">
-                      <Lock className="w-3 h-3" /> Income Hidden
-                    </div>
-                  )}
-                </>
-              ) : (
-                <p className="text-xs text-[#75666D] italic">Career details not specified</p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Contact Details (Locked conditionally) */}
-        <div className="col-span-1 md:col-span-2 bg-[#FFFDFB] border border-[#EBD9DC] p-6 rounded-[24px] shadow-sm space-y-4">
-          <h3 className="font-serif font-bold text-xl text-[#8F0038] flex items-center gap-2 border-b border-[#EBD9DC]/50 pb-3">
-            <MapPin className="w-5 h-5 text-[#C99A3D]" />
-            Contact & Location Details
-          </h3>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Core Info */}
+        <div className="lg:col-span-2 space-y-6">
+          <PersonalDetails profile={candidate} onEdit={undefined as any} />
+          <JainIdentity identity={candidate.jain_identities?.[0]} onEdit={undefined as any} />
           
-          {isConnected ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-[#F7E5EA]/40 p-4 rounded-xl border border-[#EBD9DC]">
-                <p className="text-[10px] uppercase font-bold text-[#75666D] mb-1">Mobile Number</p>
-                <p className="text-sm font-bold text-[#241B20] font-mono">Not implemented (Auth)</p>
-              </div>
-              <div className="bg-[#F7E5EA]/40 p-4 rounded-xl border border-[#EBD9DC]">
-                <p className="text-[10px] uppercase font-bold text-[#75666D] mb-1">Native Place</p>
-                <p className="text-sm font-bold text-[#241B20]">{candidate.native_city}, {candidate.native_state}</p>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-[#F9F9F9] border border-[#E0E0E0] rounded-2xl p-8 text-center space-y-3">
-              <Lock className="w-8 h-8 text-[#A0A0A0] mx-auto" />
-              <h4 className="font-bold text-sm text-[#241B20]">Contact Details Locked</h4>
-              <p className="text-xs text-[#75666D] max-w-sm mx-auto font-semibold">
-                Phone numbers, exact birth details, and family contacts become visible after mutual acceptance. Express interest to connect!
-              </p>
-            </div>
+          {candidate.education_records?.length > 0 && (
+            <EducationSection 
+              educationRecords={candidate.education_records} 
+              onAdd={undefined as any} onEdit={undefined as any} onRemove={undefined as any}
+            />
           )}
+          
+          {candidate.employment_records?.length > 0 && (
+            <CareerSection 
+              employmentRecords={candidate.employment_records} 
+              onAdd={undefined as any} onEdit={undefined as any} onRemove={undefined as any}
+            />
+          )}
+
+          {candidate.family_members?.length > 0 && (
+            <FamilySection 
+              familyMembers={candidate.family_members} 
+              onAdd={undefined as any} onEdit={undefined as any} onRemove={undefined as any}
+            />
+          )}
+
+          <LifestyleSection lifestyle={candidate.lifestyle_profiles?.[0]} onEdit={undefined as any} />
         </div>
 
+        {/* Right Column - Privacy & Contact */}
+        <div className="space-y-6">
+          
+          {/* Contact Details with Privacy Lock */}
+          <div className="bg-[#FFFDFB] border border-[#EBD9DC] rounded-[24px] p-6 shadow-sm mb-6">
+            <h2 className="font-serif text-2xl font-bold text-[#8F0038] mb-6 pb-4 border-b border-[#EBD9DC] flex items-center gap-2">
+              <Lock className="w-5 h-5 text-[#C99A3D]" /> Contact Details
+            </h2>
+            {isConnected ? (
+              <div className="space-y-4">
+                <div className="p-4 bg-[#FDF9F4] rounded-xl border border-[#C99A3D]/30">
+                  <p className="text-xs font-bold text-[#75666D] mb-1">Mobile Number</p>
+                  <p className="text-[15px] font-bold text-[#241B20]">{candidate.users?.phone || '+91 XXXXX XXXXX'}</p>
+                </div>
+                <div className="p-4 bg-[#FDF9F4] rounded-xl border border-[#C99A3D]/30">
+                  <p className="text-xs font-bold text-[#75666D] mb-1">Email Address</p>
+                  <p className="text-[15px] font-bold text-[#241B20]">{candidate.users?.email || 'Not provided'}</p>
+                </div>
+                <p className="text-xs font-bold text-[#C99A3D] mt-2 flex items-center gap-1.5 justify-center">
+                  <CheckCircle className="w-3.5 h-3.5" /> Unlocked via Mutual Connection
+                </p>
+              </div>
+            ) : (
+              <div className="text-center py-6">
+                <div className="w-12 h-12 rounded-full bg-[#F7E5EA] flex items-center justify-center mx-auto mb-3">
+                  <Lock className="w-5 h-5 text-[#8F0038]" />
+                </div>
+                <h3 className="text-sm font-bold text-[#241B20] mb-1">Contact Protected</h3>
+                <p className="text-xs text-[#75666D] mb-4">Phone and email are hidden until an interest request is mutually accepted.</p>
+                {relationshipStatus === 'none' && (
+                  <button onClick={handleInterest} className="px-6 py-2.5 bg-[#8F0038] text-white font-bold rounded-xl text-xs hover:bg-[#72002E] transition-colors w-full">
+                    Send Interest to Unlock
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          <LocationSection profile={candidate} onEdit={undefined as any} />
+        </div>
       </div>
 
     </div>
