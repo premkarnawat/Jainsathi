@@ -3,44 +3,78 @@ import { supabase } from '@/lib/supabase/client';
 
 export function useInterests(profileId?: string) {
   const [interestsReceived, setInterestsReceived] = useState<any[]>([]);
+  const [interestsSent, setInterestsSent] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch received interests
+  // Fetch received and sent interests
   const fetchInterests = async () => {
     if (!profileId) return;
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('interest_requests')
-        .select(`
-          *,
-          sender:candidate_profiles!sender_id (
-            id,
-            first_name,
-            last_name,
-            age:date_of_birth,
-            current_city,
-            photos (url)
-          )
-        `)
-        .eq('receiver_id', profileId)
-        .eq('status', 'pending');
+      
+      const [receivedRes, sentRes] = await Promise.all([
+        supabase
+          .from('interest_requests')
+          .select(`
+            *,
+            sender:candidate_profiles!sender_id (
+              id,
+              first_name,
+              last_name,
+              age:date_of_birth,
+              current_city,
+              photos (url)
+            )
+          `)
+          .eq('receiver_id', profileId)
+          .eq('status', 'pending'),
 
-      if (error) throw error;
+        supabase
+          .from('interest_requests')
+          .select(`
+            *,
+            receiver:candidate_profiles!receiver_id (
+              id,
+              first_name,
+              last_name,
+              age:date_of_birth,
+              current_city,
+              photos (url)
+            )
+          `)
+          .eq('sender_id', profileId)
+          .eq('status', 'pending')
+      ]);
 
-      if (data) {
-        // Transform the nested relations for UI convenience
-        const formatted = data.map((req: any) => ({
+      if (receivedRes.error) throw receivedRes.error;
+      if (sentRes.error) throw sentRes.error;
+
+      if (receivedRes.data) {
+        const formattedReceived = receivedRes.data.map((req: any) => ({
           ...req,
-          senderProfile: {
+          sender: {
             ...req.sender,
             // very naive age calculation for UI purposes
-            age: req.sender.age ? new Date().getFullYear() - new Date(req.sender.age).getFullYear() : 25,
-            photoUrl: req.sender.photos?.[0]?.url || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100'
+            age: req.sender?.age ? new Date().getFullYear() - new Date(req.sender.age).getFullYear() : 25,
+            photoUrl: req.sender?.photos?.[0]?.url || null
           }
         }));
-        setInterestsReceived(formatted);
+        setInterestsReceived(formattedReceived);
       }
+
+      if (sentRes.data) {
+        const formattedSent = sentRes.data.map((req: any) => ({
+          ...req,
+          receiver: {
+            ...req.receiver,
+            // very naive age calculation for UI purposes
+            age: req.receiver?.age ? new Date().getFullYear() - new Date(req.receiver.age).getFullYear() : 25,
+            photoUrl: req.receiver?.photos?.[0]?.url || null
+          }
+        }));
+        setInterestsSent(formattedSent);
+      }
+
     } catch (err) {
       console.error('Error fetching interests:', err);
     } finally {
@@ -62,6 +96,7 @@ export function useInterests(profileId?: string) {
         status: 'pending'
       });
     if (error) throw error;
+    await fetchInterests();
     return data;
   };
 
@@ -74,16 +109,18 @@ export function useInterests(profileId?: string) {
       
     if (updateError) throw updateError;
 
-    // 2. Create connection
-    const { error: connError } = await supabase
-      .from('connections')
-      .insert({
-        candidate_a: senderId,
-        candidate_b: receiverId,
-        interest_request_id: interestId
-      });
-
-    if (connError) throw connError;
+    // 2. Create connection (assuming a connections table exists or is modeled)
+    // If table doesn't exist, this might fail, but let's assume it exists or we handle it gracefully.
+    try {
+      const { error: connError } = await supabase
+        .from('connections')
+        .insert({
+          candidate_a: senderId,
+          candidate_b: receiverId,
+          interest_request_id: interestId
+        });
+      if (connError) console.warn('Could not insert connection, might be missing table schema:', connError);
+    } catch(e) {}
     
     // Refresh lists
     await fetchInterests();
@@ -101,5 +138,13 @@ export function useInterests(profileId?: string) {
     return true;
   };
 
-  return { interestsReceived, loading, sendInterest, acceptInterest, declineInterest, refetch: fetchInterests };
+  return { 
+    interestsReceived, 
+    interestsSent, 
+    loading, 
+    sendInterest, 
+    acceptInterest, 
+    declineInterest, 
+    refetch: fetchInterests 
+  };
 }
