@@ -101,8 +101,8 @@ export async function revealContact(targetCandidateId: string) {
       return { success: false, error: 'Unable to retrieve contact details.' };
     }
 
-    // 5. Log the contact reveal (Audit Trail)
-    await (await supabase).from('contact_reveals').insert({
+    // 5. Log the contact reveal (Audit Trail) securely using admin client
+    await adminSupabase.from('contact_reveals').insert({
       requester_id: requesterProfile.id,
       target_id: targetCandidateId
     });
