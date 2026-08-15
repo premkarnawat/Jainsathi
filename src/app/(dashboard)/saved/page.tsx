@@ -41,14 +41,17 @@ export default function SavedProfilesPage() {
         if (error) throw error;
         
         if (data) {
-          const formatted = data.map(saveRecord => ({
-            id: saveRecord.id,
-            ...saveRecord.candidate,
-            age: saveRecord.candidate?.age ? new Date().getFullYear() - new Date(saveRecord.candidate.age).getFullYear() : null,
-            photoUrl: saveRecord.candidate?.photos?.[0]?.url,
-            sect: saveRecord.candidate?.jain_identities?.[0]?.sect,
-            community: saveRecord.candidate?.jain_identities?.[0]?.community,
-          }));
+          const formatted = data.map((saveRecord: any) => {
+            const candidate = Array.isArray(saveRecord.candidate) ? saveRecord.candidate[0] : saveRecord.candidate;
+            return {
+              id: saveRecord.id,
+              ...candidate,
+              age: candidate?.age ? new Date().getFullYear() - new Date(candidate.age).getFullYear() : null,
+              photoUrl: candidate?.photos?.[0]?.url,
+              sect: candidate?.jain_identities?.[0]?.sect,
+              community: candidate?.jain_identities?.[0]?.community,
+            };
+          });
           setSavedProfiles(formatted);
         }
       } catch (err) {
