@@ -27,7 +27,6 @@ export function useCandidateProfile(userId?: string) {
         .from('candidate_profiles')
         .select(`
           *,
-          users (email, phone),
           jain_identities (*),
           photos (*),
           education_records (*),
@@ -53,6 +52,13 @@ export function useCandidateProfile(userId?: string) {
         if (prefData) {
           setPreferences(prefData);
         }
+
+        // Fetch user data separately
+        const { data: userData } = await supabase
+          .from('users')
+          .select('email, phone')
+          .eq('id', profileData.user_id)
+          .single();
 
         // Fetch subscription
         const { data: subData } = await supabase
@@ -94,8 +100,8 @@ export function useCandidateProfile(userId?: string) {
           lastName: profileData.last_name,
           currentCity: profileData.current_city,
           currentState: profileData.current_state,
-          email: profileData.users?.email,
-          phone: profileData.users?.phone,
+          email: userData?.email,
+          phone: userData?.phone,
           jainIdentity: profileData.jain_identities?.[0] || null,
           lifestyle: profileData.lifestyle_profiles?.[0] || null,
           privacy: profileData.profile_privacies?.[0] || null,

@@ -42,7 +42,6 @@ export default function CandidateProfileView({ params }: { params: { id: string 
           .from('candidate_profiles')
           .select(`
             *,
-            users (email, phone),
             jain_identities(*),
             education_records(*),
             employment_records(*),
@@ -56,7 +55,15 @@ export default function CandidateProfileView({ params }: { params: { id: string 
           .single();
           
         if (candError) throw candError;
-        setCandidate(candData);
+
+        // Fetch user data separately
+        const { data: userData } = await supabase
+          .from('users')
+          .select('email, phone')
+          .eq('id', candData.user_id)
+          .single();
+          
+        setCandidate({ ...candData, users: userData });
 
         // 2. Fetch Relationship Status
         const { data: connData } = await supabase

@@ -26,7 +26,7 @@ import { supabase } from '@/lib/supabase/client';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { profile: loggedInUser, loading, refetch } = useCandidateProfile();
+  const { profile: loggedInUser, loading, error, refetch } = useCandidateProfile();
   
   // Modal states
   const [isAddEducationOpen, setIsAddEducationOpen] = useState(false);
@@ -38,7 +38,23 @@ export default function ProfilePage() {
     return <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#C99A3D] border-t-transparent rounded-full animate-spin" /></div>;
   }
 
-  if (!loggedInUser) return null;
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <h2 className="text-red-500 font-bold mb-2">Error Loading Profile</h2>
+        <p className="text-sm text-gray-500 bg-red-50 p-4 rounded-lg">{error}</p>
+      </div>
+    );
+  }
+
+  if (!loggedInUser) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <h2 className="text-gray-500 font-bold mb-2">Profile Not Found</h2>
+        <p className="text-sm text-gray-400">Please complete registration.</p>
+      </div>
+    );
+  }
 
   const navigateToEdit = (tab: string) => {
     // In a real app we could pass query params to open a specific tab
