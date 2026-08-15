@@ -52,3 +52,7 @@ export function createAdminClient() {
     }
   );
 }
+
+// Backward compatibility alias for existing API routes
+export const createServerSupabaseClient = createClient;
+
