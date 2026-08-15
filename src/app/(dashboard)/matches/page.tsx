@@ -6,6 +6,7 @@ import { useCandidateProfile } from '@/hooks/useCandidateProfile';
 import { useMatches } from '@/hooks/useMatches';
 import { useInterests } from '@/hooks/useInterests';
 import Link from 'next/link';
+import { supabase } from '@/lib/supabase/client';
 
 const FallbackAvatar = () => (
   <div className="w-full h-full bg-[#EDE1D7] flex items-center justify-center text-[#766B70]">
@@ -26,6 +27,27 @@ export default function MatchesPage() {
       alert('Interest sent successfully!'); // In a real app, replace with toast
     } catch (err) {
       console.error('Failed to send interest:', err);
+    }
+  };
+
+  const handleSaveProfile = async (candidateId: string) => {
+    if (!loggedInUser) return;
+    try {
+      const { error } = await supabase.from('saved_profiles').insert({
+        candidate_id: loggedInUser.id,
+        saved_candidate_id: candidateId,
+      });
+      if (error) {
+        if (error.code === '23505') {
+          alert('Profile is already saved.');
+        } else {
+          throw error;
+        }
+      } else {
+        alert('Profile saved to your bookmarks!');
+      }
+    } catch (err) {
+      console.error('Failed to save profile:', err);
     }
   };
 
@@ -128,10 +150,13 @@ export default function MatchesPage() {
                 >
                   Interested
                 </button>
-                <button className="flex-1 bg-white hover:bg-[#F8EFE5]/25 border border-burgundy text-burgundy text-xs font-bold py-3 rounded-xl transition-all">
+                <Link href={`/profile/${cand.id}`} className="flex-1 bg-white hover:bg-[#F8EFE5]/25 border border-burgundy text-burgundy text-center text-xs font-bold py-3 rounded-xl transition-all">
                   View Profile
-                </button>
-                <button className="p-3 border border-[#EDE1D7] rounded-xl hover:bg-[#F8EFE5]/20 text-[#766B70]">
+                </Link>
+                <button 
+                  onClick={() => handleSaveProfile(cand.id)}
+                  className="p-3 border border-[#EDE1D7] rounded-xl hover:bg-[#F8EFE5]/20 text-[#766B70]"
+                >
                   <Bookmark className="w-4 h-4" />
                 </button>
               </div>

@@ -31,7 +31,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   });
 
   const userPhotoUrl = loggedInUser?.photos?.[0]?.url;
-  const userName = loggedInUser ? `${loggedInUser.firstName} ${loggedInUser.lastName}` : '';
+  const userName = loggedInUser ? `${loggedInUser.first_name} ${loggedInUser.last_name}` : '';
   const membershipTier = loggedInUser?.membershipTier || 'Free Member';
 
   const menuItems = [

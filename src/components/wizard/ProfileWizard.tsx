@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Phone, CheckCircle2, ArrowRight, ArrowLeft } from 'lucide-react';
+import { supabase } from '@/lib/supabase/client';
 
 interface ProfileWizardProps {
   onComplete: (profileData: any, selectedPlan: string) => void;
@@ -39,7 +40,46 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
     }
   };
 
+  const handleSendOtp = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: '+91' + mobileNumber,
+      });
+      if (error) throw error;
+      setStep(2);
+    } catch (err: any) {
+      alert(`Error sending OTP: ${err.message}`);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    try {
+      const code = otpDigits.join('');
+      const { data: { session }, error } = await supabase.auth.verifyOtp({
+        phone: '+91' + mobileNumber,
+        token: code,
+        type: 'sms',
+      });
+      if (error) throw error;
+      if (session) {
+        setStep(3);
+      } else {
+        throw new Error('Session not created');
+      }
+    } catch (err: any) {
+      alert(`Invalid OTP: ${err.message}`);
+    }
+  };
+
   const handleNext = () => {
+    if (step === 1) {
+      handleSendOtp();
+      return;
+    }
+    if (step === 2) {
+      handleVerifyOtp();
+      return;
+    }
     if (step < 7) {
       setStep((prev) => prev + 1);
     } else {
@@ -83,7 +123,7 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
         <div className="lg:col-span-4 bg-[#FFF9F1] border border-[#D6A24A]/30 rounded-3xl p-6 sm:p-8 flex flex-col items-center text-center space-y-8 relative overflow-hidden shadow-sm self-stretch justify-between">
           <div className="space-y-6 w-full">
             <div className="flex justify-center">
-              <img src="/logo.jpg" alt="JainSaathi" className="h-16 w-auto object-contain rounded-lg" />
+              <img src="/logo.png" alt="JainSaathi" className="h-16 w-auto object-contain rounded-lg" />
             </div>
 
             <div className="space-y-3">
@@ -118,8 +158,10 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
           </div>
 
           {/* Couple Image at Bottom */}
-          <div className="w-full relative mt-6 rounded-2xl overflow-hidden border border-[#D6A24A]/30">
-            <img src="/mock.jpg" alt="Jain Couple" className="w-full h-64 object-cover object-top" />
+          <div className="w-full relative mt-6 rounded-2xl overflow-hidden border border-[#D6A24A]/30 bg-[#F7E5EA]">
+             <div className="w-full h-64 flex items-center justify-center text-[#8F0038] font-serif font-bold opacity-30 text-2xl">
+              JainSaathi
+            </div>
             <div className="absolute inset-x-0 bottom-0 bg-black/40 p-3 text-left flex items-center justify-between">
               <div>
                 <p className="text-[10px] font-bold text-white leading-tight">Trusted by thousands of Jain families</p>

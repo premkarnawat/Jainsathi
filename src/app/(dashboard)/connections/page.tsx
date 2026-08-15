@@ -1,120 +1,138 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { UserCheck, MessageCircle, Phone, Lock, User } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { UserCheck, User, MapPin, Mail, Phone, Lock } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { useCandidateProfile } from '@/hooks/useCandidateProfile';
-
-const FallbackAvatar = () => (
-  <div className="w-full h-full bg-[#EDE1D7] flex items-center justify-center text-[#766B70]">
-    <User className="w-1/2 h-1/2 opacity-50" />
-  </div>
-);
+import Link from 'next/link';
 
 export default function ConnectionsPage() {
-  const { profile: loggedInUser, subscription } = useCandidateProfile();
+  const { profile: loggedInUser } = useCandidateProfile();
   const [connections, setConnections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchConnections() {
-      if (!loggedInUser) return;
+    const fetchConnections = async () => {
+      if (!loggedInUser?.id) return;
       try {
         setLoading(true);
-        // Connections are stored in `connections` table, but let's assume it's created when interest is accepted.
-        // Wait, looking at schema, we don't have a distinct `connections` table in 01_initial_schema.sql.
-        // Wait, `01_initial_schema.sql` might have it. Let's query `interest_requests` where status = 'accepted'.
-        
+        // A connection has candidate_a and candidate_b. We need to fetch where loggedInUser is either A or B.
         const { data, error } = await supabase
-          .from('interest_requests')
+          .from('connections')
           .select(`
             id,
-            created_at,
-            sender:sender_id (id, first_name, last_name, current_city, photos(url)),
-            receiver:receiver_id (id, first_name, last_name, current_city, photos(url))
+            candidate_a:candidate_profiles!candidate_a (
+              id, first_name, last_name, gender, current_city, current_state, date_of_birth,
+              photos (url), jain_identities (sect, community), users!user_id (phone, email)
+            ),
+            candidate_b:candidate_profiles!candidate_b (
+              id, first_name, last_name, gender, current_city, current_state, date_of_birth,
+              photos (url), jain_identities (sect, community), users!user_id (phone, email)
+            )
           `)
-          .eq('status', 'accepted')
-          .or(`sender_id.eq.${loggedInUser.id},receiver_id.eq.${loggedInUser.id}`);
+          .or(`candidate_a.eq.${loggedInUser.id},candidate_b.eq.${loggedInUser.id}`)
+          .order('created_at', { ascending: false });
 
         if (error) throw error;
-        setConnections(data || []);
+        
+        if (data) {
+          const formatted = data.map((conn: any) => {
+            // Determine which one is the OTHER person
+            const otherCandidate = conn.candidate_a.id === loggedInUser.id ? conn.candidate_b : conn.candidate_a;
+            return {
+              id: conn.id,
+              ...otherCandidate,
+              age: otherCandidate.date_of_birth ? new Date().getFullYear() - new Date(otherCandidate.date_of_birth).getFullYear() : null,
+              photoUrl: otherCandidate.photos?.[0]?.url,
+              sect: otherCandidate.jain_identities?.[0]?.sect,
+              community: otherCandidate.jain_identities?.[0]?.community,
+              phone: otherCandidate.users?.phone,
+              email: otherCandidate.users?.email
+            };
+          });
+          setConnections(formatted);
+        }
       } catch (err) {
-        console.error('Error fetching connections:', err);
+        console.error('Failed to fetch connections', err);
       } finally {
         setLoading(false);
       }
-    }
-    
+    };
     fetchConnections();
-  }, [loggedInUser]);
+  }, [loggedInUser?.id]);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="bg-white p-6 rounded-3xl border border-[#EDE1D7] shadow-sm">
-        <h1 className="font-serif text-3xl font-bold text-burgundy mb-2 flex items-center gap-2">
-          <UserCheck className="w-6 h-6" />
-          My Connections
-        </h1>
-        <p className="text-sm text-[#766B70] font-semibold">Mutually accepted interests ready for conversation.</p>
+    <div className="space-y-6 animate-in fade-in max-w-5xl mx-auto">
+      <div className="bg-[#FFFDFB] p-6 rounded-[24px] border border-[#EBD9DC] shadow-sm flex items-center justify-between">
+        <div>
+          <h1 className="font-serif text-3xl font-bold text-[#8F0038] flex items-center gap-2">
+            <UserCheck className="w-6 h-6 text-[#C99A3D]" />
+            Mutual Connections
+          </h1>
+          <p className="text-[#75666D] text-sm font-semibold mt-1">
+            Profiles with mutually accepted interests. Contact details are now unlocked.
+          </p>
+        </div>
       </div>
 
-      <div className="pt-4">
-        {loading ? (
-          <div className="space-y-4">
-            {[1, 2].map(i => (
-              <div key={i} className="h-32 bg-white border border-[#EDE1D7] rounded-2xl animate-pulse" />
-            ))}
-          </div>
-        ) : connections.length === 0 ? (
-          <div className="bg-white border border-[#EDE1D7] rounded-3xl p-12 text-center shadow-sm">
-            <UserCheck className="w-12 h-12 text-[#EDE1D7] mx-auto mb-4" />
-            <h3 className="font-serif text-xl font-bold text-text mb-2">No connections yet</h3>
-            <p className="text-sm text-[#766B70]">
-              When someone accepts your interest or you accept theirs, they will appear here.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {connections.map((conn) => {
-              // Extract the OTHER person
-              const profile = conn.sender.id === loggedInUser?.id ? conn.receiver : conn.sender;
-              const hasPremium = subscription?.plan?.code === 'pro' || subscription?.plan?.code === 'super' || subscription?.plan?.code === 'deluxe_6m';
+      {loading ? (
+        <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#C99A3D] border-t-transparent rounded-full animate-spin" /></div>
+      ) : connections.length === 0 ? (
+        <div className="bg-[#FFFDFB] border border-[#EBD9DC] rounded-[24px] p-12 text-center shadow-sm">
+          <UserCheck className="w-12 h-12 text-[#EBD9DC] mx-auto mb-4" />
+          <h3 className="font-serif text-xl font-bold text-[#241B20] mb-2">No Connections Yet</h3>
+          <p className="text-sm text-[#75666D] mb-6">
+            Connections are formed when an interest request is mutually accepted.
+          </p>
+          <Link href="/interests" className="px-6 py-3 bg-[#8F0038] text-white font-bold rounded-xl text-xs hover:bg-[#72002E] transition-colors inline-flex items-center gap-2">
+            View Interests
+          </Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {connections.map(profile => (
+            <div key={profile.id} className="bg-[#FFFDFB] border border-[#C99A3D]/30 rounded-[24px] p-6 shadow-sm flex flex-col items-center text-center">
+              <div className="w-24 h-24 rounded-full border-4 border-[#FDF9F4] shadow-md overflow-hidden relative bg-[#F7E5EA] mb-4">
+                {profile.photoUrl ? (
+                  <img src={profile.photoUrl} className="w-full h-full object-cover" alt="" />
+                ) : (
+                  <User className="w-12 h-12 absolute top-6 left-6 text-[#75666D] opacity-40" />
+                )}
+              </div>
+              <h3 className="font-serif text-xl font-bold text-[#241B20]">
+                {profile.first_name} {profile.last_name}
+              </h3>
+              <p className="text-xs font-semibold text-[#75666D] flex items-center gap-1 justify-center mt-1">
+                <MapPin className="w-3.5 h-3.5 text-[#8F0038]" />
+                {profile.current_city}, {profile.current_state}
+              </p>
               
-              return (
-                <div key={conn.id} className="bg-white border border-[#EDE1D7] rounded-3xl p-6 flex flex-col gap-5 shadow-sm">
-                  <div className="flex items-center gap-4 border-b border-[#F8EFE5] pb-5">
-                    <div className="w-16 h-16 rounded-full overflow-hidden shrink-0 bg-[#F8EFE5] border-2 border-[#FFF9F2]">
-                      {profile.photos?.[0]?.url ? (
-                        <img src={profile.photos[0].url} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <FallbackAvatar />
-                      )}
-                    </div>
-                    <div className="flex-grow">
-                      <h3 className="font-serif font-bold text-lg text-text">{profile.first_name} {profile.last_name}</h3>
-                      <p className="text-xs text-[#766B70] font-semibold">{profile.current_city}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <button className="flex-1 bg-burgundy text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-deepBurgundy">
-                      <MessageCircle className="w-4 h-4" /> Message
-                    </button>
-                    <button className={`flex-1 px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 border ${
-                      hasPremium 
-                        ? 'border-burgundy text-burgundy hover:bg-[#F8EFE5]/30' 
-                        : 'border-[#EDE1D7] text-[#766B70] bg-gray-50 opacity-70'
-                    }`}>
-                      {hasPremium ? <Phone className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-                      View Contact
-                    </button>
-                  </div>
+              <div className="w-full mt-6 bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl p-4 space-y-3">
+                <div className="flex items-center gap-3 justify-center text-sm font-bold text-[#241B20]">
+                  <Phone className="w-4 h-4 text-[#8F0038]" />
+                  {profile.phone || 'Phone not available'}
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+                {profile.email && (
+                  <div className="flex items-center gap-3 justify-center text-sm font-bold text-[#241B20]">
+                    <Mail className="w-4 h-4 text-[#8F0038]" />
+                    {profile.email}
+                  </div>
+                )}
+                <div className="pt-2 flex justify-center text-[10px] text-[#C99A3D] font-bold uppercase tracking-widest flex items-center gap-1">
+                  <Lock className="w-3 h-3" />
+                  Contact Info Unlocked
+                </div>
+              </div>
+
+              <div className="w-full mt-4">
+                <Link href={`/profile/${profile.id}`} className="block w-full py-2.5 bg-[#8F0038] text-white font-bold rounded-xl text-xs hover:bg-[#72002E] transition-colors">
+                  View Full Profile
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
