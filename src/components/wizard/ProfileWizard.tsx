@@ -402,7 +402,7 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
 
       // MOCK SUPABASE AUTHENTICATION
       // Since we don't have a real SMS provider attached to Supabase, we create a session using a mock email.
-      const mockEmail = `${mobileNumber}@jainsaathi.local`;
+      const mockEmail = `${mobileNumber}@auth.jainsaathi.com`;
       const mockPassword = `JainSathiAuth$${mobileNumber}`;
 
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
