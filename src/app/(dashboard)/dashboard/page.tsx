@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import { 
   Search, Bell, Mail, ShieldAlert, Award, Heart, Eye, Bookmark, 
-  MapPin, CheckCircle, ArrowRight, Lock, Sparkles, AlertCircle
+  MapPin, CheckCircle, ArrowRight, Lock, Sparkles, AlertCircle,
+  LayoutDashboard, Users, HeartHandshake, UserCheck, User, Sliders, Settings
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCandidateProfile } from '@/hooks/useCandidateProfile';
@@ -148,16 +149,17 @@ export default function DashboardPage() {
             {/* Sidebar Menu Links */}
             <nav className="space-y-2 text-[13px]">
               {[
-                { label: 'Dashboard', icon: '📋' },
-                { label: 'Matches', icon: '👥' },
-                { label: 'Search', icon: '🔍' },
-                { label: 'Interests', icon: '📩' },
-                { label: 'Connections', icon: '🤝' },
-                { label: 'Saved', icon: '🔖' },
-                { label: 'Profile', icon: '👤' },
-                { label: 'Preferences', icon: '⚙️' },
-                { label: 'Settings', icon: '🛠️' },
+                { label: 'Dashboard', icon: LayoutDashboard },
+                { label: 'Matches', icon: Users },
+                { label: 'Search', icon: Search },
+                { label: 'Interests', icon: HeartHandshake },
+                { label: 'Connections', icon: UserCheck },
+                { label: 'Saved', icon: Bookmark },
+                { label: 'Profile', icon: User },
+                { label: 'Preferences', icon: Sliders },
+                { label: 'Settings', icon: Settings },
               ].map((item) => {
+                const IconComponent = item.icon;
                 const isActive = activeMenu === item.label;
                 return (
                   <button
@@ -169,7 +171,7 @@ export default function DashboardPage() {
                         : 'text-[#766B70] hover:bg-[#F8EFE5]/50 hover:text-text'
                     }`}
                   >
-                    <span className="text-base">{item.icon}</span>
+                    <IconComponent className="w-4 h-4 shrink-0" />
                     <span>{item.label}</span>
                   </button>
                 );
