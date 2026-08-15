@@ -60,8 +60,11 @@ export async function sendInterest(targetCandidateId: string, message?: string) 
       return { success: false, error: 'Cannot send interest. This user is not accepting requests.' };
     }
 
-    // Insert request
-    const { error: insertError } = await (await supabase)
+    // Insert request securely using Admin Client
+    const { createAdminClient } = await import('@/lib/supabase/server');
+    const adminSupabase = createAdminClient();
+    
+    const { error: insertError } = await adminSupabase
       .from('interest_requests')
       .insert({
         sender_id: requesterProfile.id,
@@ -93,8 +96,11 @@ export async function acceptInterest(requestId: string) {
     const { data: requesterProfile } = await (await supabase).from('candidate_profiles').select('id').eq('user_id', user.id).single();
     if (!requesterProfile) return { success: false, error: 'Profile not found.' };
 
-    // Update the request
-    const { data: request, error: updateError } = await (await supabase)
+    // Update the request securely using Admin Client
+    const { createAdminClient } = await import('@/lib/supabase/server');
+    const adminSupabase = createAdminClient();
+
+    const { data: request, error: updateError } = await adminSupabase
       .from('interest_requests')
       .update({ status: 'accepted', updated_at: new Date().toISOString() })
       .eq('id', requestId)
@@ -108,7 +114,7 @@ export async function acceptInterest(requestId: string) {
     }
 
     // Create mutual connection
-    await (await supabase).from('connections').insert({
+    await adminSupabase.from('connections').insert({
       candidate_a: request.sender_id,
       candidate_b: request.receiver_id,
       interest_request_id: request.id

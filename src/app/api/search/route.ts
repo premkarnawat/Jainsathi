@@ -25,8 +25,8 @@ export async function GET(request: Request) {
     const community = searchParams.get('community');
     const verifiedOnly = searchParams.get('verifiedOnly') === 'true';
     const featuredOnly = searchParams.get('featuredOnly') === 'true';
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50);
 
     const supabase = createServerSupabaseClient();
 
