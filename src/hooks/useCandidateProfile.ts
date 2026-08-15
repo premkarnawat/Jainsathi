@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/client';
-import { CandidateProfile } from '@/types';
 
 export function useCandidateProfile(userId?: string) {
-  const [profile, setProfile] = useState<CandidateProfile | null>(null);
+  const [profile, setProfile] = useState<any | null>(null);
   const [preferences, setPreferences] = useState<any | null>(null);
+  const [subscription, setSubscription] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,10 +15,8 @@ export function useCandidateProfile(userId?: string) {
         let currentUserId = userId;
 
         if (!currentUserId) {
-          // If no specific userId is provided, fetch the authenticated user
           const { data: { user }, error: authError } = await supabase.auth.getUser();
           if (authError || !user) {
-            // For testing/mock purposes without true auth, we will leave it null
             setLoading(false);
             return;
           }
@@ -39,15 +37,8 @@ export function useCandidateProfile(userId?: string) {
         if (profileError) throw profileError;
 
         if (profileData) {
-          // Transform response slightly to match our CandidateProfile type expectations
-          const formattedProfile = {
-            ...profileData,
-            jainIdentity: profileData.jain_identities?.[0] || null,
-          };
-          setProfile(formattedProfile as any);
-
           // Fetch preferences
-          const { data: prefData, error: prefError } = await supabase
+          const { data: prefData } = await supabase
             .from('partner_preferences')
             .select('*')
             .eq('candidate_id', profileData.id)
@@ -56,6 +47,56 @@ export function useCandidateProfile(userId?: string) {
           if (prefData) {
             setPreferences(prefData);
           }
+
+          // Fetch subscription
+          const { data: subData } = await supabase
+            .from('subscriptions')
+            .select(`
+              *,
+              plan:plans (*)
+            `)
+            .eq('candidate_id', profileData.id)
+            .eq('status', 'active')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+          
+          setSubscription(subData || null);
+
+          // Calculate profile completion percentage
+          let filledFields = 0;
+          let totalFields = 6; // base
+
+          if (profileData.first_name && profileData.last_name) filledFields++;
+          if (profileData.gender && profileData.date_of_birth) filledFields++;
+          if (profileData.height_cm) filledFields++;
+          if (profileData.current_city && profileData.current_state) filledFields++;
+          if (profileData.photos && profileData.photos.length > 0) filledFields++;
+          if (prefData) filledFields++;
+
+          if (profileData.jain_identities && profileData.jain_identities.length > 0) {
+            totalFields++;
+            const ji = profileData.jain_identities[0];
+            if (ji.sect && ji.community) filledFields++;
+          }
+
+          const completionPercentage = Math.round((filledFields / totalFields) * 100);
+
+          const formattedProfile = {
+            ...profileData,
+            firstName: profileData.first_name,
+            lastName: profileData.last_name,
+            currentCity: profileData.current_city,
+            currentState: profileData.current_state,
+            jainIdentity: profileData.jain_identities?.[0] || null,
+            completionPercentage,
+            // Calculate membership tier from subscription or fallback to Free
+            membershipTier: subData?.plan?.name || 'Free Member',
+            isVerified: profileData.verification_status === 'verified',
+            verificationStatus: profileData.verification_status || 'pending'
+          };
+          
+          setProfile(formattedProfile);
         }
       } catch (err: any) {
         console.error('Error fetching candidate profile:', err);
@@ -68,5 +109,5 @@ export function useCandidateProfile(userId?: string) {
     fetchProfile();
   }, [userId]);
 
-  return { profile, preferences, loading, error };
+  return { profile, preferences, subscription, loading, error };
 }

@@ -22,8 +22,32 @@ export function useMatches(profileId?: string) {
 
         if (rpcError) throw rpcError;
 
-        // Map the RPC response to the CandidateProfile format expected by the UI
-        if (data) {
+        if (data && data.length > 0) {
+          // Fetch primary photos and verification status for these candidates
+          const candidateIds = data.map((m: any) => m.candidate_id);
+          
+          const [photosRes, profilesRes] = await Promise.all([
+            supabase
+              .from('photos')
+              .select('candidate_id, url')
+              .in('candidate_id', candidateIds)
+              .eq('is_primary', true),
+            supabase
+              .from('candidate_profiles')
+              .select('id, verification_status')
+              .in('id', candidateIds)
+          ]);
+
+          const photoMap = new Map();
+          if (photosRes.data) {
+            photosRes.data.forEach(p => photoMap.set(p.candidate_id, p.url));
+          }
+
+          const verificationMap = new Map();
+          if (profilesRes.data) {
+            profilesRes.data.forEach(p => verificationMap.set(p.id, p.verification_status));
+          }
+
           const formattedMatches = data.map((match: any) => ({
             id: match.candidate_id,
             userId: match.user_id,
@@ -40,15 +64,16 @@ export function useMatches(profileId?: string) {
               community: match.community,
             },
             compatibilityScore: match.compatibility_score,
-            matchingReasons: match.matching_reasons,
-            // For now, load a placeholder image, since the RPC didn't join photos
-            // A more advanced RPC would join the primary photo URL.
-            photos: [{ url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400' }],
-            verificationStatus: 'verified',
+            matchingReasons: match.matching_reasons || [],
+            photos: [{ url: photoMap.get(match.candidate_id) || null }],
+            verificationStatus: verificationMap.get(match.candidate_id) || 'pending',
+            isVerified: verificationMap.get(match.candidate_id) === 'verified',
             isDiscoverable: true,
             isActive: true,
           }));
           setMatches(formattedMatches);
+        } else {
+          setMatches([]);
         }
       } catch (err: any) {
         console.error('Error fetching matches:', err);
