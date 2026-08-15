@@ -64,7 +64,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside className="hidden md:flex w-[280px] bg-[#FFFDFB] border-r border-[#EBD9DC] p-8 flex-col justify-between shrink-0 h-screen sticky top-0">
         <div className="space-y-8">
           <div className="flex items-center gap-3 py-2 cursor-pointer" onClick={() => router.push('/dashboard')}>
-            <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
+            <img src="/logo.png" alt="Logo" className="w-14 h-14 object-contain rounded-lg" />
             <h1 className="font-serif font-bold text-2xl text-[#8F0038] tracking-tight">
               JainSaathi
             </h1>
@@ -144,7 +144,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           ========================================== */}
       <header className="md:hidden flex justify-between items-center bg-[#FFFDFB] border-b border-[#EBD9DC] px-6 py-4 sticky top-0 z-40 shadow-sm shrink-0">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push('/dashboard')}>
-          <img src="/logo.png" alt="Logo" className="w-6 h-6 object-contain" />
+          <img src="/logo.png" alt="Logo" className="w-10 h-10 object-contain rounded-md" />
           <span className="font-serif font-bold text-lg text-[#8F0038]">JainSaathi</span>
         </div>
         <div className="font-serif text-[#8F0038] font-bold text-lg tracking-wide select-none">
