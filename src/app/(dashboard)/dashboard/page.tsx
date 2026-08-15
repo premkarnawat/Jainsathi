@@ -3,230 +3,36 @@
 import React, { useState } from 'react';
 import { CandidateProfile } from '@/types';
 import { JainSaathiLogo } from '@/components/ui/JainSaathiLogo';
-import { calculateMatchScore } from '@/lib/matching-engine';
 import { 
   Search, Filter, Bell, User, Heart, MessageSquare, ShieldCheck, 
   Download, Award, Settings, LogOut, CheckCircle2, Bookmark, X, ArrowLeft,
   ChevronDown, ChevronUp, Lock, Send, CheckCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// Reference data corresponding to mockups
-const LOGGED_IN_USER: CandidateProfile = {
-  id: 'user-cand',
-  userId: 'usr-logged',
-  managedBy: 'self',
-  firstName: 'Priya',
-  lastName: 'Jain',
-  gender: 'female',
-  dateOfBirth: '1999-10-15',
-  age: 26,
-  heightCm: 163,
-  maritalStatus: 'never_married',
-  currentCountry: 'India',
-  currentState: 'Maharashtra',
-  currentCity: 'Mumbai',
-  languagesKnown: ['English', 'Hindi'],
-  hobbies: ['Reading', 'Travel'],
-  completionPercentage: 92,
-  isActive: true,
-  isDiscoverable: true,
-  verificationStatus: 'verified',
-  createdAt: new Date().toISOString(),
-};
-
-const RECOMMENDATIONS: CandidateProfile[] = [
-  {
-    id: 'cand-001',
-    userId: 'usr-101',
-    managedBy: 'self',
-    firstName: 'Aarav',
-    lastName: 'Jain',
-    gender: 'male',
-    dateOfBirth: '1997-05-12',
-    age: 28,
-    heightCm: 175,
-    maritalStatus: 'never_married',
-    currentCountry: 'India',
-    currentState: 'Maharashtra',
-    currentCity: 'Mumbai',
-    languagesKnown: ['English', 'Hindi'],
-    aboutMe: 'Aarav is a grounded, family-oriented person with a positive outlook towards life. He is currently working as a Business Analyst at Deloitte.',
-    hobbies: ['Fitness', 'Technology'],
-    completionPercentage: 92,
-    isActive: true,
-    isDiscoverable: true,
-    verificationStatus: 'verified',
-    jainIdentity: {
-      sect: 'Shwetambar',
-      community: 'Oswal',
-      selfSaka: 'Shah',
-      mamasaSaka: 'Mehta',
-    },
-    lifestyle: {
-      diet: 'strict_jain',
-      smoking: false,
-      alcohol: false,
-      tobacco: false,
-    },
-    education: [
-      { qualificationLevel: 'Masters', degreeName: 'MBA', specialization: 'Finance', passoutYear: 2020 }
-    ],
-    employment: [
-      { employmentType: 'Corporate', companyName: 'Deloitte', designation: 'Business Analyst', annualIncomeLakhs: 18 }
-    ],
-    photos: [
-      {
-        id: 'p-1',
-        storagePath: 'profile-photos/aarav.jpg',
-        url: '/mock.jpg',
-        isPrimary: true,
-        isApproved: true,
-        privacy: 'verified_users',
-      }
-    ],
-    compatibilityScore: 92,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'cand-002',
-    userId: 'usr-102',
-    managedBy: 'parent',
-    firstName: 'Rahul',
-    lastName: 'Jain',
-    gender: 'male',
-    dateOfBirth: '1996-08-20',
-    age: 29,
-    heightCm: 180,
-    maritalStatus: 'never_married',
-    currentCountry: 'India',
-    currentState: 'Maharashtra',
-    currentCity: 'Pune',
-    languagesKnown: ['English', 'Hindi', 'Marathi'],
-    hobbies: ['Coding', 'Cycling'],
-    completionPercentage: 88,
-    isActive: true,
-    isDiscoverable: true,
-    verificationStatus: 'verified',
-    jainIdentity: {
-      sect: 'Digambar',
-      community: 'Murtipujak',
-    },
-    education: [
-      { qualificationLevel: 'Bachelors', degreeName: 'MS', specialization: 'Software Engineering' }
-    ],
-    employment: [
-      { employmentType: 'Corporate', companyName: 'Tech Corp', designation: 'Software Engineer', annualIncomeLakhs: 22 }
-    ],
-    photos: [
-      {
-        id: 'p-2',
-        storagePath: 'profile-photos/rahul.jpg',
-        url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
-        isPrimary: true,
-        isApproved: true,
-        privacy: 'verified_users',
-      }
-    ],
-    compatibilityScore: 89,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'cand-003',
-    userId: 'usr-103',
-    managedBy: 'self',
-    firstName: 'Mehul',
-    lastName: 'Shah',
-    gender: 'male',
-    dateOfBirth: '1998-11-05',
-    age: 27,
-    heightCm: 172,
-    maritalStatus: 'never_married',
-    currentCountry: 'India',
-    currentState: 'Gujarat',
-    currentCity: 'Ahmedabad',
-    languagesKnown: ['English', 'Gujarati'],
-    hobbies: ['Finance', 'Reading'],
-    completionPercentage: 85,
-    isActive: true,
-    isDiscoverable: true,
-    verificationStatus: 'verified',
-    jainIdentity: {
-      sect: 'Shwetambar',
-      community: 'Oswal',
-    },
-    education: [
-      { qualificationLevel: 'Bachelors', degreeName: 'CA', specialization: 'Chartered Accountant' }
-    ],
-    employment: [
-      { employmentType: 'Corporate', companyName: 'KPMG', designation: 'Chartered Accountant', annualIncomeLakhs: 15 }
-    ],
-    photos: [
-      {
-        id: 'p-3',
-        storagePath: 'profile-photos/mehul.jpg',
-        url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400',
-        isPrimary: true,
-        isApproved: true,
-        privacy: 'verified_users',
-      }
-    ],
-    compatibilityScore: 89,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'cand-004',
-    userId: 'usr-104',
-    managedBy: 'parent',
-    firstName: 'Harsh',
-    lastName: 'Jain',
-    gender: 'male',
-    dateOfBirth: '1995-04-15',
-    age: 30,
-    heightCm: 178,
-    maritalStatus: 'never_married',
-    currentCountry: 'India',
-    currentState: 'Karnataka',
-    currentCity: 'Bengaluru',
-    languagesKnown: ['English', 'Hindi', 'Kannada'],
-    hobbies: ['Product Design', 'Hiking'],
-    completionPercentage: 90,
-    isActive: true,
-    isDiscoverable: true,
-    verificationStatus: 'verified',
-    jainIdentity: {
-      sect: 'Digambar',
-      community: 'Sthanakvasi',
-    },
-    education: [
-      { qualificationLevel: 'Bachelors', degreeName: 'B.Tech', specialization: 'Computer Science' }
-    ],
-    employment: [
-      { employmentType: 'Corporate', companyName: 'Startup', designation: 'Product Manager', annualIncomeLakhs: 25 }
-    ],
-    photos: [
-      {
-        id: 'p-4',
-        storagePath: 'profile-photos/harsh.jpg',
-        url: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=400',
-        isPrimary: true,
-        isApproved: true,
-        privacy: 'verified_users',
-      }
-    ],
-    compatibilityScore: 89,
-    createdAt: new Date().toISOString(),
-  }
-];
+import { useCandidateProfile } from '@/hooks/useCandidateProfile';
+import { useMatches } from '@/hooks/useMatches';
+import { useInterests } from '@/hooks/useInterests';
+import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 
 export default function DashboardPage() {
   const [activeMenu, setActiveMenu] = useState('Home');
-  const [selectedCandidate, setSelectedCandidate] = useState<CandidateProfile | null>(null);
+  const [selectedCandidate, setSelectedCandidate] = useState<any | null>(null);
   
+  // Real-time hooks integration
+  const { profile: loggedInUser, loading: profileLoading } = useCandidateProfile();
+  const { matches: recommendations, loading: matchesLoading } = useMatches(loggedInUser?.id);
+  const { interestsReceived, sendInterest, acceptInterest, declineInterest, refetch: refetchInterests } = useInterests(loggedInUser?.id);
+  
+  // Real-time notification listener
+  useRealtimeNotifications(loggedInUser?.id, () => {
+    // When a new interest is received, refetch the interests list
+    refetchInterests();
+  });
+
   // Mobile navigation state
   const [mobileTab, setMobileTab] = useState<'home' | 'matches' | 'interests' | 'messages' | 'profile'>('home');
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-  const [interestModalCandidate, setInterestModalCandidate] = useState<CandidateProfile | null>(null);
+  const [interestModalCandidate, setInterestModalCandidate] = useState<any | null>(null);
   const [interestSentStatus, setInterestSentStatus] = useState<string | null>(null); // 'sending' | 'success'
 
   // Accordion state for profile details
@@ -245,18 +51,45 @@ export default function DashboardPage() {
     setAccordionOpen(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  const triggerInterestFlow = (candidate: CandidateProfile, e?: React.MouseEvent) => {
+  const triggerInterestFlow = (candidate: any, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     setInterestModalCandidate(candidate);
     setInterestSentStatus(null);
   };
 
-  const handleSendInterest = () => {
+  const handleSendInterest = async () => {
+    if (!loggedInUser || !interestModalCandidate) return;
     setInterestSentStatus('sending');
-    setTimeout(() => {
+    try {
+      await sendInterest(loggedInUser.id, interestModalCandidate.id);
       setInterestSentStatus('success');
-    }, 1000);
+    } catch (err) {
+      console.error('Failed to send interest:', err);
+      // fallback handling here
+    }
   };
+
+  const handleAcceptInterest = async (interestId: string, senderId: string) => {
+    if (!loggedInUser) return;
+    try {
+      await acceptInterest(interestId, senderId, loggedInUser.id);
+    } catch (err) {
+      console.error('Failed to accept interest', err);
+    }
+  };
+
+  // Safe fallbacks for UI while loading or if data missing
+  const userName = loggedInUser?.firstName || 'User';
+  const profileComplete = loggedInUser?.completionPercentage || 50;
+  const recommendedList = recommendations || [];
+  
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-burgundy animate-pulse font-serif text-2xl font-bold">Loading JainSaathi...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-text">
@@ -276,22 +109,22 @@ export default function DashboardPage() {
             <div className="bg-surface border border-border p-4 rounded-2xl space-y-3 shadow-sm">
               <div className="flex items-center gap-3">
                 <img 
-                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80" 
+                  src={loggedInUser?.photos?.[0]?.url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80"} 
                   className="w-10 h-10 rounded-full object-cover border border-gold" 
-                  alt="Priya"
+                  alt={userName}
                 />
                 <div>
-                  <p className="font-serif font-bold text-sm text-text">Priya Jain</p>
+                  <p className="font-serif font-bold text-sm text-text">{loggedInUser?.firstName} {loggedInUser?.lastName}</p>
                   <span className="text-[9px] font-bold text-gold uppercase tracking-wider">Super Member</span>
                 </div>
               </div>
               <div className="space-y-1">
                 <div className="flex justify-between text-[10px] text-muted">
                   <span>Profile Complete</span>
-                  <span className="font-bold text-burgundy">92%</span>
+                  <span className="font-bold text-burgundy">{profileComplete}%</span>
                 </div>
                 <div className="w-full bg-cream h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-burgundy h-full w-[92%]" />
+                  <div className="bg-burgundy h-full transition-all" style={{ width: `${profileComplete}%` }} />
                 </div>
               </div>
               <button className="w-full bg-burgundy text-white text-[11px] font-bold py-2 rounded-xl hover:bg-deepBurgundy transition-all border border-gold/45 shadow-sm">
@@ -335,7 +168,7 @@ export default function DashboardPage() {
                     }`}
                   >
                     <span>Received</span>
-                    <span className="bg-burgundy text-white text-[9px] font-bold px-1.5 rounded-full">12</span>
+                    <span className="bg-burgundy text-white text-[9px] font-bold px-1.5 rounded-full">{interestsReceived.length}</span>
                   </button>
                   <button
                     onClick={() => setActiveMenu('Sent')}
@@ -344,7 +177,7 @@ export default function DashboardPage() {
                     }`}
                   >
                     <span>Sent</span>
-                    <span className="bg-gold text-white text-[9px] font-bold px-1.5 rounded-full">8</span>
+                    <span className="bg-gold text-white text-[9px] font-bold px-1.5 rounded-full">0</span>
                   </button>
                   <button
                     onClick={() => setActiveMenu('Accepted')}
@@ -353,7 +186,7 @@ export default function DashboardPage() {
                     }`}
                   >
                     <span>Accepted</span>
-                    <span className="bg-success text-white text-[9px] font-bold px-1.5 rounded-full">6</span>
+                    <span className="bg-success text-white text-[9px] font-bold px-1.5 rounded-full">0</span>
                   </button>
                 </div>
               </div>
@@ -420,7 +253,7 @@ export default function DashboardPage() {
                 <span className="text-[10px] font-bold text-burgundy tracking-wider uppercase">SUPER MEMBER</span>
               </div>
               <img 
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80" 
+                src={loggedInUser?.photos?.[0]?.url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80"} 
                 className="w-10 h-10 rounded-full object-cover border border-border cursor-pointer shadow"
                 alt=""
               />
@@ -433,20 +266,20 @@ export default function DashboardPage() {
               <div className="space-y-6">
                 <div>
                   <h1 className="font-serif font-bold text-3.5xl text-text">
-                    Good Morning, Priya 👋
+                    Good Morning, {userName} 👋
                   </h1>
                   <p className="text-xs text-muted mt-1 font-medium">
-                    Here are some profiles selected for you.
+                    Here are some profiles selected for you based on your preferences.
                   </p>
                 </div>
 
                 {/* 4 Stats Cards */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   {[
-                    { count: '24', label: 'Recommended Matches', icon: '💕' },
-                    { count: '12', label: 'Interests Received', icon: '📩' },
-                    { count: '8', label: 'Interests Sent', icon: '📤' },
-                    { count: '15', label: 'Saved Profiles', icon: '🔖' },
+                    { count: recommendedList.length, label: 'Recommended Matches', icon: '💕' },
+                    { count: interestsReceived.length, label: 'Interests Received', icon: '📩' },
+                    { count: '0', label: 'Interests Sent', icon: '📤' },
+                    { count: '0', label: 'Saved Profiles', icon: '🔖' },
                   ].map((stat, idx) => (
                     <div key={idx} className="bg-surface border border-border p-4 rounded-2xl flex items-center justify-between shadow-sm hover:shadow transition-all">
                       <div>
@@ -469,62 +302,69 @@ export default function DashboardPage() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-                  {RECOMMENDATIONS.map((cand) => (
-                    <div 
-                      key={cand.id}
-                      onClick={() => setSelectedCandidate(cand)}
-                      className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-gold/50 cursor-pointer flex flex-col group transition-all duration-300"
-                    >
-                      <div className="relative h-64 w-full bg-gray-100 overflow-hidden">
-                        <img
-                          src={cand.photos?.[0]?.url}
-                          alt=""
-                          className="w-full h-full object-cover object-top group-hover:scale-102 transition-transform duration-300"
-                        />
-                        <div className="absolute top-3 right-3 bg-burgundy/95 text-[#FFF9F1] text-[9px] font-bold px-2 py-0.5 rounded-full border border-gold/40">
-                          {cand.compatibilityScore}% Match
+                {matchesLoading ? (
+                   <div className="text-xs text-muted">Analyzing compatibility and finding matches...</div>
+                ) : recommendedList.length === 0 ? (
+                  <div className="text-xs text-muted bg-surface p-6 rounded-xl border border-border">
+                    No recommendations yet. Complete your profile and preferences to improve your matches.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+                    {recommendedList.map((cand: any) => (
+                      <div 
+                        key={cand.id}
+                        onClick={() => setSelectedCandidate(cand)}
+                        className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-gold/50 cursor-pointer flex flex-col group transition-all duration-300"
+                      >
+                        <div className="relative h-64 w-full bg-gray-100 overflow-hidden">
+                          <img
+                            src={cand.photos?.[0]?.url}
+                            alt=""
+                            className="w-full h-full object-cover object-top group-hover:scale-102 transition-transform duration-300"
+                          />
+                          <div className="absolute top-3 right-3 bg-burgundy/95 text-[#FFF9F1] text-[9px] font-bold px-2 py-0.5 rounded-full border border-gold/40">
+                            {cand.compatibilityScore}% Match
+                          </div>
                         </div>
-                      </div>
-                      <div className="p-4 space-y-2">
-                        <h3 className="font-serif font-bold text-base text-text">
-                          {cand.firstName} {cand.lastName}
-                        </h3>
-                        <p className="text-[10px] text-muted font-medium">
-                          {cand.age} Yrs • {cand.currentCity}
-                        </p>
-                        <p className="text-[10px] text-burgundy font-semibold">
-                          {cand.jainIdentity?.sect} • {cand.jainIdentity?.community}
-                        </p>
-                        <div className="flex flex-col gap-1 pt-1 text-[9px] text-success font-semibold border-t border-gray-100 mt-2">
-                          <p>✓ Identity Verified</p>
-                          <p>✓ Jain Details Verified</p>
-                        </div>
+                        <div className="p-4 space-y-2">
+                          <h3 className="font-serif font-bold text-base text-text">
+                            {cand.firstName} {cand.lastName}
+                          </h3>
+                          <p className="text-[10px] text-muted font-medium">
+                            {cand.age} Yrs • {cand.currentCity}
+                          </p>
+                          <p className="text-[10px] text-burgundy font-semibold">
+                            {cand.jainIdentity?.sect} • {cand.jainIdentity?.community}
+                          </p>
+                          <div className="flex flex-col gap-1 pt-1 text-[9px] text-success font-semibold border-t border-gray-100 mt-2">
+                            <p>✓ Identity Verified</p>
+                            <p>✓ Jain Details Verified</p>
+                          </div>
 
-                        {/* Custom Matrimonial Actions */}
-                        <div className="flex gap-2 pt-2 border-t border-gray-100">
-                          <button
-                            onClick={(e) => triggerInterestFlow(cand, e)}
-                            className="flex-1 bg-burgundy text-white text-[10px] font-bold py-2 rounded-lg hover:bg-deepBurgundy transition-colors"
-                          >
-                            Interested
-                          </button>
-                          <button
-                            onClick={(e) => e.stopPropagation()}
-                            className="p-2 border border-border rounded-lg hover:bg-cream/30 text-muted"
-                          >
-                            <Bookmark className="w-3.5 h-3.5" />
-                          </button>
+                          <div className="flex gap-2 pt-2 border-t border-gray-100">
+                            <button
+                              onClick={(e) => triggerInterestFlow(cand, e)}
+                              className="flex-1 bg-burgundy text-white text-[10px] font-bold py-2 rounded-lg hover:bg-deepBurgundy transition-colors"
+                            >
+                              Interested
+                            </button>
+                            <button
+                              onClick={(e) => e.stopPropagation()}
+                              className="p-2 border border-border rounded-lg hover:bg-cream/30 text-muted"
+                            >
+                              <Bookmark className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Interests & Activity Sections */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {/* Interests Received (7 Cols) */}
+                {/* Interests Received */}
                 <div className="lg:col-span-7 bg-surface border border-border rounded-2xl p-6 space-y-4 shadow-sm">
                   <div className="flex justify-between items-center pb-2 border-b border-border">
                     <h3 className="font-serif font-bold text-base text-text">Interests Received</h3>
@@ -532,29 +372,29 @@ export default function DashboardPage() {
                   </div>
                   
                   <div className="space-y-3">
-                    {[
-                      { name: 'Priya Shah', age: 26, city: 'Delhi', img: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100' },
-                      { name: 'Neha Jain', age: 25, city: 'Jaipur', img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' },
-                      { name: 'Ritika Jain', age: 27, city: 'Indore', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100' },
-                    ].map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-surfaceWarm border border-border">
-                        <div className="flex items-center gap-3">
-                          <img src={item.img} className="w-10 h-10 rounded-full object-cover border border-gold" alt="" />
-                          <div>
-                            <p className="font-bold text-xs text-text">{item.name}</p>
-                            <p className="text-[10px] text-muted">{item.age} Yrs • {item.city} • Interested in you</p>
+                    {interestsReceived.length === 0 ? (
+                      <p className="text-xs text-muted">No interests received yet.</p>
+                    ) : (
+                      interestsReceived.slice(0, 3).map((req: any) => (
+                        <div key={req.id} className="flex items-center justify-between p-3 rounded-xl bg-surfaceWarm border border-border">
+                          <div className="flex items-center gap-3">
+                            <img src={req.senderProfile.photoUrl} className="w-10 h-10 rounded-full object-cover border border-gold" alt="" />
+                            <div>
+                              <p className="font-bold text-xs text-text">{req.senderProfile.first_name} {req.senderProfile.last_name}</p>
+                              <p className="text-[10px] text-muted">{req.senderProfile.age} Yrs • {req.senderProfile.current_city} • Interested in you</p>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <button onClick={() => handleAcceptInterest(req.id, req.sender_id)} className="bg-burgundy text-white text-[10px] font-bold px-4 py-1.5 rounded-lg hover:bg-deepBurgundy transition-colors shadow-sm">Accept</button>
+                            <button onClick={() => declineInterest(req.id)} className="bg-white border border-border text-muted text-[10px] px-4 py-1.5 rounded-lg hover:bg-cream/20 transition-colors">Decline</button>
                           </div>
                         </div>
-                        <div className="flex gap-2">
-                          <button className="bg-burgundy text-white text-[10px] font-bold px-4 py-1.5 rounded-lg hover:bg-deepBurgundy transition-colors shadow-sm">Accept</button>
-                          <button className="bg-white border border-border text-muted text-[10px] px-4 py-1.5 rounded-lg hover:bg-cream/20 transition-colors">Decline</button>
-                        </div>
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </div>
 
-                {/* Recent Activity (5 Cols) */}
+                {/* Recent Activity */}
                 <div className="lg:col-span-5 bg-surface border border-border rounded-2xl p-6 space-y-4 shadow-sm">
                   <div className="flex justify-between items-center pb-2 border-b border-border">
                     <h3 className="font-serif font-bold text-base text-text">Recent Activity</h3>
@@ -562,68 +402,12 @@ export default function DashboardPage() {
 
                   <div className="space-y-4 text-xs">
                     <div className="flex gap-3">
-                      <span className="p-1 bg-blush rounded-full text-burgundy">✓</span>
-                      <div>
-                        <p className="text-text font-semibold"><span className="text-burgundy">Aarav Jain</span> accepted your interest request</p>
-                        <p className="text-[10px] text-muted mt-0.5">2 hours ago</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-3">
-                      <span className="p-1 bg-blush rounded-full text-burgundy">👀</span>
-                      <div>
-                        <p className="text-text font-semibold"><span className="text-burgundy">Neha Jain</span> viewed your profile</p>
-                        <p className="text-[10px] text-muted mt-0.5">5 hours ago</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-3">
                       <span className="p-1 bg-cream rounded-full text-gold">📊</span>
                       <div>
-                        <p className="text-text font-semibold">Your profile is <span className="font-bold text-burgundy">92% complete</span></p>
+                        <p className="text-text font-semibold">Your profile is <span className="font-bold text-burgundy">{profileComplete}% complete</span></p>
                         <p className="text-[10px] text-muted mt-0.5">Complete to get better matches</p>
                       </div>
                     </div>
-                    <div className="flex gap-3">
-                      <span className="p-1 bg-cream rounded-full text-gold">👑</span>
-                      <div>
-                        <p className="text-text font-semibold">Your <span className="font-bold text-burgundy">Super Plan</span> expires in 25 days</p>
-                        <p className="text-[10px] text-muted mt-0.5">Renew now to continue</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* New on JainSaathi & Highly Compatible Section */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
-                <div className="space-y-4">
-                  <h3 className="font-serif text-lg font-bold text-text">New on JainSaathi</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    {RECOMMENDATIONS.slice(0, 2).map((cand) => (
-                      <div key={cand.id} className="bg-surface border border-border rounded-xl p-3 flex gap-3 shadow-sm">
-                        <img src={cand.photos?.[0]?.url} className="w-16 h-20 rounded-lg object-cover" alt="" />
-                        <div className="space-y-1">
-                          <span className="bg-gold/20 text-burgundy text-[8px] font-bold px-1.5 py-0.5 rounded uppercase">NEW</span>
-                          <h4 className="font-serif font-bold text-sm text-text">{cand.firstName} {cand.lastName}</h4>
-                          <p className="text-[9px] text-muted">{cand.age} Yrs • {cand.currentCity}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="font-serif text-lg font-bold text-text">Highly Compatible</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    {RECOMMENDATIONS.slice(2, 4).map((cand) => (
-                      <div key={cand.id} className="bg-surface border border-border rounded-xl p-3 flex gap-3 shadow-sm">
-                        <img src={cand.photos?.[0]?.url} className="w-16 h-20 rounded-lg object-cover" alt="" />
-                        <div className="space-y-1">
-                          <span className="bg-success/15 text-success text-[8px] font-bold px-1.5 py-0.5 rounded">94% Match</span>
-                          <h4 className="font-serif font-bold text-sm text-text">{cand.firstName} {cand.lastName}</h4>
-                          <p className="text-[9px] text-muted">{cand.age} Yrs • {cand.currentCity}</p>
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 </div>
               </div>
@@ -679,16 +463,24 @@ export default function DashboardPage() {
                         <p className="text-[9px] text-muted font-bold uppercase tracking-wider">Preference Compatibility</p>
                       </div>
                     </div>
+                    
+                    {/* Compatibility Reasons */}
+                    {selectedCandidate.matchingReasons && selectedCandidate.matchingReasons.length > 0 && (
+                      <div className="bg-blush/30 border border-border rounded-xl p-4 space-y-2">
+                        <p className="text-xs font-bold text-burgundy">Why this is a good match:</p>
+                        <ul className="text-xs text-text space-y-1">
+                          {selectedCandidate.matchingReasons.map((reason: string, idx: number) => (
+                            <li key={idx}>{reason}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
 
                     {/* Accordions */}
                     <div className="space-y-3">
                       {[
-                        { id: 'about', label: 'About', content: selectedCandidate.aboutMe },
-                        { id: 'jain', label: 'Jain Details', content: `${selectedCandidate.jainIdentity?.sect} • ${selectedCandidate.jainIdentity?.community} • Gotra: Self (${selectedCandidate.jainIdentity?.selfSaka || 'Shah'}) Mama (${selectedCandidate.jainIdentity?.mamasaSaka || 'Mehta'})` },
-                        { id: 'education', label: 'Education & Career', content: 'MBA Finance • Business Analyst at Deloitte' },
-                        { id: 'family', label: 'Family Details', content: 'Father: Businessman (Mumbai), Mother: Homemaker' },
-                        { id: 'lifestyle', label: 'Lifestyle', content: 'Diet: Strict Jain, Alcohol: No, Smoking: No' },
-                        { id: 'preferences', label: 'Partner Preferences', content: 'Seeking Shwetambar Oswal, Age 24-28' },
+                        { id: 'about', label: 'About', content: selectedCandidate.aboutMe || 'Details provided upon connection.' },
+                        { id: 'jain', label: 'Jain Details', content: `${selectedCandidate.jainIdentity?.sect} • ${selectedCandidate.jainIdentity?.community}` },
                         { id: 'biodata', label: 'Biodata 🔒', content: 'Available after mutual acceptance', locked: true },
                         { id: 'contact', label: 'Contact Details 🔒', content: 'Available after mutual acceptance', locked: true },
                       ].map((sec) => (
@@ -743,7 +535,7 @@ export default function DashboardPage() {
               <span className="absolute top-1 right-1 bg-burgundy text-white text-[8px] font-bold px-1 rounded-full">3</span>
             </button>
             <img 
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80" 
+              src={loggedInUser?.photos?.[0]?.url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80"} 
               className="w-8 h-8 rounded-full object-cover border border-gold" 
               alt=""
             />
@@ -754,24 +546,24 @@ export default function DashboardPage() {
         {mobileTab === 'home' && (
           <div className="p-4 space-y-6">
             <div>
-              <h2 className="font-serif text-2xl font-bold text-text">Good Morning, Priya 👋</h2>
+              <h2 className="font-serif text-2xl font-bold text-text">Good Morning, {userName} 👋</h2>
               <p className="text-xs text-muted mt-0.5">Find your perfect Jain Saathi</p>
             </div>
 
             {/* Profile complete card */}
             <div className="bg-surface border border-border p-4 rounded-2xl space-y-3 shadow-sm flex items-center gap-4">
               <img 
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80" 
+                src={loggedInUser?.photos?.[0]?.url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80"} 
                 className="w-12 h-12 rounded-full object-cover border border-gold"
                 alt=""
               />
               <div className="flex-1 space-y-1.5">
                 <div className="flex justify-between text-[11px] font-bold text-text">
                   <span>Profile Complete</span>
-                  <span className="text-burgundy">92%</span>
+                  <span className="text-burgundy">{profileComplete}%</span>
                 </div>
                 <div className="w-full bg-cream h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-burgundy h-full w-[92%]" />
+                  <div className="bg-burgundy h-full" style={{ width: `${profileComplete}%` }} />
                 </div>
                 <button className="bg-burgundy text-white text-[10px] font-bold px-4 py-1.5 rounded-lg">
                   Complete Profile
@@ -791,8 +583,7 @@ export default function DashboardPage() {
                 </button>
               </div>
 
-              {/* Aarav Featured Card */}
-              {RECOMMENDATIONS.slice(0, 1).map((cand) => (
+              {recommendedList.slice(0, 1).map((cand: any) => (
                 <div 
                   key={cand.id}
                   onClick={() => setSelectedCandidate(cand)}
@@ -833,19 +624,27 @@ export default function DashboardPage() {
             <div className="space-y-4">
               <h3 className="font-serif font-bold text-lg text-text">Interests Received</h3>
               <div className="bg-surface border border-border rounded-2xl p-4 space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-border">
-                  <div className="flex items-center gap-3">
-                    <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100" className="w-10 h-10 rounded-full object-cover border border-gold" alt="" />
-                    <div>
-                      <p className="font-bold text-xs text-text">Priya Shah</p>
-                      <p className="text-[10px] text-muted">26 Yrs • Delhi • Interested</p>
+                {interestsReceived.length === 0 ? (
+                  <p className="text-xs text-muted text-center py-4">No interests yet.</p>
+                ) : (
+                  interestsReceived.slice(0, 1).map((req: any) => (
+                    <div key={req.id}>
+                      <div className="flex items-center justify-between pb-2 border-b border-border mb-3">
+                        <div className="flex items-center gap-3">
+                          <img src={req.senderProfile.photoUrl} className="w-10 h-10 rounded-full object-cover border border-gold" alt="" />
+                          <div>
+                            <p className="font-bold text-xs text-text">{req.senderProfile.first_name} {req.senderProfile.last_name}</p>
+                            <p className="text-[10px] text-muted">{req.senderProfile.age} Yrs • {req.senderProfile.current_city}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => handleAcceptInterest(req.id, req.sender_id)} className="flex-1 bg-burgundy text-white py-2 rounded-xl text-xs font-bold">Accept</button>
+                        <button onClick={() => declineInterest(req.id)} className="flex-1 bg-white border border-border text-muted py-2 rounded-xl text-xs">Decline</button>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button className="flex-1 bg-burgundy text-white py-2 rounded-xl text-xs font-bold">Accept</button>
-                  <button className="flex-1 bg-white border border-border text-muted py-2 rounded-xl text-xs">Decline</button>
-                </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -880,7 +679,7 @@ export default function DashboardPage() {
 
             {/* Vertical list of candidates */}
             <div className="space-y-4">
-              {RECOMMENDATIONS.slice(1).map((cand) => (
+              {recommendedList.map((cand: any) => (
                 <div 
                   key={cand.id} 
                   onClick={() => setSelectedCandidate(cand)}
@@ -891,7 +690,7 @@ export default function DashboardPage() {
                     <h3 className="font-serif font-bold text-base text-text">{cand.firstName} {cand.lastName}</h3>
                     <p className="text-[10px] text-muted">{cand.age} Yrs • {cand.currentCity}</p>
                     <p className="text-[10px] text-burgundy font-semibold">{cand.jainIdentity?.sect} • {cand.jainIdentity?.community}</p>
-                    <span className="text-[8px] font-bold text-success bg-success/10 px-1.5 py-0.5 rounded border border-success/20">89% Match</span>
+                    <span className="text-[8px] font-bold text-success bg-success/10 px-1.5 py-0.5 rounded border border-success/20">{cand.compatibilityScore}% Match</span>
                   </div>
                   <div className="flex flex-col gap-1 justify-center">
                     <button 
@@ -929,7 +728,7 @@ export default function DashboardPage() {
           {[
             { id: 'home', label: 'Home', icon: '🏠' },
             { id: 'matches', label: 'Matches', icon: '💕' },
-            { id: 'interests', label: 'Interests', icon: '📩', badge: 12 },
+            { id: 'interests', label: 'Interests', icon: '📩', badge: interestsReceived.length > 0 ? interestsReceived.length : undefined },
             { id: 'messages', label: 'Messages', icon: '💬', badge: 5 },
             { id: 'profile', label: 'Profile', icon: '👤' },
           ].map((tab) => (
@@ -1016,7 +815,7 @@ export default function DashboardPage() {
               onClick={() => setMobileFilterOpen(false)}
               className="w-full bg-burgundy text-white py-3.5 rounded-xl text-xs font-bold shadow-md"
             >
-              Show 124 Matches
+              Show Matches
             </button>
           </div>
         )}
@@ -1064,15 +863,20 @@ export default function DashboardPage() {
                 </button>
               </div>
 
+              {selectedCandidate.matchingReasons && selectedCandidate.matchingReasons.length > 0 && (
+                <div className="bg-blush/30 border border-border rounded-xl p-4 space-y-1">
+                  <p className="text-xs font-bold text-burgundy">Why this is a good match:</p>
+                  {selectedCandidate.matchingReasons.map((r: string, i: number) => (
+                     <p key={i} className="text-xs text-text">{r}</p>
+                  ))}
+                </div>
+              )}
+
               {/* Accordions */}
               <div className="space-y-2.5 pt-2">
                 {[
-                  { id: 'about', label: 'About', content: selectedCandidate.aboutMe },
-                  { id: 'jain', label: 'Jain Details', content: `${selectedCandidate.jainIdentity?.sect} • ${selectedCandidate.jainIdentity?.community} • Gotra: Self (${selectedCandidate.jainIdentity?.selfSaka || 'Shah'}) Mama (${selectedCandidate.jainIdentity?.mamasaSaka || 'Mehta'})` },
-                  { id: 'education', label: 'Education & Career', content: 'MBA Finance • Business Analyst at Deloitte' },
-                  { id: 'family', label: 'Family Details', content: 'Father: Businessman (Mumbai), Mother: Homemaker' },
-                  { id: 'lifestyle', label: 'Lifestyle', content: 'Diet: Strict Jain, Alcohol: No, Smoking: No' },
-                  { id: 'preferences', label: 'Partner Preferences', content: 'Seeking Shwetambar Oswal, Age 24-28' },
+                  { id: 'about', label: 'About', content: selectedCandidate.aboutMe || 'Details provided upon connection' },
+                  { id: 'jain', label: 'Jain Details', content: `${selectedCandidate.jainIdentity?.sect} • ${selectedCandidate.jainIdentity?.community}` },
                   { id: 'biodata', label: 'Biodata 🔒', content: 'Available after mutual acceptance', locked: true },
                   { id: 'contact', label: 'Contact Details 🔒', content: 'Available after mutual acceptance', locked: true },
                 ].map((sec) => (
