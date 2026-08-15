@@ -24,11 +24,11 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className="bg-[#100A18] text-[#241A20] font-sans min-h-screen antialiased selection:bg-[#9E183A] selection:text-white">
+      <body className="bg-[#FFF8F7] text-[#241B20] font-sans min-h-screen antialiased selection:bg-[#8F0038] selection:text-white">
         {children}
       </body>
     </html>
