@@ -8,7 +8,7 @@ export async function POST(request: Request) {
 
     if (!phone || !code) {
       return NextResponse.json(
-        { success: false, error: 'Phone number and 6-digit OTP code required' },
+        { success: false, error: 'Phone number and 4-digit OTP code required' },
         { status: 400 }
       );
     }
@@ -25,8 +25,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verify OTP code (Accept 123456 or valid 6-digit code)
-    if (code === '123456' || (code.length === 6 && /^\d+$/.test(code))) {
+    // Verify OTP code (Accept 1234 or valid 4-digit code)
+    if (code === '1234' || (code.length === 4 && /^\d+$/.test(code))) {
       return NextResponse.json({
         success: true,
         message: 'Mobile number verified successfully.',
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { success: false, error: 'Invalid 6-digit OTP code. Please check and try again.' },
+      { success: false, error: 'Invalid 4-digit OTP code. Please check and try again.' },
       { status: 400 }
     );
   } catch (error: any) {

@@ -25,11 +25,11 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log(`[Production OTP Gateway] Generated 6-digit OTP for ${phone}`);
+    console.log(`[Production OTP Gateway] Generated 4-digit OTP for ${phone}`);
 
     return NextResponse.json({
       success: true,
-      message: `OTP sent successfully to ${phone}. (Use test OTP: 123456 in dev environment)`,
+      message: `OTP sent successfully to ${phone}. (Use test OTP: 1234 in dev environment)`,
       expiresInSeconds: 300,
     });
   } catch (error: any) {
