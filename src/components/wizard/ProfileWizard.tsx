@@ -9,6 +9,8 @@ import {
   Briefcase, Heart, MapPin, Smile, Award
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
+import { auth } from '@/lib/firebase/client';
+import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
 
 interface ProfileWizardProps {
   onComplete?: (profileData: any, selectedPlan: string) => void;
@@ -19,10 +21,11 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
   // Steps: 'welcome', 'otp', 'otp_verifying', 'otp_success', 'email', 'register_start', 1..10, 'photo_verification', 'review', 'plan'
   const [step, setStep] = useState<string | number>('welcome');
   const [mobileNumber, setMobileNumber] = useState('');
-  const [otpDigits, setOtpDigits] = useState(['', '', '', '']); // Changed to 4 digits
+  const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']); // Changed to 6 digits for Firebase
   const [otpSent, setOtpSent] = useState(false);
   const [otpTimer, setOtpTimer] = useState(30);
   const [otpError, setOtpError] = useState('');
+  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   
   // Email states (Optional)
   const [email, setEmail] = useState('');
@@ -353,19 +356,27 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
     try {
       setLoading(true);
       setOtpError('');
-      const response = await fetch('/api/auth/otp/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: '+91' + mobileNumber })
-      });
-      const data = await response.json();
-      if (!data.success) throw new Error(data.error);
+      
+      if (!(window as any).recaptchaVerifier) {
+        (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          size: 'invisible'
+        });
+      }
+
+      const formattedPhone = '+91' + mobileNumber;
+      const confirmResult = await signInWithPhoneNumber(auth, formattedPhone, (window as any).recaptchaVerifier);
+      setConfirmationResult(confirmResult);
 
       setOtpSent(true);
       setOtpTimer(30);
       setStep('otp');
     } catch (err: any) {
-      setOtpError(err.message || 'Failed to send OTP.');
+      console.error('Firebase Auth Error:', err);
+      setOtpError(err.message || 'Failed to send OTP. Please try again.');
+      if ((window as any).recaptchaVerifier) {
+        (window as any).recaptchaVerifier.clear();
+        (window as any).recaptchaVerifier = null;
+      }
     } finally {
       setLoading(false);
     }
@@ -374,21 +385,20 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
   // Auth helper: Verify Mobile OTP with 5 seconds rotation matrix
   const handleVerifyMobileOtp = async () => {
     const code = otpDigits.join('');
-    if (code.length < 4) {
-      setOtpError('Please enter the 4-digit OTP code.');
+    if (code.length < 6) {
+      setOtpError('Please enter the 6-digit OTP code.');
       return;
     }
     try {
       setStep('otp_verifying');
       setOtpError('');
 
-      const response = await fetch('/api/auth/otp/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: '+91' + mobileNumber, code })
-      });
-      const data = await response.json();
-      if (!data.success) throw new Error(data.error || 'Invalid OTP');
+      if (!confirmationResult) {
+        throw new Error('Session expired. Please request a new OTP.');
+      }
+
+      // Verify with Firebase
+      await confirmationResult.confirm(code);
 
       // MOCK SUPABASE AUTHENTICATION
       // Since we don't have a real SMS provider attached to Supabase, we create a session using a mock email.
@@ -426,7 +436,7 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
     } catch (err: any) {
       setStep('otp');
       setOtpError(err.message || 'Incorrect OTP. Please check your code and try again.');
-      setOtpDigits(['', '', '', '']);
+      setOtpDigits(['', '', '', '', '', '']);
       setTimeout(() => {
         document.getElementById('otp-0')?.focus();
       }, 100);
@@ -902,10 +912,12 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
 
   const boxVariants = (index: number) => {
     const positions = [
-      { x: -16, y: -16 }, // Top left
-      { x: 16, y: -16 },  // Top right
-      { x: -16, y: 16 },  // Bottom left
-      { x: 16, y: 16 }    // Bottom right
+      { x: -24, y: -16 }, // Top left
+      { x: 0, y: -16 },   // Top middle
+      { x: 24, y: -16 },  // Top right
+      { x: -24, y: 16 },  // Bottom left
+      { x: 0, y: 16 },    // Bottom middle
+      { x: 24, y: 16 }    // Bottom right
     ];
     return {
       otp: {
@@ -993,6 +1005,7 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
                   >
                     {loading ? 'Sending OTP...' : 'Send OTP'}
                   </button>
+                  <div id="recaptcha-container"></div>
 
                   <div className="flex items-center my-4">
                     <div className="flex-grow border-t border-[#EBD9DC]"></div>
@@ -1021,7 +1034,7 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
               >
                 <div className="space-y-2">
                   <h2 className="font-serif text-2xl font-bold text-[#241A20]">Verify Your Mobile Number</h2>
-                  <p className="text-sm text-[#746A70]">We've sent a 4-digit OTP code to <br /><span className="font-bold text-[#241A20]">+91 {mobileNumber}</span></p>
+                  <p className="text-sm text-[#746A70]">We've sent a 6-digit OTP code to <br /><span className="font-bold text-[#241A20]">+91 {mobileNumber}</span></p>
                 </div>
 
                 {otpError && (
@@ -1038,8 +1051,8 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
                     animate={step === 'otp_verifying' ? 'verifying' : 'otp'}
                     className={
                       step === 'otp_verifying'
-                        ? 'grid grid-cols-2 gap-4 w-[140px] h-[140px] justify-center items-center animate-spin-slow'
-                        : 'flex flex-row gap-4 justify-center items-center'
+                        ? 'grid grid-cols-3 gap-3 w-[180px] h-[140px] justify-center items-center animate-spin-slow'
+                        : 'flex flex-row gap-3 justify-center items-center'
                     }
                     style={{ animationDuration: step === 'otp_verifying' ? '5s' : '0s' }}
                   >
