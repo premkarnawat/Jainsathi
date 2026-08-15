@@ -226,6 +226,64 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
     setAge(calculatedAge > 0 ? calculatedAge : 'N/A');
   }, [dob]);
 
+  const handleCheckAndCreateProfile = async () => {
+    try {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setStep('welcome');
+        return;
+      }
+      setUserId(user.id);
+
+      // Get internal user record
+      let { data: dbUser } = await supabase.from('users').select('*').eq('auth_id', user.id).single();
+      if (!dbUser) {
+        const { data: newUser, error: userError } = await supabase.from('users').insert({
+          auth_id: user.id,
+          phone: user.phone || '+91' + mobileNumber,
+          full_name: firstName ? `${firstName} ${lastName}` : 'Jain Member',
+          role: 'user'
+        }).select().single();
+        if (userError) throw userError;
+        dbUser = newUser;
+      }
+
+      // Check if profile exists
+      const { data: profile } = await supabase.from('candidate_profiles').select('*').eq('user_id', dbUser.id).single();
+      if (profile) {
+        setProfileId(profile.id);
+        
+        setFirstName(profile.first_name || '');
+        setLastName(profile.last_name || '');
+        setDob(profile.date_of_birth || '');
+        setGender(profile.gender || 'female');
+        setHeightCm(profile.height_cm || 160);
+        setMaritalStatus(profile.marital_status || 'never_married');
+        setProfileFor(profile.profile_created_for || 'self');
+        setManagedBy(profile.managed_by || 'self');
+
+        if (profile.completion_percentage >= 100) {
+          window.location.href = '/dashboard';
+          return;
+        }
+
+        if (!profile.first_name || profile.first_name === 'Jain') {
+          setStep(2);
+        } else {
+          setStep(3);
+        }
+      } else {
+        setStep(1);
+      }
+    } catch (err) {
+      console.error(err);
+      setStep(1);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch states
   useEffect(() => {
     async function loadStates() {
