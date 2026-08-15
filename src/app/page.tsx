@@ -55,70 +55,8 @@ export default function LandingPage() {
           </div>
 
           <ProfileWizard
-            onComplete={async (profileData, selectedPlan) => {
-              try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) {
-                   alert('Authentication failed. Please verify OTP again.');
-                   return;
-                }
-                
-                // Ensure users table record exists
-                const { data: existingUser } = await supabase.from('users').select('id').eq('auth_id', user.id).single();
-                let internalUserId;
-                if (!existingUser) {
-                  const { data: newUser, error: userError } = await supabase.from('users').insert({
-                    auth_id: user.id,
-                    phone: user.phone || profileData.mobileNumber,
-                    full_name: `${profileData.firstName} ${profileData.lastName}`,
-                    role: 'user'
-                  }).select().single();
-                  if (userError) throw userError;
-                  internalUserId = newUser.id;
-                } else {
-                  internalUserId = existingUser.id;
-                }
-
-                // Insert into candidate_profiles
-                const { data: profile, error: profileError } = await supabase.from('candidate_profiles').insert({
-                   user_id: internalUserId,
-                   first_name: profileData.firstName,
-                   last_name: profileData.lastName,
-                   gender: profileData.gender,
-                   date_of_birth: profileData.dateOfBirth,
-                   height_cm: profileData.heightCm,
-                   marital_status: profileData.maritalStatus,
-                   profile_created_for: profileData.profileFor,
-                   is_active: true,
-                   is_discoverable: true,
-                   verification_status: 'pending'
-                }).select().single();
-                
-                if (profileError) throw profileError;
-
-                // Insert jain identity
-                await supabase.from('jain_identities').insert({
-                   candidate_id: profile.id,
-                   sect: profileData.jainIdentity.sect,
-                   community: profileData.jainIdentity.community,
-                   saka_gotra: profileData.jainIdentity.selfSaka,
-                   mamas_gotra: profileData.jainIdentity.mamasaSaka
-                });
-
-                // Create default partner preferences
-                await supabase.from('partner_preferences').insert({
-                   candidate_id: profile.id,
-                   min_age: 18,
-                   max_age: 40,
-                   min_height_cm: 140,
-                   max_height_cm: 200,
-                   preferred_sects: [profileData.jainIdentity.sect],
-                });
-
-                window.location.href = '/dashboard';
-              } catch (err: any) {
-                alert(`Error creating profile: ${err.message}`);
-              }
+            onComplete={() => {
+              window.location.href = '/dashboard';
             }}
           />
         </div>
