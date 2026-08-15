@@ -388,7 +388,31 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
         body: JSON.stringify({ phone: '+91' + mobileNumber, code })
       });
       const data = await response.json();
-      if (!data.success) throw new Error(data.error);
+      if (!data.success) throw new Error(data.error || 'Invalid OTP');
+
+      // MOCK SUPABASE AUTHENTICATION
+      // Since we don't have a real SMS provider attached to Supabase, we create a session using a mock email.
+      const mockEmail = `${mobileNumber}@jainsaathi.local`;
+      const mockPassword = `JainSathiAuth$${mobileNumber}`;
+
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: mockEmail,
+        password: mockPassword,
+      });
+
+      if (authError && authError.message.includes('Invalid login credentials')) {
+        // First time logging in with this number, sign them up
+        const { error: signUpError } = await supabase.auth.signUp({
+          email: mockEmail,
+          password: mockPassword,
+          options: {
+            data: { phone: '+91' + mobileNumber }
+          }
+        });
+        if (signUpError) throw signUpError;
+      } else if (authError) {
+        throw authError;
+      }
 
       // Verify OTP Success - Let the rotation complete the 5 seconds interval
       setTimeout(() => {
@@ -401,7 +425,7 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
 
     } catch (err: any) {
       setStep('otp');
-      setOtpError('Incorrect OTP. Please check your code and try again.');
+      setOtpError(err.message || 'Incorrect OTP. Please check your code and try again.');
       setOtpDigits(['', '', '', '']);
       setTimeout(() => {
         document.getElementById('otp-0')?.focus();
