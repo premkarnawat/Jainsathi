@@ -15,23 +15,17 @@ interface ProfileWizardProps {
 }
 
 export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
-  // Wizard overall state
-  // Steps: 'welcome', 'otp', 'otp_success', 'email', 'register_start', 1..10, 'photo_verification', 'review', 'plan'
+  // Authentication states
+  // Steps: 'welcome', 'otp', 'otp_verifying', 'otp_success', 'email', 'register_start', 1..10, 'photo_verification', 'review', 'plan'
   const [step, setStep] = useState<string | number>('welcome');
-  
-  // Auth states
   const [mobileNumber, setMobileNumber] = useState('');
-  const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
+  const [otpDigits, setOtpDigits] = useState(['', '', '', '']); // Changed to 4 digits
   const [otpSent, setOtpSent] = useState(false);
   const [otpTimer, setOtpTimer] = useState(30);
-  const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [otpError, setOtpError] = useState('');
   
   // Email states (Optional)
   const [email, setEmail] = useState('');
-  const [emailOtpSent, setEmailOtpSent] = useState(false);
-  const [emailOtpDigits, setEmailOtpDigits] = useState(['', '', '', '', '', '']);
-  const [verifyingEmailOtp, setVerifyingEmailOtp] = useState(false);
   const [emailVerified, setEmailVerified] = useState(false);
 
   // Profile management database states
@@ -157,12 +151,59 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
 
   // Photo Verification Step
   const [verificationPhoto, setVerificationPhoto] = useState<string | null>(null);
-  const [uploadingVerification, setUploadingVerification] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState<'none' | 'submitted' | 'approved' | 'rejected'>('none');
-  const [verificationAttempt, setVerificationAttempt] = useState(1);
 
   // Plan Selection Step
   const [selectedPlan, setSelectedPlan] = useState('super_3m');
+
+  // Session handler on mount to prevent the loop / recover steps
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session && session.user) {
+          setUserId(session.user.id);
+          
+          let { data: dbUser } = await supabase
+            .from('users')
+            .select('*')
+            .eq('auth_id', session.user.id)
+            .single();
+            
+          if (dbUser) {
+            const { data: profile } = await supabase
+              .from('candidate_profiles')
+              .select('*')
+              .eq('user_id', dbUser.id)
+              .single();
+              
+            if (profile) {
+              setProfileId(profile.id);
+              if (profile.completion_percentage >= 100) {
+                window.location.href = '/dashboard';
+              } else {
+                setStep(1); // Continue registration
+              }
+            } else {
+              setStep(1); // Start registration
+            }
+          } else {
+            // Create user mapping
+            const { data: newUser } = await supabase.from('users').insert({
+              auth_id: session.user.id,
+              phone: session.user.phone || '',
+              full_name: 'Jain Member',
+              role: 'user'
+            }).select().single();
+            if (newUser) setStep(1);
+          }
+        }
+      } catch (err) {
+        console.error("Error checking session:", err);
+      }
+    }
+    checkSession();
+  }, []);
 
   // Timer helper
   useEffect(() => {
@@ -185,7 +226,7 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
     setAge(calculatedAge > 0 ? calculatedAge : 'N/A');
   }, [dob]);
 
-  // Fetch states on mount
+  // Fetch states
   useEffect(() => {
     async function loadStates() {
       try {
@@ -218,7 +259,6 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
       if (!currentState) return;
       try {
         setLoadingLocations(true);
-        // Find state ID
         const stateObj = states.find(s => s.name === currentState);
         if (!stateObj) return;
 
@@ -233,7 +273,6 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
           if (fallbackList.length > 0) setCurrentCity(fallbackList[0]);
         }
       } catch (err) {
-        // Fallback
         const stateObj = states.find(s => s.name === currentState);
         if (stateObj) {
           const fallbackList = FALLBACK_CITIES[stateObj.id] || [];
@@ -256,7 +295,6 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
     try {
       setLoading(true);
       setOtpError('');
-      // In development or test, we trigger the endpoint
       const response = await fetch('/api/auth/otp/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -275,15 +313,15 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
     }
   };
 
-  // Auth helper: Verify Mobile OTP
+  // Auth helper: Verify Mobile OTP with 5 seconds rotation matrix
   const handleVerifyMobileOtp = async () => {
     const code = otpDigits.join('');
-    if (code.length < 6) {
-      setOtpError('Please enter the 6-digit OTP code.');
+    if (code.length < 4) {
+      setOtpError('Please enter the 4-digit OTP code.');
       return;
     }
     try {
-      setVerifyingOtp(true);
+      setStep('otp_verifying');
       setOtpError('');
 
       const response = await fetch('/api/auth/otp/verify', {
@@ -294,12 +332,22 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
       const data = await response.json();
       if (!data.success) throw new Error(data.error);
 
-      // Verify OTP Success
-      setStep('otp_success');
+      // Verify OTP Success - Let the rotation complete the 5 seconds interval
+      setTimeout(() => {
+        setStep('otp_success');
+        // Auto-redirect success view to continue registration after 1.5 seconds
+        setTimeout(() => {
+          handleCheckAndCreateProfile();
+        }, 1500);
+      }, 5000);
+
     } catch (err: any) {
-      setOtpError('Incorrect OTP. Please check the code and try again.');
-    } finally {
-      setVerifyingOtp(false);
+      setStep('otp');
+      setOtpError('Incorrect OTP. Please check your code and try again.');
+      setOtpDigits(['', '', '', '']);
+      setTimeout(() => {
+        document.getElementById('otp-0')?.focus();
+      }, 100);
     }
   };
 
@@ -307,67 +355,11 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
   const handleVerifyEmail = async () => {
     if (!email) return;
     try {
-      setVerifyingEmailOtp(true);
-      // Mocking Email OTP Verification for this flow
+      setLoading(true);
       setEmailVerified(true);
       setStep('register_start');
     } catch (err) {
       console.error(err);
-    } finally {
-      setVerifyingEmailOtp(false);
-    }
-  };
-
-  // Dynamic state restorer
-  const handleCheckAndCreateProfile = async () => {
-    try {
-      setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setStep('welcome');
-        return;
-      }
-      setUserId(user.id);
-
-      // Get internal user record
-      let { data: dbUser } = await supabase.from('users').select('*').eq('auth_id', user.id).single();
-      if (!dbUser) {
-        const { data: newUser, error: err } = await supabase.from('users').insert({
-          auth_id: user.id,
-          phone: user.phone || '+91' + mobileNumber,
-          full_name: `${firstName || 'Candidate'}`,
-          role: 'user'
-        }).select().single();
-        if (err) throw err;
-        dbUser = newUser;
-      }
-
-      // Check if profile exists
-      const { data: profile } = await supabase.from('candidate_profiles').select('*').eq('user_id', dbUser.id).single();
-      if (profile) {
-        setProfileId(profile.id);
-        // Load data if available
-        setFirstName(profile.first_name || '');
-        setLastName(profile.last_name || '');
-        setDob(profile.date_of_birth || '');
-        setGender(profile.gender || 'female');
-        setHeightCm(profile.height_cm || 160);
-        setMaritalStatus(profile.marital_status || 'never_married');
-        setProfileFor(profile.profile_created_for || 'self');
-        setManagedBy(profile.managed_by || 'self');
-
-        // Determine step based on profile completeness
-        if (!profile.first_name) {
-          setStep(2);
-        } else {
-          setStep(3); // Go to Jain identity if basic is filled
-        }
-      } else {
-        // Brand new profile
-        setStep(1);
-      }
-    } catch (err) {
-      setStep(1);
     } finally {
       setLoading(false);
     }
@@ -384,7 +376,6 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
       let { data: dbUser } = await supabase.from('users').select('*').eq('auth_id', user.id).single();
       if (!dbUser) throw new Error('User record missing');
 
-      // Create new profile record
       const { data: newProfile, error: err } = await supabase.from('candidate_profiles').insert({
         user_id: dbUser.id,
         managed_by: managedBy,
@@ -462,7 +453,6 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
       }, { onConflict: 'candidate_id' });
 
       if (error) throw error;
-
       await supabase.from('candidate_profiles').update({ completion_percentage: 40 }).eq('id', profileId);
       setStep(4);
     } catch (err: any) {
@@ -546,13 +536,10 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
     try {
       setLoading(true);
       setSaveError(null);
-      
-      // Update parent info in profile
       await supabase.from('candidate_profiles').update({
         about_me: `${firstName}'s profile. Father: ${fatherName} (${fatherOccupation}), Mother: ${motherName} (${motherOccupation}).`
       }).eq('id', profileId);
 
-      // Save additional family members if any
       if (familyMembers.length > 0) {
         await supabase.from('family_members').insert(
           familyMembers.map(m => ({ candidate_id: profileId, ...m }))
@@ -595,7 +582,6 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
 
       if (error) throw error;
 
-      // Update hobbies/interests arrays inside profile table
       await supabase.from('candidate_profiles').update({
         hobbies,
         languages_known: interests,
@@ -739,7 +725,6 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
       }, { onConflict: 'candidate_id' });
 
       if (error) throw error;
-
       await supabase.from('candidate_profiles').update({ completion_percentage: 100 }).eq('id', profileId);
       setStep('photo_verification');
     } catch (err: any) {
@@ -751,98 +736,41 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
 
   // Verification Screen Save
   const handleVerifySubmission = async () => {
-    setVerificationStatus('submitted');
+    setLoading(true);
     setTimeout(() => {
-      // Simulate admin review approval
       setVerificationStatus('approved');
-    }, 3000);
+      setLoading(false);
+    }, 2000);
   };
 
-  // Final submit
-  const handleFinalSubmit = async () => {
-    setStep('plan');
-  };
-
-  // Handle plan registration complete
+  // Plan Selection Step
   const handlePlanSelection = async () => {
     try {
       setLoading(true);
-      // Create user subscription record
-      const { error } = await supabase.from('subscriptions').insert({
+      await supabase.from('subscriptions').insert({
         candidate_id: profileId,
         status: 'active',
         created_at: new Date().toISOString()
       });
-      
       if (onComplete) {
         onComplete({ profileId, mobileNumber }, selectedPlan);
       } else {
         window.location.href = '/dashboard';
       }
     } catch (err) {
-      console.error(err);
       window.location.href = '/dashboard';
     } finally {
       setLoading(false);
     }
   };
 
-  // Circular coordinate calculations for OTP circle animation
-  const containerVariants = {
-    initial: { rotate: 0 },
-    animate: {
-      rotate: 360,
-      transition: { duration: 1.5, ease: "easeInOut" }
-    }
-  };
-
-  const itemVariants = (index: number) => {
-    const angle = (index * 2 * Math.PI) / 6;
-    const initialX = Math.cos(angle) * 70;
-    const initialY = Math.sin(angle) * 70;
-    return {
-      initial: {
-        x: initialX,
-        y: initialY,
-        borderRadius: "9999px",
-        scale: 0.6,
-        opacity: 0
-      },
-      animate: {
-        x: 0,
-        y: 0,
-        borderRadius: "12px",
-        scale: 1,
-        opacity: 1,
-        transition: {
-          delay: 0.2,
-          duration: 1.2,
-          ease: "easeInOut"
-        }
-      }
-    };
-  };
-
-  const mergeVariants = (index: number) => {
-    const centerOffset = (2.5 - index) * 52;
-    return {
-      success: {
-        x: centerOffset,
-        scale: 0,
-        opacity: 0,
-        borderRadius: "9999px",
-        transition: { duration: 0.6, ease: "easeInOut" }
-      }
-    };
-  };
-
-  // OTP field logic helpers
+  // 4-digit input logic helpers
   const handleOtpChange = (index: number, value: string) => {
     if (value.length > 1) return;
     const newDigits = [...otpDigits];
     newDigits[index] = value;
     setOtpDigits(newDigits);
-    if (value && index < 5) {
+    if (value && index < 3) {
       document.getElementById(`otp-${index + 1}`)?.focus();
     }
   };
@@ -853,19 +781,71 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
     }
   };
 
-  const handleEmailOtpChange = (index: number, value: string) => {
-    if (value.length > 1) return;
-    const newDigits = [...emailOtpDigits];
-    newDigits[index] = value;
-    setEmailOtpDigits(newDigits);
-    if (value && index < 5) {
-      document.getElementById(`email-otp-${index + 1}`)?.focus();
+  // Paste 4-digit helper
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').slice(0, 4);
+    if (/^\d{4}$/.test(pastedData)) {
+      const chars = pastedData.split('');
+      setOtpDigits(chars);
+      document.getElementById('otp-3')?.focus();
     }
+  };
+
+  // Layout morphing helper variants for Framer Motion 2x2 grid rotation
+  const rowVariants = {
+    otp: {
+      rotate: 0,
+      scale: 1,
+      opacity: 1
+    },
+    verifying: {
+      rotate: 360,
+      scale: 1,
+      opacity: 1,
+      transition: {
+        duration: 5,
+        ease: 'linear'
+      }
+    },
+    success: {
+      scale: 0.65,
+      opacity: 0,
+      transition: {
+        duration: 0.5,
+        ease: 'easeInOut'
+      }
+    }
+  };
+
+  const boxVariants = (index: number) => {
+    const positions = [
+      { x: -16, y: -16 }, // Top left
+      { x: 16, y: -16 },  // Top right
+      { x: -16, y: 16 },  // Bottom left
+      { x: 16, y: 16 }    // Bottom right
+    ];
+    return {
+      otp: {
+        x: 0,
+        y: 0,
+        scale: 1
+      },
+      verifying: {
+        x: positions[index].x,
+        y: positions[index].y,
+        scale: 1,
+        transition: {
+          duration: 0.6,
+          ease: 'easeInOut'
+        }
+      }
+    };
   };
 
   return (
     <div 
-      className="min-h-screen bg-cover bg-center bg-no-repeat flex items-center justify-center p-4 md:p-8"
+      className="min-h-screen bg-cover bg-center bg-no-repeat flex items-center justify-center p-4 md:p-8 relative"
       style={{ backgroundImage: "url('/wedding-bg.jpg')" }}
     >
       {/* Soft translucent luxury overlay */}
@@ -948,10 +928,10 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
               </motion.div>
             )}
 
-            {/* 2. OTP VERIFICATION */}
-            {step === 'otp' && (
+            {/* 2. OTP VERIFICATION & ROTATION MATRIX */}
+            {(step === 'otp' || step === 'otp_verifying') && (
               <motion.div 
-                key="otp"
+                key="otp-screen"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -959,60 +939,82 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
               >
                 <div className="space-y-2">
                   <h2 className="font-serif text-2xl font-bold text-[#241A20]">Verify Your Mobile Number</h2>
-                  <p className="text-sm text-[#746A70]">We've sent a 6-digit OTP code to <br /><span className="font-bold text-[#241A20]">+91 {mobileNumber}</span></p>
+                  <p className="text-sm text-[#746A70]">We've sent a 4-digit OTP code to <br /><span className="font-bold text-[#241A20]">+91 {mobileNumber}</span></p>
                 </div>
 
                 {otpError && (
                   <div className="p-3 bg-[#FFF1F1] text-[#8F0038] rounded-xl text-xs font-bold flex items-center justify-center gap-2 border border-[#8F0038]/20 animate-shake">
-                    <AlertCircle className="w-4 h-4 animate-pulse" /> {otpError}
+                    <AlertCircle className="w-4 h-4" /> {otpError}
                   </div>
                 )}
 
-                {/* OTP Boxes Circular-to-Grid Entrance Animation */}
-                <motion.div 
-                  variants={containerVariants}
-                  initial="initial"
-                  animate="animate"
-                  className="flex justify-center gap-3 relative py-12"
-                >
-                  {otpDigits.map((digit, index) => (
-                    <motion.input
-                      key={index}
-                      id={`otp-${index}`}
-                      type="text"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleOtpChange(index, e.target.value)}
-                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      variants={itemVariants(index)}
-                      className="w-12 h-14 text-center bg-white border border-[#EBD9DC] rounded-xl font-bold text-lg focus:outline-none focus:border-[#8F173D] focus:ring-2 focus:ring-[#8F173D]/20 shadow-sm"
-                    />
-                  ))}
-                </motion.div>
+                {/* Animated OTP Input Boxes Grid / 2x2 Matrix */}
+                <div className="relative py-12 flex justify-center items-center h-44">
+                  <motion.div
+                    layout
+                    variants={rowVariants}
+                    animate={step === 'otp_verifying' ? 'verifying' : 'otp'}
+                    className={
+                      step === 'otp_verifying'
+                        ? 'grid grid-cols-2 gap-4 w-[140px] h-[140px] justify-center items-center animate-spin-slow'
+                        : 'flex flex-row gap-4 justify-center items-center'
+                    }
+                    style={{ animationDuration: step === 'otp_verifying' ? '5s' : '0s' }}
+                  >
+                    {otpDigits.map((digit, index) => (
+                      <motion.div
+                        layout
+                        key={index}
+                        variants={boxVariants(index)}
+                        animate={step === 'otp_verifying' ? 'verifying' : 'otp'}
+                        className="w-12 h-12 md:w-14 md:h-14 animate-spin-cancel"
+                      >
+                        <input
+                          id={`otp-${index}`}
+                          type="text"
+                          maxLength={1}
+                          pattern="\d*"
+                          inputMode="numeric"
+                          value={digit}
+                          disabled={step === 'otp_verifying'}
+                          onPaste={handleOtpPaste}
+                          onChange={(e) => handleOtpChange(index, e.target.value)}
+                          onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                          className="w-full h-full text-center bg-white/85 border border-[#8F173D]/18 rounded-[16px] font-bold text-xl md:text-2xl text-[#8F173D] focus:outline-none focus:border-[#8F173D] focus:ring-2 focus:ring-[#8F173D]/20 focus:shadow-[0_0_12px_rgba(217,164,65,0.3)] shadow-sm transition-all"
+                        />
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </div>
 
                 <div className="space-y-4">
-                  <p className="text-xs font-bold text-[#746A70]">
-                    {otpTimer > 0 ? (
-                      `Resend OTP in 00:${otpTimer < 10 ? '0' : ''}${otpTimer}`
-                    ) : (
-                      <button onClick={handleSendMobileOtp} className="text-[#8F173D] hover:underline">Resend OTP</button>
-                    )}
-                  </p>
+                  {step === 'otp_verifying' ? (
+                    <p className="text-sm font-semibold text-[#8F173D] animate-pulse">Verifying your number...</p>
+                  ) : (
+                    <>
+                      <p className="text-xs font-bold text-[#746A70]">
+                        {otpTimer > 0 ? (
+                          `Resend OTP in 00:${otpTimer < 10 ? '0' : ''}${otpTimer}`
+                        ) : (
+                          <button onClick={handleSendMobileOtp} className="text-[#8F173D] hover:underline">Resend OTP</button>
+                        )}
+                      </p>
+                      
+                      <button
+                        onClick={handleVerifyMobileOtp}
+                        className="w-full bg-[#8F173D] hover:bg-[#6E1735] text-white py-3.5 rounded-xl text-xs font-bold tracking-widest uppercase shadow-md transition-all"
+                      >
+                        Verify OTP
+                      </button>
 
-                  <button
-                    onClick={handleVerifyMobileOtp}
-                    disabled={verifyingOtp}
-                    className="w-full bg-[#8F173D] hover:bg-[#6E1735] text-white py-3.5 rounded-xl text-xs font-bold tracking-widest uppercase shadow-md transition-all"
-                  >
-                    {verifyingOtp ? 'Verify OTP...' : 'Verify OTP'}
-                  </button>
-
-                  <button 
-                    onClick={() => setStep('welcome')}
-                    className="text-xs font-bold text-[#746A70] hover:text-[#8F173D] block mx-auto underline"
-                  >
-                    Change Number
-                  </button>
+                      <button 
+                        onClick={() => setStep('welcome')}
+                        className="text-xs font-bold text-[#746A70] hover:text-[#8F173D] block mx-auto underline"
+                      >
+                        Change Number
+                      </button>
+                    </>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -1025,11 +1027,10 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
                 animate={{ opacity: 1, scale: 1 }}
                 className="space-y-6 max-w-md mx-auto text-center"
               >
-                {/* Checkmark drawing success circle */}
                 <div className="flex justify-center py-4">
                   <motion.div 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
+                    initial={{ scale: 0.6, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
                     transition={{ type: "spring", stiffness: 200, damping: 15 }}
                     className="w-20 h-20 rounded-full bg-emerald-50 border-2 border-emerald-500 flex items-center justify-center text-emerald-500 shadow-md shadow-emerald-500/10"
                   >
@@ -1042,6 +1043,7 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
                   <p className="text-sm font-semibold text-[#746A70]">
                     Your mobile number has been verified successfully.
                   </p>
+                  <p className="text-xs font-bold text-[#D9A441] mt-1">Let's create your JainSaathi profile.</p>
                 </div>
 
                 <button
@@ -1081,7 +1083,7 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
 
                   <button
                     onClick={handleVerifyEmail}
-                    disabled={!email || verifyingEmailOtp}
+                    disabled={!email || loading}
                     className="w-full bg-[#8F173D] hover:bg-[#6E1735] text-white py-3.5 rounded-xl text-xs font-bold tracking-widest uppercase shadow-md transition-all"
                   >
                     Verify Email
@@ -1292,7 +1294,6 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
                       </div>
                     </div>
 
-                    {/* Languages Known chip system */}
                     <div>
                       <label className="block text-[10px] font-bold uppercase text-[#746A70] mb-1.5">Languages Known</label>
                       <div className="flex flex-wrap gap-2 mb-3">
@@ -1401,7 +1402,6 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
                       <p className="text-xs font-semibold text-[#746A70]">Add academic milestones (Multiple allowed).</p>
                     </div>
 
-                    {/* Show added records */}
                     {educationRecords.length > 0 && (
                       <div className="space-y-3">
                         <label className="block text-[10px] font-bold uppercase text-[#746A70]">Added Records</label>
@@ -1480,7 +1480,6 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
                       </div>
                     </div>
 
-                    {/* Conditional inputs */}
                     {['Employed', 'Business', 'Self Employed', 'Family Business'].includes(workingStatus) && (
                       <div className="space-y-4 animate-in fade-in duration-200">
                         <div className="grid grid-cols-2 gap-4">
@@ -1570,7 +1569,6 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
                       </div>
                     </div>
 
-                    {/* Add Sibling or Family member listing */}
                     {familyMembers.length > 0 && (
                       <div className="space-y-2">
                         <label className="block text-[10px] font-bold uppercase text-[#746A70]">Other Family Members</label>
@@ -1717,13 +1715,13 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-[10px] font-bold uppercase text-[#746A70] mb-1">State *</label>
-                        <select value={currentState} onChange={e => setCurrentState(e.target.value)} className="w-full bg-white border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-xs font-semibold">
+                        <select value={currentState} onChange={e => setCurrentState(e.target.value)} className="w-full bg-white border-[#EBD9DC] border rounded-xl px-4 py-2.5 text-xs font-semibold">
                           {states.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
                         </select>
                       </div>
                       <div>
                         <label className="block text-[10px] font-bold uppercase text-[#746A70] mb-1">City *</label>
-                        <select value={currentCity} onChange={e => setCurrentCity(e.target.value)} className="w-full bg-white border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-xs font-semibold">
+                        <select value={currentCity} onChange={e => setCurrentCity(e.target.value)} className="w-full bg-white border-[#EBD9DC] border rounded-xl px-4 py-2.5 text-xs font-semibold">
                           {cities.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                         </select>
                       </div>
@@ -1732,7 +1730,7 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-[10px] font-bold uppercase text-[#746A70] mb-1">Native State</label>
-                        <select value={nativeState} onChange={e => setNativeState(e.target.value)} className="w-full bg-white border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-xs font-semibold">
+                        <select value={nativeState} onChange={e => setNativeState(e.target.value)} className="w-full bg-white border-[#EBD9DC] border rounded-xl px-4 py-2.5 text-xs font-semibold">
                           {states.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
                         </select>
                       </div>
@@ -1760,7 +1758,6 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
                       <p className="text-xs font-semibold text-[#746A70]">Upload up to 5 clear photos. Minimum 1 required.</p>
                     </div>
 
-                    {/* Photo upload slots */}
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                       {/* Slot 1: Primary Photo (large) */}
                       <div className="col-span-2 relative aspect-[3/4] border-2 border-dashed border-[#EBD9DC] rounded-2xl bg-white/40 flex items-center justify-center overflow-hidden">
@@ -2062,7 +2059,6 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
                   <p className="text-xs text-[#746A70]">100% profile completeness checks passed successfully.</p>
                 </div>
 
-                {/* Review matrix */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
                     { title: 'Personal Details', stepNum: 2, value: `${firstName} ${lastName}` },
@@ -2088,7 +2084,7 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
 
                 <div className="flex gap-3 pt-6 border-t border-[#EBD9DC]">
                   <button onClick={() => setStep('photo_verification')} className="px-6 py-2.5 border border-[#EBD9DC] hover:bg-gray-50 text-gray-700 font-bold text-xs rounded-xl">Back</button>
-                  <button onClick={handleFinalSubmit} className="flex-1 bg-[#8F173D] hover:bg-[#6E1735] text-white py-3.5 rounded-xl text-xs font-bold shadow-md tracking-wider uppercase">Submit Profile</button>
+                  <button onClick={() => setStep('plan')} className="flex-1 bg-[#8F173D] hover:bg-[#6E1735] text-white py-3.5 rounded-xl text-xs font-bold shadow-md tracking-wider uppercase">Submit Profile</button>
                 </div>
               </motion.div>
             )}
