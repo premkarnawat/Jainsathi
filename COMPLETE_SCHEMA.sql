@@ -265,6 +265,19 @@ CREATE TABLE IF NOT EXISTS photos (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- IDENTITY VERIFICATIONS
+CREATE TABLE IF NOT EXISTS identity_verifications (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    candidate_id UUID REFERENCES candidate_profiles(id) ON DELETE CASCADE,
+    selfie_path TEXT NOT NULL,
+    document_path TEXT NOT NULL,
+    status verification_status_type DEFAULT 'pending',
+    submitted_at TIMESTAMPTZ DEFAULT NOW(),
+    reviewed_at TIMESTAMPTZ,
+    reviewed_by UUID REFERENCES users(id),
+    notes TEXT
+);
+
 -- BIODATA SYSTEM
 CREATE TABLE IF NOT EXISTS biodatas (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

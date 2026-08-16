@@ -155,8 +155,12 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
   // Photo Verification Step
   const [verificationPhoto, setVerificationPhoto] = useState<string | null>(null);
   const [aadhaarPhoto, setAadhaarPhoto] = useState<string | null>(null);
+  const [aadhaarFile, setAadhaarFile] = useState<File | null>(null);
   const [consentChecked, setConsentChecked] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState<'none' | 'submitted' | 'approved' | 'rejected'>('none');
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Plan Selection Step
   const [selectedPlan, setSelectedPlan] = useState('super_3m');
@@ -1013,8 +1017,59 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
   };
 
   // Verification Screen Save
+  // --- WEBRTC CAMERA LOGIC ---
+  const startCamera = async () => {
+    try {
+      setIsCameraActive(true);
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+      }
+    } catch (err) {
+      alert("Camera access denied or unavailable. Please check your browser permissions.");
+      setIsCameraActive(false);
+    }
+  };
+
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
+    }
+    setIsCameraActive(false);
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const context = canvasRef.current.getContext('2d');
+      if (context) {
+        canvasRef.current.width = videoRef.current.videoWidth;
+        canvasRef.current.height = videoRef.current.videoHeight;
+        context.drawImage(videoRef.current, 0, 0);
+        const dataUrl = canvasRef.current.toDataURL('image/jpeg');
+        setVerificationPhoto(dataUrl);
+        stopCamera();
+      }
+    }
+  };
+
+  const retakePhoto = () => {
+    setVerificationPhoto(null);
+    startCamera();
+  };
+
+  // Cleanup camera on unmount
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
+  // ---------------------------
+
+  // Verification Screen Save
   const handleVerifySubmission = async () => {
-    if (!verificationPhoto || !aadhaarPhoto) {
+    if (!verificationPhoto || !aadhaarFile) {
       alert("Please provide both a selfie and an Aadhaar card for verification.");
       return;
     }
@@ -1023,11 +1078,45 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
       return;
     }
 
-    setLoading(true);
-    setTimeout(() => {
+    try {
+      setLoading(true);
+      setVerificationStatus('submitted');
+
+      // 1. Upload Selfie (base64 to Blob)
+      const selfieBlob = await (await fetch(verificationPhoto)).blob();
+      const selfieFileName = `${profileId}-${Date.now()}-selfie.jpg`;
+      const { data: selfieUpload, error: selfieError } = await supabase.storage
+        .from('verification-selfies')
+        .upload(selfieFileName, selfieBlob);
+      if (selfieError) throw selfieError;
+
+      // 2. Upload Aadhaar (PDF file)
+      const aadhaarFileName = `${profileId}-${Date.now()}-aadhaar.pdf`;
+      const { data: aadhaarUpload, error: aadhaarError } = await supabase.storage
+        .from('verification-documents')
+        .upload(aadhaarFileName, aadhaarFile);
+      if (aadhaarError) throw aadhaarError;
+
+      // 3. Insert into identity_verifications
+      const { error: dbError } = await supabase.from('identity_verifications').insert({
+        candidate_id: profileId,
+        selfie_path: selfieUpload.path,
+        document_path: aadhaarUpload.path,
+        status: 'pending'
+      });
+      if (dbError) throw dbError;
+
       setVerificationStatus('approved');
+      
+      // Route immediately to Plan Selection Step
+      setTimeout(() => setStep('plan'), 1500);
+
+    } catch (err: any) {
+      alert(`Verification failed: ${err.message}`);
+      setVerificationStatus('none');
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
   };
 
   // Plan Selection Step
@@ -2272,46 +2361,56 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                  <div className="border border-[#EBD9DC] rounded-2xl bg-white/40 aspect-[4/3] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
+                  <div className="border border-[#EBD9DC] rounded-2xl bg-white/40 aspect-[4/3] flex flex-col items-center justify-center p-4 text-center relative overflow-hidden">
                     {verificationPhoto ? (
                       <div className="w-full h-full relative">
                         <img src={verificationPhoto} alt="Verification" className="w-full h-full object-cover rounded-xl" />
-                        <button onClick={() => setVerificationPhoto(null)} className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity rounded-xl">
+                          <button onClick={retakePhoto} className="px-4 py-2 bg-white text-[#241A20] font-bold text-xs rounded-lg shadow-md">Retake Photo</button>
+                        </div>
+                      </div>
+                    ) : isCameraActive ? (
+                      <div className="w-full h-full relative flex flex-col bg-black rounded-xl overflow-hidden">
+                        <video ref={videoRef} className="w-full flex-1 object-cover" playsInline muted autoPlay />
+                        <canvas ref={canvasRef} className="hidden" />
+                        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3">
+                          <button onClick={stopCamera} className="px-4 py-2 bg-red-600/90 text-white font-bold text-xs rounded-lg shadow-md">Cancel</button>
+                          <button onClick={capturePhoto} className="px-6 py-2 bg-emerald-600/90 text-white font-bold text-xs rounded-lg shadow-md">Take Snapshot</button>
+                        </div>
                       </div>
                     ) : (
                       <>
                         <Camera className="w-10 h-10 text-[#D9A441] mb-2" />
                         <h4 className="text-sm font-bold text-[#241A20] mb-2">Selfie Photo</h4>
-                        <label className="px-6 py-2.5 bg-[#8F173D] hover:bg-[#6E1735] text-white font-bold text-xs rounded-xl shadow-sm mb-2 cursor-pointer">
-                          Take Selfie
-                          <input type="file" accept="image/*" capture="user" onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) setVerificationPhoto(URL.createObjectURL(file));
-                          }} className="hidden" />
-                        </label>
-                        <span className="text-[10px] text-gray-500">Must be a clear front-facing photo</span>
+                        <button onClick={startCamera} className="px-6 py-2.5 bg-[#8F173D] hover:bg-[#6E1735] text-white font-bold text-xs rounded-xl shadow-sm mb-2">
+                          Start Camera
+                        </button>
+                        <span className="text-[10px] text-gray-500">Live front-facing photo required</span>
                       </>
                     )}
                   </div>
 
                   <div className="border border-[#EBD9DC] rounded-2xl bg-white/40 aspect-[4/3] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
-                    {aadhaarPhoto ? (
-                      <div className="w-full h-full relative">
-                        <img src={aadhaarPhoto} alt="Aadhaar" className="w-full h-full object-cover rounded-xl" />
-                        <button onClick={() => setAadhaarPhoto(null)} className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                    {aadhaarFile ? (
+                      <div className="w-full h-full relative flex flex-col items-center justify-center bg-gray-50 rounded-xl">
+                        <FileText className="w-12 h-12 text-[#8F173D] mb-2" />
+                        <span className="text-xs font-bold text-[#241A20] truncate w-3/4">{aadhaarFile.name}</span>
+                        <button onClick={() => setAadhaarFile(null)} className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-lg"><Trash2 className="w-4 h-4" /></button>
                       </div>
                     ) : (
                       <>
                         <FileText className="w-10 h-10 text-[#D9A441] mb-2" />
                         <h4 className="text-sm font-bold text-[#241A20] mb-2">Aadhaar Card</h4>
                         <label className="px-6 py-2.5 bg-[#8F173D] hover:bg-[#6E1735] text-white font-bold text-xs rounded-xl shadow-sm mb-2 cursor-pointer">
-                          Upload Aadhaar
-                          <input type="file" accept="image/*,application/pdf" onChange={(e) => {
+                          Upload PDF
+                          <input type="file" accept="application/pdf" onChange={(e) => {
                             const file = e.target.files?.[0];
-                            if (file) setAadhaarPhoto(URL.createObjectURL(file));
+                            if (file) setAadhaarFile(file);
                           }} className="hidden" />
                         </label>
-                        <span className="text-[10px] text-gray-500">Front & Back or PDF</span>
+                        <span className="text-[10px] text-red-600 font-bold max-w-[200px] leading-tight mt-1">
+                          Must be both front and back combined in one PDF. Separate images will be rejected.
+                        </span>
                       </>
                     )}
                   </div>
@@ -2343,10 +2442,13 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
                 <div className="flex gap-3 pt-6 border-t border-[#EBD9DC]">
                   <button onClick={() => setStep(10)} className="px-6 py-2.5 border border-[#EBD9DC] hover:bg-gray-50 text-gray-700 font-bold text-xs rounded-xl">Back</button>
                   <button 
-                    onClick={verificationStatus === 'approved' ? () => setStep('review') : handleVerifySubmission}
-                    className="flex-1 bg-[#8F173D] hover:bg-[#6E1735] text-white py-3 rounded-xl text-xs font-bold shadow-md tracking-wider uppercase"
+                    disabled={!consentChecked || loading}
+                    onClick={verificationStatus === 'approved' ? () => setStep('plan') : handleVerifySubmission}
+                    className={`flex-1 py-3 rounded-xl text-xs font-bold shadow-md tracking-wider uppercase transition-all ${
+                      (!consentChecked || loading) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#8F173D] hover:bg-[#6E1735] text-white'
+                    }`}
                   >
-                    {verificationStatus === 'approved' ? 'Continue to Review' : 'Submit for Verification'}
+                    {loading ? 'Processing...' : verificationStatus === 'approved' ? 'Continue to Plan' : 'Submit for Verification'}
                   </button>
                 </div>
               </motion.div>
