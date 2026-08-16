@@ -427,8 +427,8 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
       if (!dbUser) {
         const { data: newUser, error: userError } = await supabase.from('users').insert({
           auth_id: user.id,
-          phone: user.phone || '+91' + mobileNumber,
-          full_name: firstName ? `${firstName} ${lastName}` : 'Jain Member',
+          phone: user.phone || user.user_metadata?.phone || `+91${mobileNumber}`,
+          full_name: firstName ? `${firstName} ${lastName}`.trim() : 'Jain Member',
           role: 'user'
         }).select().single();
         if (userError) throw userError;
@@ -631,6 +631,11 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
     if (!email) return;
     try {
       setLoading(true);
+      
+      if (userId) {
+        await supabase.from('users').update({ email }).eq('id', userId);
+      }
+      
       setEmailVerified(true);
       setStep('register_start');
     } catch (err) {
@@ -702,6 +707,14 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
       }).eq('id', profileId);
 
       if (error) throw error;
+      
+      // Sync full name to users table
+      if (userId) {
+        await supabase.from('users').update({
+          full_name: `${firstName} ${lastName}`.trim()
+        }).eq('id', userId);
+      }
+
       setStep(3);
     } catch (err: any) {
       setSaveError(err.message);
