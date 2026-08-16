@@ -134,6 +134,8 @@ CREATE TABLE IF NOT EXISTS jain_identities (
     nanisa_saka VARCHAR(100),
     family_kul_gotra VARCHAR(100),
     lineage_notes TEXT,
+    native_place VARCHAR(150),
+    family_background TEXT,
     
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
