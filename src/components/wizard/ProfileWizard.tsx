@@ -140,7 +140,7 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [biodataPdf, setBiodataPdf] = useState<any | null>(null);
   const [uploadingPdf, setUploadingPdf] = useState(false);
-  const [photoPrivacy, setPhotoPrivacy] = useState('interested_members');
+  const [photoPrivacy, setPhotoPrivacy] = useState('interest_accepted_only');
 
   // STEP 10 Form data: Partner Preferences
   const [prefMinAge, setPrefMinAge] = useState(21);
@@ -1951,9 +1951,9 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
                     <div className="p-5 border border-[#EBD9DC] bg-white rounded-2xl">
                       <label className="block text-[10px] font-bold uppercase text-[#746A70] tracking-wider mb-2">Photo Privacy Settings</label>
                       <select value={photoPrivacy} onChange={e => setPhotoPrivacy(e.target.value)} className="w-full bg-white border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-xs font-semibold">
-                        <option value="everyone">Visible to everyone</option>
-                        <option value="interested_members">Visible to interested members</option>
-                        <option value="mutually_accepted">Visible to mutually accepted connections</option>
+                        <option value="public">Visible to everyone</option>
+                        <option value="interest_accepted_only">Visible to interested members</option>
+                        <option value="matches_only">Visible to mutually accepted connections</option>
                       </select>
                       <p className="text-[10px] text-gray-400 font-semibold mt-2 flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 text-[#D9A441]" /> Your photos are protected according to your privacy settings.</p>
                     </div>
