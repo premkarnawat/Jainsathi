@@ -22,7 +22,16 @@ export function useCandidateProfile(userId?: string) {
         currentUserId = user.id;
       }
 
-      // Fetch candidate profile
+      // First get internal user ID
+      const { data: dbUser, error: dbUserError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_id', currentUserId)
+        .single();
+        
+      if (dbUserError) throw dbUserError;
+
+      // Fetch candidate profile using internal user_id
       const { data: profileData, error: profileError } = await supabase
         .from('candidate_profiles')
         .select(`
@@ -36,7 +45,7 @@ export function useCandidateProfile(userId?: string) {
           profile_privacies (*),
           biodatas (*)
         `)
-        .eq('user_id', currentUserId)
+        .eq('user_id', dbUser.id)
         .single();
 
       if (profileError) throw profileError;
