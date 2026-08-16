@@ -84,6 +84,8 @@ CREATE TABLE IF NOT EXISTS candidate_profiles (
     marital_status marital_status_type DEFAULT 'never_married',
     birth_place VARCHAR(150),
     birth_time TIME,
+    blood_group VARCHAR(10),
+    mother_tongue VARCHAR(100),
     
     current_country VARCHAR(100) DEFAULT 'India',
     current_state VARCHAR(100) NOT NULL,
