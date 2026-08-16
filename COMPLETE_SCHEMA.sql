@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- CANDIDATE PROFILE (Main Matrimonial Record)
 CREATE TABLE IF NOT EXISTS candidate_profiles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE UNIQUE,
     profile_created_for VARCHAR(50),
     managed_by profile_managed_by DEFAULT 'self',
     first_name VARCHAR(100) NOT NULL,
@@ -96,6 +96,7 @@ CREATE TABLE IF NOT EXISTS candidate_profiles (
     languages_known TEXT[] DEFAULT '{}',
     about_me TEXT,
     hobbies TEXT[] DEFAULT '{}',
+    interests TEXT[] DEFAULT '{}',
     
     completion_percentage INT DEFAULT 10,
     is_active BOOLEAN DEFAULT TRUE,

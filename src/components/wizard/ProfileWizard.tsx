@@ -651,7 +651,7 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
       let { data: dbUser } = await supabase.from('users').select('*').eq('auth_id', user.id).single();
       if (!dbUser) throw new Error('User record missing');
 
-      const { data: newProfile, error: err } = await supabase.from('candidate_profiles').insert({
+      const { data: newProfile, error: err } = await supabase.from('candidate_profiles').upsert({
         user_id: dbUser.id,
         managed_by: managedBy,
         profile_created_for: profileFor,
@@ -664,7 +664,7 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
         current_city: currentCity || 'Mumbai',
         verification_status: 'pending',
         completion_percentage: 10
-      }).select().single();
+      }, { onConflict: 'user_id' }).select().single();
 
       if (err) throw err;
       setProfileId(newProfile.id);
@@ -859,7 +859,7 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
 
       await supabase.from('candidate_profiles').update({
         hobbies,
-        languages_known: interests,
+        interests,
         completion_percentage: 80
       }).eq('id', profileId);
 
