@@ -100,6 +100,7 @@ CREATE TABLE IF NOT EXISTS candidate_profiles (
     completion_percentage INT DEFAULT 10,
     is_active BOOLEAN DEFAULT TRUE,
     is_discoverable BOOLEAN DEFAULT TRUE,
+    is_featured BOOLEAN DEFAULT FALSE,
     verification_status verification_status_type DEFAULT 'not_verified',
     
     created_at TIMESTAMPTZ DEFAULT NOW(),
