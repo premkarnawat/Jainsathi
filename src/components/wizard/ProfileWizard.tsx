@@ -161,6 +161,183 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
   // Plan Selection Step
   const [selectedPlan, setSelectedPlan] = useState('super_3m');
 
+  // --- AUTO SAVE TO LOCAL STORAGE ---
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('jainsaathi_wizard_state');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+        if (parsed.step !== undefined) setStep(parsed.step);
+        if (parsed.mobileNumber !== undefined) setMobileNumber(parsed.mobileNumber);
+        if (parsed.otpDigits !== undefined) setOtpDigits(parsed.otpDigits);
+        if (parsed.otpError !== undefined) setOtpError(parsed.otpError);
+        if (parsed.email !== undefined) setEmail(parsed.email);
+        if (parsed.emailVerified !== undefined) setEmailVerified(parsed.emailVerified);
+        if (parsed.userId !== undefined) setUserId(parsed.userId);
+        if (parsed.profileId !== undefined) setProfileId(parsed.profileId);
+        if (parsed.profileFor !== undefined) setProfileFor(parsed.profileFor);
+        if (parsed.managedBy !== undefined) setManagedBy(parsed.managedBy);
+        if (parsed.firstName !== undefined) setFirstName(parsed.firstName);
+        if (parsed.middleName !== undefined) setMiddleName(parsed.middleName);
+        if (parsed.lastName !== undefined) setLastName(parsed.lastName);
+        if (parsed.gender !== undefined) setGender(parsed.gender);
+        if (parsed.dob !== undefined) setDob(parsed.dob);
+        if (parsed.age !== undefined) setAge(parsed.age);
+        if (parsed.birthTime !== undefined) setBirthTime(parsed.birthTime);
+        if (parsed.birthPlace !== undefined) setBirthPlace(parsed.birthPlace);
+        if (parsed.heightCm !== undefined) setHeightCm(parsed.heightCm);
+        if (parsed.bloodGroup !== undefined) setBloodGroup(parsed.bloodGroup);
+        if (parsed.maritalStatus !== undefined) setMaritalStatus(parsed.maritalStatus);
+        if (parsed.motherTongue !== undefined) setMotherTongue(parsed.motherTongue);
+        if (parsed.languagesKnown !== undefined) setLanguagesKnown(parsed.languagesKnown);
+        if (parsed.tempLang !== undefined) setTempLang(parsed.tempLang);
+        if (parsed.sect !== undefined) setSect(parsed.sect);
+        if (parsed.community !== undefined) setCommunity(parsed.community);
+        if (parsed.subCommunity !== undefined) setSubCommunity(parsed.subCommunity);
+        if (parsed.selfSaka !== undefined) setSelfSaka(parsed.selfSaka);
+        if (parsed.mamaSaka !== undefined) setMamaSaka(parsed.mamaSaka);
+        if (parsed.nativePlace !== undefined) setNativePlace(parsed.nativePlace);
+        if (parsed.familyBackground !== undefined) setFamilyBackground(parsed.familyBackground);
+        if (parsed.educationRecords !== undefined) setEducationRecords(parsed.educationRecords);
+        if (parsed.qualLevel !== undefined) setQualLevel(parsed.qualLevel);
+        if (parsed.degreeName !== undefined) setDegreeName(parsed.degreeName);
+        if (parsed.specialization !== undefined) setSpecialization(parsed.specialization);
+        if (parsed.institution !== undefined) setInstitution(parsed.institution);
+        if (parsed.passoutYear !== undefined) setPassoutYear(parsed.passoutYear);
+        if (parsed.workingStatus !== undefined) setWorkingStatus(parsed.workingStatus);
+        if (parsed.companyName !== undefined) setCompanyName(parsed.companyName);
+        if (parsed.designation !== undefined) setDesignation(parsed.designation);
+        if (parsed.industry !== undefined) setIndustry(parsed.industry);
+        if (parsed.workLocation !== undefined) setWorkLocation(parsed.workLocation);
+        if (parsed.annualIncome !== undefined) setAnnualIncome(parsed.annualIncome);
+        if (parsed.fatherName !== undefined) setFatherName(parsed.fatherName);
+        if (parsed.fatherOccupation !== undefined) setFatherOccupation(parsed.fatherOccupation);
+        if (parsed.motherName !== undefined) setMotherName(parsed.motherName);
+        if (parsed.motherOccupation !== undefined) setMotherOccupation(parsed.motherOccupation);
+        if (parsed.familyType !== undefined) setFamilyType(parsed.familyType);
+        if (parsed.familyValues !== undefined) setFamilyValues(parsed.familyValues);
+        if (parsed.familyMembers !== undefined) setFamilyMembers(parsed.familyMembers);
+        if (parsed.famRelation !== undefined) setFamRelation(parsed.famRelation);
+        if (parsed.famName !== undefined) setFamName(parsed.famName);
+        if (parsed.famOccupation !== undefined) setFamOccupation(parsed.famOccupation);
+        if (parsed.famLocation !== undefined) setFamLocation(parsed.famLocation);
+        if (parsed.diet !== undefined) setDiet(parsed.diet);
+        if (parsed.smoking !== undefined) setSmoking(parsed.smoking);
+        if (parsed.alcohol !== undefined) setAlcohol(parsed.alcohol);
+        if (parsed.hobbies !== undefined) setHobbies(parsed.hobbies);
+        if (parsed.interests !== undefined) setInterests(parsed.interests);
+        if (parsed.tempHobby !== undefined) setTempHobby(parsed.tempHobby);
+        if (parsed.tempInterest !== undefined) setTempInterest(parsed.tempInterest);
+        if (parsed.currentCountry !== undefined) setCurrentCountry(parsed.currentCountry);
+        if (parsed.currentState !== undefined) setCurrentState(parsed.currentState);
+        if (parsed.currentCity !== undefined) setCurrentCity(parsed.currentCity);
+        if (parsed.nativeState !== undefined) setNativeState(parsed.nativeState);
+        if (parsed.nativeCity !== undefined) setNativeCity(parsed.nativeCity);
+        if (parsed.photoPrivacy !== undefined) setPhotoPrivacy(parsed.photoPrivacy);
+        if (parsed.prefMinAge !== undefined) setPrefMinAge(parsed.prefMinAge);
+        if (parsed.prefMaxAge !== undefined) setPrefMaxAge(parsed.prefMaxAge);
+        if (parsed.prefMinHeight !== undefined) setPrefMinHeight(parsed.prefMinHeight);
+        if (parsed.prefMaxHeight !== undefined) setPrefMaxHeight(parsed.prefMaxHeight);
+        if (parsed.prefSects !== undefined) setPrefSects(parsed.prefSects);
+        if (parsed.prefCommunities !== undefined) setPrefCommunities(parsed.prefCommunities);
+        if (parsed.prefDiet !== undefined) setPrefDiet(parsed.prefDiet);
+        if (parsed.prefMaritalStatus !== undefined) setPrefMaritalStatus(parsed.prefMaritalStatus);
+        if (parsed.consentChecked !== undefined) setConsentChecked(parsed.consentChecked);
+        if (parsed.selectedPlan !== undefined) setSelectedPlan(parsed.selectedPlan);
+
+        } catch (e) {}
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stateToSave = {
+      step,
+      mobileNumber,
+      otpDigits,
+      otpError,
+      email,
+      emailVerified,
+      userId,
+      profileId,
+      profileFor,
+      managedBy,
+      firstName,
+      middleName,
+      lastName,
+      gender,
+      dob,
+      age,
+      birthTime,
+      birthPlace,
+      heightCm,
+      bloodGroup,
+      maritalStatus,
+      motherTongue,
+      languagesKnown,
+      tempLang,
+      sect,
+      community,
+      subCommunity,
+      selfSaka,
+      mamaSaka,
+      nativePlace,
+      familyBackground,
+      educationRecords,
+      qualLevel,
+      degreeName,
+      specialization,
+      institution,
+      passoutYear,
+      workingStatus,
+      companyName,
+      designation,
+      industry,
+      workLocation,
+      annualIncome,
+      fatherName,
+      fatherOccupation,
+      motherName,
+      motherOccupation,
+      familyType,
+      familyValues,
+      familyMembers,
+      famRelation,
+      famName,
+      famOccupation,
+      famLocation,
+      diet,
+      smoking,
+      alcohol,
+      hobbies,
+      interests,
+      tempHobby,
+      tempInterest,
+      currentCountry,
+      currentState,
+      currentCity,
+      nativeState,
+      nativeCity,
+      photoPrivacy,
+      prefMinAge,
+      prefMaxAge,
+      prefMinHeight,
+      prefMaxHeight,
+      prefSects,
+      prefCommunities,
+      prefDiet,
+      prefMaritalStatus,
+      consentChecked,
+      selectedPlan,
+    };
+      localStorage.setItem('jainsaathi_wizard_state', JSON.stringify(stateToSave));
+    }
+  }, [step, mobileNumber, otpDigits, otpError, email, emailVerified, userId, profileId, profileFor, managedBy, firstName, middleName, lastName, gender, dob, age, birthTime, birthPlace, heightCm, bloodGroup, maritalStatus, motherTongue, languagesKnown, tempLang, sect, community, subCommunity, selfSaka, mamaSaka, nativePlace, familyBackground, educationRecords, qualLevel, degreeName, specialization, institution, passoutYear, workingStatus, companyName, designation, industry, workLocation, annualIncome, fatherName, fatherOccupation, motherName, motherOccupation, familyType, familyValues, familyMembers, famRelation, famName, famOccupation, famLocation, diet, smoking, alcohol, hobbies, interests, tempHobby, tempInterest, currentCountry, currentState, currentCity, nativeState, nativeCity, photoPrivacy, prefMinAge, prefMaxAge, prefMinHeight, prefMaxHeight, prefSects, prefCommunities, prefDiet, prefMaritalStatus, consentChecked, selectedPlan]);
+  // -----------------------------------
+
+
   // Session handler on mount to prevent the loop / recover steps
   useEffect(() => {
     async function checkSession() {
