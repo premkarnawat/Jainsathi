@@ -118,6 +118,22 @@ CREATE TABLE IF NOT EXISTS profile_members (
     UNIQUE(candidate_id, user_id)
 );
 
+-- TRIGGER TO AUTO-ASSIGN PROFILE OWNERSHIP
+CREATE OR REPLACE FUNCTION auto_insert_profile_member()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO profile_members (candidate_id, user_id, can_edit, can_manage_interests)
+    VALUES (NEW.id, NEW.user_id, TRUE, TRUE)
+    ON CONFLICT (candidate_id, user_id) DO NOTHING;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER trg_auto_insert_profile_member
+AFTER INSERT ON candidate_profiles
+FOR EACH ROW
+EXECUTE FUNCTION auto_insert_profile_member();
+
 -- JAIN IDENTITY & LINEAGE
 CREATE TABLE IF NOT EXISTS jain_identities (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
