@@ -715,6 +715,13 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
   const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !profileId) return;
+    
+    // Prevent uploading massive files (15MB limit)
+    if (file.size > 15 * 1024 * 1024) {
+      alert('Photo exceeds the 15MB size limit. Please select a smaller photo.');
+      return;
+    }
+
     try {
       setUploadingPhoto(true);
       const fileExt = file.name.split('.').pop();

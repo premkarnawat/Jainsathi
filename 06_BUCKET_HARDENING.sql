@@ -2,10 +2,10 @@
 -- JAINSAATHI STORAGE - MIME TYPE & SIZE HARDENING
 -- ========================================================
 
--- Hardening profile-photos to only allow images up to 5MB
+-- Hardening profile-photos to only allow images up to 15MB
 UPDATE storage.buckets 
 SET 
-  file_size_limit = 5242880, -- 5MB in bytes
+  file_size_limit = 15728640, -- 15MB in bytes
   allowed_mime_types = ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/heic']
 WHERE id = 'profile-photos';
 
