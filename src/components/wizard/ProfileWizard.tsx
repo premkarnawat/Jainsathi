@@ -154,6 +154,8 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
 
   // Photo Verification Step
   const [verificationPhoto, setVerificationPhoto] = useState<string | null>(null);
+  const [aadhaarPhoto, setAadhaarPhoto] = useState<string | null>(null);
+  const [consentChecked, setConsentChecked] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState<'none' | 'submitted' | 'approved' | 'rejected'>('none');
 
   // Plan Selection Step
@@ -835,6 +837,15 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
 
   // Verification Screen Save
   const handleVerifySubmission = async () => {
+    if (!verificationPhoto || !aadhaarPhoto) {
+      alert("Please provide both a selfie and an Aadhaar card for verification.");
+      return;
+    }
+    if (!consentChecked) {
+      alert("You must consent to the Privacy Policy to proceed with verification.");
+      return;
+    }
+
     setLoading(true);
     setTimeout(() => {
       setVerificationStatus('approved');
@@ -2084,7 +2095,7 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                  <div className="border border-[#EBD9DC] rounded-2xl bg-white/40 aspect-square flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
+                  <div className="border border-[#EBD9DC] rounded-2xl bg-white/40 aspect-[4/3] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
                     {verificationPhoto ? (
                       <div className="w-full h-full relative">
                         <img src={verificationPhoto} alt="Verification" className="w-full h-full object-cover rounded-xl" />
@@ -2092,34 +2103,52 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
                       </div>
                     ) : (
                       <>
-                        <Camera className="w-12 h-12 text-[#D9A441] mb-3" />
-                        <button onClick={() => setVerificationPhoto('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500')} className="px-6 py-2.5 bg-[#8F173D] hover:bg-[#6E1735] text-white font-bold text-xs rounded-xl shadow-sm mb-3">Take Self Photo</button>
-                        <label className="text-xs font-bold text-[#8F173D] hover:underline cursor-pointer">
-                          Or Upload Photo
-                          <input type="file" accept="image/*" onChange={(e) => {
+                        <Camera className="w-10 h-10 text-[#D9A441] mb-2" />
+                        <h4 className="text-sm font-bold text-[#241A20] mb-2">Selfie Photo</h4>
+                        <label className="px-6 py-2.5 bg-[#8F173D] hover:bg-[#6E1735] text-white font-bold text-xs rounded-xl shadow-sm mb-2 cursor-pointer">
+                          Take Selfie
+                          <input type="file" accept="image/*" capture="user" onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (file) setVerificationPhoto(URL.createObjectURL(file));
                           }} className="hidden" />
                         </label>
+                        <span className="text-[10px] text-gray-500">Must be a clear front-facing photo</span>
                       </>
                     )}
                   </div>
 
-                  <div className="space-y-4">
-                    <h4 className="font-serif text-sm font-bold text-[#241B20]">Guidelines:</h4>
-                    <ul className="space-y-2 text-xs text-[#746A70] font-semibold">
-                      <li className="flex gap-2">
-                        <span className="text-emerald-500">✓</span> Face should be clearly visible and centered
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="text-emerald-500">✓</span> Good lighting with no filters or sunglasses
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="text-emerald-500">✓</span> Must be a recent snapshot matching other photos
-                      </li>
-                    </ul>
+                  <div className="border border-[#EBD9DC] rounded-2xl bg-white/40 aspect-[4/3] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
+                    {aadhaarPhoto ? (
+                      <div className="w-full h-full relative">
+                        <img src={aadhaarPhoto} alt="Aadhaar" className="w-full h-full object-cover rounded-xl" />
+                        <button onClick={() => setAadhaarPhoto(null)} className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                      </div>
+                    ) : (
+                      <>
+                        <FileText className="w-10 h-10 text-[#D9A441] mb-2" />
+                        <h4 className="text-sm font-bold text-[#241A20] mb-2">Aadhaar Card</h4>
+                        <label className="px-6 py-2.5 bg-[#8F173D] hover:bg-[#6E1735] text-white font-bold text-xs rounded-xl shadow-sm mb-2 cursor-pointer">
+                          Upload Aadhaar
+                          <input type="file" accept="image/*,application/pdf" onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) setAadhaarPhoto(URL.createObjectURL(file));
+                          }} className="hidden" />
+                        </label>
+                        <span className="text-[10px] text-gray-500">Front & Back or PDF</span>
+                      </>
+                    )}
+                  </div>
+                </div>
 
-                    {verificationStatus === 'submitted' && (
+                <div className="space-y-4 pt-4">
+                  <label className="flex items-start gap-3 p-4 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer">
+                    <input type="checkbox" checked={consentChecked} onChange={(e) => setConsentChecked(e.target.checked)} className="mt-1 w-4 h-4 accent-[#8F173D]" />
+                    <span className="text-[10px] leading-relaxed text-gray-600 font-medium">
+                      I consent to JainSaathi collecting, storing, processing, and securely using the personal and sensitive information I provide—including identity documents (such as Aadhaar), photographs, selfies, contact details, and profile information—for profile creation, verification, matching, safety, and platform services, in accordance with the JainSaathi Privacy Policy.
+                    </span>
+                  </label>
+
+                  {verificationStatus === 'submitted' && (
                       <div className="p-4 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-800 font-bold flex gap-2 items-center">
                         <span className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
                         Under Review: Checking verification photo...
