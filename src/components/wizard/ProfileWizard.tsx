@@ -2162,7 +2162,6 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
                       </div>
                     )}
                   </div>
-                </div>
 
                 <div className="flex gap-3 pt-6 border-t border-[#EBD9DC]">
                   <button onClick={() => setStep(10)} className="px-6 py-2.5 border border-[#EBD9DC] hover:bg-gray-50 text-gray-700 font-bold text-xs rounded-xl">Back</button>
