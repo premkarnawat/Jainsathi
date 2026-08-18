@@ -4,14 +4,13 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Menu, X, Globe } from 'lucide-react';
-import { useTranslation } from '@/lib/i18n/TranslationContext';
+import { Bell, Menu, X } from 'lucide-react';
+import LanguageToggle from '@/components/ui/LanguageToggle';
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
-  const { t, lang, setLang } = useTranslation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,18 +20,14 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const toggleLanguage = () => {
-    setLang(lang === 'en' ? 'hi' : 'en');
-  };
-
   const navLinks = [
-    { href: '/', label: t('nav.home') },
-    { href: '#about', label: t('nav.about') },
-    { href: '#how-it-works', label: t('nav.howItWorks') },
-    { href: '#safety', label: t('nav.safety') },
-    { href: '#success-stories', label: t('nav.successStories') },
-    { href: '#pricing', label: t('nav.pricing') },
-    { href: '/help', label: t('nav.help') },
+    { href: '/', label: 'Home' },
+    { href: '#about', label: 'About' },
+    { href: '#how-it-works', label: 'How It Works' },
+    { href: '#safety', label: 'Safety' },
+    { href: '#success-stories', label: 'Success Stories' },
+    { href: '#pricing', label: 'Pricing' },
+    { href: '/help', label: 'Help' },
   ];
 
   return (
@@ -69,13 +64,7 @@ export default function Header() {
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-4">
-            <button 
-              onClick={toggleLanguage}
-              className="flex items-center gap-1.5 text-sm font-medium text-muted hover:text-deepBurgundy transition-colors"
-            >
-              <Globe className="w-4 h-4" />
-              <span>{lang === 'en' ? 'हिन्दी' : 'English'}</span>
-            </button>
+            <LanguageToggle className="text-muted hover:text-deepBurgundy" />
             
             <button className="p-2 text-muted hover:text-deepBurgundy transition-colors">
               <Bell className="w-5 h-5" />
@@ -84,10 +73,10 @@ export default function Header() {
             <div className="h-6 w-px bg-border mx-1"></div>
 
             <Link href="/login" className="text-sm font-semibold text-deepBurgundy hover:text-premiumBurgundy transition-colors px-2">
-              {t('nav.login')}
+              Login
             </Link>
             <Link href="/register" className="btn-ruby text-sm px-5 py-2">
-              {t('nav.createProfile')}
+              Create Profile
             </Link>
           </div>
 
@@ -153,18 +142,14 @@ export default function Header() {
                 </div>
 
                 <div className="mt-auto flex flex-col gap-4 pt-6 border-t border-border">
-                  <button 
-                    onClick={toggleLanguage}
-                    className="flex items-center justify-center gap-2 py-3 rounded-xl border border-border text-text font-medium"
-                  >
-                    <Globe className="w-5 h-5 text-muted" />
-                    Switch to {lang === 'en' ? 'हिन्दी' : 'English'}
-                  </button>
+                  <div className="flex justify-center py-3 rounded-xl border border-border">
+                    <LanguageToggle className="text-text font-medium" />
+                  </div>
                   <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="btn-gold-outline w-full py-3">
-                    {t('nav.login')}
+                    Login
                   </Link>
                   <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="btn-ruby w-full py-3">
-                    {t('nav.createProfile')}
+                    Create Profile
                   </Link>
                 </div>
               </div>

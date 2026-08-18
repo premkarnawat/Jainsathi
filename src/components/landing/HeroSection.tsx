@@ -4,12 +4,9 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { useTranslation } from '@/lib/i18n/TranslationContext';
 import { ShieldCheck, CheckCircle2, Heart } from 'lucide-react';
 
 export default function HeroSection() {
-  const { t } = useTranslation();
-
   return (
     <section className="relative min-h-[90vh] flex items-center pt-24 overflow-hidden">
       {/* Background Image with Parallax & Opacity */}
@@ -48,7 +45,7 @@ export default function HeroSection() {
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 backdrop-blur-md border border-champagneGold/30 mb-8">
               <ShieldCheck className="w-4 h-4 text-deepBurgundy" />
               <span className="text-xs font-semibold uppercase tracking-widest text-deepBurgundy">
-                {t('hero.trust')}
+                Built for the Jain community • Privacy-first • Verified profiles
               </span>
             </div>
 
@@ -57,12 +54,12 @@ export default function HeroSection() {
             </h1>
 
             <p className="text-lg sm:text-xl text-muted max-w-lg mb-10 leading-relaxed font-sans">
-              {t('hero.subtitle')}
+              A trusted Jain matrimonial platform for meaningful relationships, family involvement and privacy.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
               <Link href="/register" className="btn-ruby w-full sm:w-auto text-lg px-8 py-4">
-                {t('nav.createProfile')}
+                Create Profile
               </Link>
               <Link href="/login" className="btn-gold-outline w-full sm:w-auto text-lg px-8 py-4 bg-white/50 backdrop-blur-sm">
                 Login
