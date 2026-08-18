@@ -36,6 +36,8 @@ export default function RootLayout({
           `
         }} />
         <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
         <style dangerouslySetInnerHTML={{
           __html: `
             /* Hide the ugly Google Translate top bar and widget */

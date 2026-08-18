@@ -17,10 +17,15 @@ import SafetyTransparencySection from '@/components/landing/SafetyTransparencySe
 import FinalCTASection from '@/components/landing/FinalCTASection';
 import Footer from '@/components/landing/Footer';
 import PageIntroLoader from '@/components/landing/PageIntroLoader';
+import FloatingPetals from '@/components/landing/FloatingPetals';
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-background font-sans text-text selection:bg-deepBurgundy selection:text-white">
+    <div className="min-h-screen bg-background font-sans text-text selection:bg-deepBurgundy selection:text-white relative overflow-x-hidden">
+      {/* Global Cinematic Floating Petals & Gold Glimmer Particles */}
+      <div className="fixed inset-0 pointer-events-none z-30">
+        <FloatingPetals />
+      </div>
       {/* 13-Step Cinematic Initial Entrance Sequencer */}
       <PageIntroLoader />
 

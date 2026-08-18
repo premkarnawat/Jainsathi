@@ -16,11 +16,85 @@ import {
 import FloatingPetals from './FloatingPetals';
 
 export default function HeroSection() {
+  React.useEffect(() => {
+    // Safely check if GSAP is loaded from the CDN
+    const initGSAP = () => {
+      const gsap = (window as any).gsap;
+      const ScrollTrigger = (window as any).ScrollTrigger;
+      
+      if (gsap && ScrollTrigger) {
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Zoom wedding image on scroll
+        gsap.to('.hero-image-zoom', {
+          scale: 1.12,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '#home',
+            start: 'top top',
+            end: 'bottom top',
+            scrub: true,
+          }
+        });
+
+        // Parallax effects on floating cards
+        gsap.to('.parallax-card-1', {
+          y: -60,
+          x: -15,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '#home',
+            start: 'top top',
+            end: 'bottom top',
+            scrub: true,
+          }
+        });
+
+        gsap.to('.parallax-card-2', {
+          y: -100,
+          x: 25,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '#home',
+            start: 'top top',
+            end: 'bottom top',
+            scrub: true,
+          }
+        });
+
+        gsap.to('.parallax-card-3', {
+          y: 60,
+          x: -20,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '#home',
+            start: 'top top',
+            end: 'bottom top',
+            scrub: true,
+          }
+        });
+
+        gsap.to('.parallax-card-4', {
+          y: 40,
+          x: 15,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '#home',
+            start: 'top top',
+            end: 'bottom top',
+            scrub: true,
+          }
+        });
+      }
+    };
+
+    // If script isn't fully loaded, retry briefly
+    const timer = setTimeout(initGSAP, 150);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <section id="home" className="relative min-h-[92vh] flex items-center pt-28 pb-16 overflow-hidden bg-background">
-      {/* Animated Floating Petals & Gold Dust System */}
-      <FloatingPetals />
-
       {/* Decorative Warm Ambient Glows */}
       <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-gradient-to-b from-softRose/40 via-champagneGold/10 to-transparent rounded-full blur-3xl pointer-events-none -z-0" />
 
@@ -53,7 +127,7 @@ export default function HeroSection() {
               className="font-serif text-5xl sm:text-6xl xl:text-7xl font-bold text-text leading-[1.08] tracking-tight mb-6"
             >
               Find Your <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-deepBurgundy via-premiumBurgundy to-champagneGold italic font-normal">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-deepBurgundy via-darkBurgundy to-champagneGold italic font-normal">
                 Jain Saathi
               </span>
             </motion.h1>
@@ -121,7 +195,7 @@ export default function HeroSection() {
                   src="/images/hero-wedding.jpg"
                   alt="JainSaathi Wedding Couple in Traditional Elegance"
                   fill
-                  className="object-cover object-center scale-[1.02] transition-transform duration-700 hover:scale-105"
+                  className="object-cover object-center hero-image-zoom transition-transform duration-700"
                   priority
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 460px"
                 />
@@ -157,7 +231,7 @@ export default function HeroSection() {
               initial={{ opacity: 0, x: -30, y: -20 }}
               animate={{ opacity: 1, x: 0, y: 0 }}
               transition={{ duration: 0.8, delay: 0.5, ease: 'easeOut' }}
-              className="absolute -top-4 -left-4 sm:-left-8 z-20 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 border border-border shadow-xl shadow-deepBurgundy/10 flex items-center gap-3"
+              className="absolute -top-4 -left-4 sm:-left-8 z-20 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 border border-border shadow-xl shadow-deepBurgundy/10 flex items-center gap-3 parallax-card-1"
             >
               <div className="w-10 h-10 rounded-xl bg-success/10 border border-success/30 flex items-center justify-center">
                 <ShieldCheck className="w-5 h-5 text-success" />
@@ -173,7 +247,7 @@ export default function HeroSection() {
               initial={{ opacity: 0, x: 30, y: -20 }}
               animate={{ opacity: 1, x: 0, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6, ease: 'easeOut' }}
-              className="absolute top-12 -right-4 sm:-right-8 z-20 bg-gradient-to-br from-deepBurgundy to-[#5C0D28] text-white rounded-2xl p-4 border border-champagneGold/40 shadow-xl shadow-deepBurgundy/20 text-left"
+              className="absolute top-12 -right-4 sm:-right-8 z-20 bg-gradient-to-br from-deepBurgundy to-[#5C0D28] text-white rounded-2xl p-4 border border-champagneGold/40 shadow-xl shadow-deepBurgundy/20 text-left parallax-card-2"
             >
               <div className="flex items-center gap-2 mb-1">
                 <Sparkles className="w-4 h-4 text-champagneGold" />
@@ -192,7 +266,7 @@ export default function HeroSection() {
               initial={{ opacity: 0, x: -30, y: 30 }}
               animate={{ opacity: 1, x: 0, y: 0 }}
               transition={{ duration: 0.8, delay: 0.7, ease: 'easeOut' }}
-              className="absolute -bottom-6 -left-4 sm:-left-6 z-20 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 border border-border shadow-xl shadow-deepBurgundy/10 flex items-center gap-3"
+              className="absolute -bottom-6 -left-4 sm:-left-6 z-20 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 border border-border shadow-xl shadow-deepBurgundy/10 flex items-center gap-3 parallax-card-3"
             >
               <div className="w-10 h-10 rounded-xl bg-softRose border border-champagneGold/30 flex items-center justify-center">
                 <Lock className="w-5 h-5 text-deepBurgundy" />
@@ -208,7 +282,7 @@ export default function HeroSection() {
               initial={{ opacity: 0, x: 30, y: 30 }}
               animate={{ opacity: 1, x: 0, y: 0 }}
               transition={{ duration: 0.8, delay: 0.8, ease: 'easeOut' }}
-              className="hidden sm:flex absolute -bottom-4 -right-6 z-20 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 border border-border shadow-xl shadow-deepBurgundy/10 items-center gap-3"
+              className="hidden sm:flex absolute -bottom-4 -right-6 z-20 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 border border-border shadow-xl shadow-deepBurgundy/10 items-center gap-3 parallax-card-4"
             >
               <div className="w-10 h-10 rounded-xl bg-champagneGold/15 border border-champagneGold/40 flex items-center justify-center">
                 <FileText className="w-5 h-5 text-champagneGold" />
