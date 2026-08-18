@@ -8,22 +8,21 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: '#F7EFE8',
+        background: '#F7EEE7',
         secondary: '#FFF9F4',
         card: '#FFFDFC',
         softRose: '#F3E0E3',
         deepBurgundy: '#7A1235',
-        premiumBurgundy: '#8F173D',
-        darkBurgundy: '#4E0D25',
-        champagneGold: '#C99A45',
-        softGold: '#E3C47A',
-        text: '#2B2024',
-        muted: '#766A6E',
-        border: '#E8D8CE',
+        darkBurgundy: '#5E0D28',
+        champagneGold: '#D4A64A',
+        softGold: '#E7C77D',
+        text: '#241A20',
+        muted: '#75686B',
+        border: '#E7D5C7',
         success: '#5D7A61',
       },
       fontFamily: {
-        serif: ['"Playfair Display"', '"DM Serif Display"', 'Georgia', 'serif'],
+        serif: ['"Playfair Display"', '"DM Serif Display"', '"Cormorant Garamond"', 'Georgia', 'serif'],
         sans: ['Inter', 'Manrope', 'system-ui', 'sans-serif'],
       },
       animation: {

@@ -9,23 +9,22 @@
 @tailwind utilities;
 
 :root {
-  /* Premium Matrimonial Color Tokens */
-  --background: #F7EFE8;
+  /* Exact Specified Luxury Matrimonial Color Tokens */
+  --background: #F7EEE7;
   --secondary: #FFF9F4;
   --card: #FFFDFC;
   --soft-rose: #F3E0E3;
   --deep-burgundy: #7A1235;
-  --premium-burgundy: #8F173D;
-  --dark-burgundy: #4E0D25;
-  --champagne-gold: #C99A45;
-  --soft-gold: #E3C47A;
-  --text: #2B2024;
-  --muted: #766A6E;
-  --border: #E8D8CE;
+  --dark-burgundy: #5E0D28;
+  --champagne-gold: #D4A64A;
+  --soft-gold: #E7C77D;
+  --text: #241A20;
+  --muted: #75686B;
+  --border: #E7D5C7;
   --success: #5D7A61;
 
   /* Typography */
-  --font-serif: 'Playfair Display', 'DM Serif Display', Georgia, serif;
+  --font-serif: 'Playfair Display', 'DM Serif Display', 'Cormorant Garamond', Georgia, serif;
   --font-sans: 'Inter', 'Manrope', system-ui, -apple-system, sans-serif;
 }
 

@@ -3,7 +3,8 @@ import Header from '@/components/landing/Header';
 import HeroSection from '@/components/landing/HeroSection';
 import WhyJainSaathi from '@/components/landing/WhyJainSaathi';
 import TrustSystem from '@/components/landing/TrustSystem';
-import HowItWorksSection from '@/components/landing/HowItWorksSection';
+import AnimatedTrustMetrics from '@/components/landing/AnimatedTrustMetrics';
+import HowItWorksStickyCanvas from '@/components/landing/HowItWorksStickyCanvas';
 import MatchingEngineSection from '@/components/landing/MatchingEngineSection';
 import InterestFlowSection from '@/components/landing/InterestFlowSection';
 import PrivacySection from '@/components/landing/PrivacySection';
@@ -15,58 +16,65 @@ import PricingSection from '@/components/landing/PricingSection';
 import SafetyTransparencySection from '@/components/landing/SafetyTransparencySection';
 import FinalCTASection from '@/components/landing/FinalCTASection';
 import Footer from '@/components/landing/Footer';
+import PageIntroLoader from '@/components/landing/PageIntroLoader';
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background font-sans text-text selection:bg-deepBurgundy selection:text-white">
+      {/* 13-Step Cinematic Initial Entrance Sequencer */}
+      <PageIntroLoader />
+
       {/* Sticky Glassmorphism Header */}
       <Header />
       
       <main>
-        {/* 1. Hero Section */}
+        {/* 1. Hero Section (Parallax, Masked Image, Floating Parallax Cards) */}
         <HeroSection />
 
-        {/* 2. Why JainSaathi Section */}
+        {/* 2. Dynamic Count-up Statistics & Verification Pipeline */}
+        <AnimatedTrustMetrics />
+
+        {/* 3. Why JainSaathi Concept Canvas */}
         <WhyJainSaathi />
 
-        {/* 3. Four Trust Pillars */}
+        {/* 4. Four Core Trust Pillars */}
         <TrustSystem />
 
-        {/* 4. 7-Step Interactive How It Works */}
-        <HowItWorksSection />
+        {/* 5. Cinematic Sticky Scroll Product Demonstration (6 Steps) */}
+        <HowItWorksStickyCanvas />
 
-        {/* 5. Matching Engine & UI Experience */}
+        {/* 6. Matching Engine & UI Experience (92% Score Mockup) */}
         <MatchingEngineSection />
 
-        {/* 6. Interest Flow & Mutual Consent */}
+        {/* 7. Mutual Consent Interest Flow */}
         <InterestFlowSection />
 
-        {/* 7. Privacy First Locked Controls */}
+        {/* 8. Privacy First Protected Controls */}
         <PrivacySection />
 
-        {/* 8. Designed for Individuals, Trusted by Families */}
+        {/* 9. Designed for Individuals, Trusted by Families */}
         <FamilyTrustSection />
 
-        {/* 9. Exclusively Built for the Jain Community */}
+        {/* 10. Exclusively Built for the Jain Community */}
         <JainCommunitySection />
 
-        {/* 10. Digital Matrimonial Biodata */}
+        {/* 11. Digital Matrimonial Biodata Document Preview */}
         <DigitalBiodataSection />
 
-        {/* 11. Success Stories & Unions */}
+        {/* 12. Success Stories & Real Unions */}
         <SuccessStoriesSection />
 
-        {/* 12. Transparent Pricing & Bride Offer */}
+        {/* 13. Transparent Pricing & Bride Offer Banner */}
         <PricingSection />
 
-        {/* 13. Safety & Moderation Safeguards */}
+        {/* 14. Safety & Moderation Safeguards */}
         <SafetyTransparencySection />
 
-        {/* 14. Final Emotion-Driven CTA */}
+        {/* 15. Final Emotion-Driven Closing Section */}
         <FinalCTASection />
       </main>
 
-      {/* Comprehensive Footer */}
+      {/* Comprehensive 4-Column Luxury Footer */}
       <Footer />
     </div>
   );
