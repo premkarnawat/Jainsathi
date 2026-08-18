@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import '@/styles/globals.css';
+import { TranslationProvider } from '@/lib/i18n/TranslationContext';
 
 export const metadata: Metadata = {
   title: 'JainSaathi | Find Your Jain Saathi',
@@ -24,12 +25,14 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&display=swap"
+          href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className="bg-[#FFF8F7] text-[#241B20] font-sans min-h-screen antialiased selection:bg-[#8F0038] selection:text-white">
-        {children}
+      <body className="bg-background text-text font-sans min-h-screen antialiased selection:bg-deepBurgundy selection:text-white">
+        <TranslationProvider>
+          {children}
+        </TranslationProvider>
       </body>
     </html>
   );

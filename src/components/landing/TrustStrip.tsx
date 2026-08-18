@@ -1,64 +1,67 @@
+'use client';
+
 import React from 'react';
-import { ShieldCheck, Lock, Sparkles, HeartHandshake } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ShieldCheck, Sparkles, LockKeyhole, Users, HeartHandshake, ScrollText } from 'lucide-react';
 
-export const TrustStrip: React.FC = () => {
+const features = [
+  {
+    icon: ShieldCheck,
+    title: 'Verified Profiles',
+    description: 'Every profile goes through verification for authenticity.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Smart Matching',
+    description: 'Recommendations based on community and lifestyle preferences.',
+  },
+  {
+    icon: LockKeyhole,
+    title: 'Privacy Protected',
+    description: 'Control who sees your photos and contact details.',
+  },
+  {
+    icon: HeartHandshake,
+    title: 'Secure Connections',
+    description: 'Connect safely through mutual acceptance.',
+  },
+  {
+    icon: ScrollText,
+    title: 'Digital Biodata',
+    description: 'Securely attach and share your family biodata.',
+  },
+  {
+    icon: Users,
+    title: 'Family Friendly',
+    description: 'Accounts built for individuals, parents, and guardians.',
+  }
+];
+
+export default function TrustStrip() {
   return (
-    <section className="bg-[#FFF9F1] py-16 px-4 sm:px-6 lg:px-8 border-b border-[#D6A24A]/25">
-      <div className="max-w-7xl mx-auto space-y-12">
-        {/* Title */}
-        <div className="text-center">
-          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#100A18] tracking-tight">
-            Built Around Trust, Family & Jain Values
-          </h2>
-        </div>
-
-        {/* 4 Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {/* Card 1 */}
-          <div className="bg-white border border-[#D6A24A]/25 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-[#D6A24A]/55">
-            <div className="w-10 h-10 rounded-full bg-[#3E8B68]/10 text-[#3E8B68] flex items-center justify-center mb-4">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <h3 className="font-serif font-bold text-lg text-[#100A18] mb-2">Verified Profiles</h3>
-            <p className="text-xs text-[#756B70] leading-relaxed font-medium">
-              Every profile is verified for authenticity and trust.
-            </p>
-          </div>
-
-          {/* Card 2 */}
-          <div className="bg-white border border-[#D6A24A]/25 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-[#D6A24A]/55">
-            <div className="w-10 h-10 rounded-full bg-[#6E1231]/10 text-[#6E1231] flex items-center justify-center mb-4">
-              <Lock className="w-5 h-5" />
-            </div>
-            <h3 className="font-serif font-bold text-lg text-[#100A18] mb-2">Privacy Protected</h3>
-            <p className="text-xs text-[#756B70] leading-relaxed font-medium">
-              Your information is safe and always in your control.
-            </p>
-          </div>
-
-          {/* Card 3 */}
-          <div className="bg-white border border-[#D6A24A]/25 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-[#D6A24A]/55">
-            <div className="w-10 h-10 rounded-full bg-[#D6A24A]/10 text-[#D6A24A] flex items-center justify-center mb-4">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <h3 className="font-serif font-bold text-lg text-[#100A18] mb-2">Smart Compatibility</h3>
-            <p className="text-xs text-[#756B70] leading-relaxed font-medium">
-              Matches based on preferences, values and lifestyle.
-            </p>
-          </div>
-
-          {/* Card 4 */}
-          <div className="bg-white border border-[#D6A24A]/25 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-[#D6A24A]/55">
-            <div className="w-10 h-10 rounded-full bg-amber-500/10 text-amber-600 flex items-center justify-center mb-4">
-              <HeartHandshake className="w-5 h-5" />
-            </div>
-            <h3 className="font-serif font-bold text-lg text-[#100A18] mb-2">Family Friendly</h3>
-            <p className="text-xs text-[#756B70] leading-relaxed font-medium">
-              Designed for individuals, parents and guardians.
-            </p>
-          </div>
+    <section className="py-16 bg-white relative z-20 border-y border-border">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {features.map((feature, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              className="flex items-start gap-4 p-6 rounded-2xl bg-secondary/50 border border-border/50 hover:bg-white hover:shadow-xl hover:shadow-deepBurgundy/5 transition-all duration-300 group"
+            >
+              <div className="w-12 h-12 shrink-0 rounded-xl bg-background border border-border flex items-center justify-center group-hover:border-champagneGold transition-colors">
+                <feature.icon className="w-6 h-6 text-deepBurgundy" />
+              </div>
+              <div>
+                <h3 className="font-serif font-bold text-lg text-text mb-1">{feature.title}</h3>
+                <p className="text-sm text-muted leading-relaxed">{feature.description}</p>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>
   );
-};
+}

@@ -1,128 +1,153 @@
+'use client';
+
 import React from 'react';
-import { ShieldCheck, Sparkles, Lock, Building2, ArrowRight, Play, Star } from 'lucide-react';
-import { PremiumButton } from '@/components/ui/PremiumButton';
+import Link from 'next/link';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
+import { useTranslation } from '@/lib/i18n/TranslationContext';
+import { ShieldCheck, CheckCircle2, Heart } from 'lucide-react';
 
-interface HeroSectionProps {
-  onSendOtp?: (phone: string, lookingFor: string, name: string) => void;
-  onExploreMatches?: () => void;
-}
+export default function HeroSection() {
+  const { t } = useTranslation();
 
-export const HeroSection: React.FC<HeroSectionProps> = ({
-  onSendOtp,
-  onExploreMatches,
-}) => {
   return (
-    <section className="relative min-h-[85vh] bg-[#FFF9F1] pt-12 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
-      {/* Subtle background overlay and lighting */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-[#6E1231]/5 via-transparent to-transparent pointer-events-none" />
-
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+    <section className="relative min-h-[90vh] flex items-center pt-24 overflow-hidden">
+      {/* Background Image with Parallax & Opacity */}
+      <div className="absolute inset-0 z-0">
+        <motion.div 
+          initial={{ scale: 1.05 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+          className="w-full h-full relative"
+        >
+          <Image
+            src="/images/hero-wedding.jpg"
+            alt="JainSaathi Wedding"
+            fill
+            className="object-cover object-top opacity-[0.25] mix-blend-multiply"
+            priority
+            sizes="100vw"
+          />
+        </motion.div>
         
-        {/* LEFT COLUMN: Hero Copy (7 Cols) */}
-        <div className="lg:col-span-7 space-y-8 text-left">
-          <div className="space-y-4">
-            <span className="text-xs font-bold tracking-widest text-[#9E183A] uppercase bg-[#F8E8EA] px-3.5 py-1.5 rounded-full border border-[#9E183A]/25">
-              Jain Community Matrimony
-            </span>
-            <h1 className="font-serif text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-[#100A18] leading-[1.15]">
-              Find Your <br />
-              <span className="text-[#6E1231]">Jain Saathi</span>
+        {/* Gradients for readability and premium feel */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#F7EFE8]/80 via-[#F7EFE8]/60 to-[#F7EFE8]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#F7EFE8] via-transparent to-[#F7EFE8]/80" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full py-12 lg:py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          
+          {/* Left Text Content */}
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+            className="flex flex-col items-center lg:items-start text-center lg:text-left"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 backdrop-blur-md border border-champagneGold/30 mb-8">
+              <ShieldCheck className="w-4 h-4 text-deepBurgundy" />
+              <span className="text-xs font-semibold uppercase tracking-widest text-deepBurgundy">
+                {t('hero.trust')}
+              </span>
+            </div>
+
+            <h1 className="font-serif text-5xl sm:text-6xl lg:text-7xl font-bold text-text mb-6 leading-[1.1]">
+              Find Your <span className="text-deepBurgundy italic font-normal">Jain Saathi</span>
             </h1>
-            <p className="text-base sm:text-lg text-[#756B70] max-w-xl font-medium leading-relaxed">
-              A trusted matrimonial platform designed for meaningful relationships, family involvement and complete privacy.
+
+            <p className="text-lg sm:text-xl text-muted max-w-lg mb-10 leading-relaxed font-sans">
+              {t('hero.subtitle')}
             </p>
-          </div>
 
-          {/* Action CTAs */}
-          <div className="flex flex-wrap items-center gap-4">
-            <button 
-              onClick={onExploreMatches}
-              className="bg-[#9E183A] text-[#FFF9F1] font-semibold text-sm px-8 py-3.5 rounded-md hover:bg-[#80122E] transition-all flex items-center gap-2 shadow-lg"
-            >
-              <span>Create Your Profile</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+              <Link href="/register" className="btn-ruby w-full sm:w-auto text-lg px-8 py-4">
+                {t('nav.createProfile')}
+              </Link>
+              <Link href="/login" className="btn-gold-outline w-full sm:w-auto text-lg px-8 py-4 bg-white/50 backdrop-blur-sm">
+                Login
+              </Link>
+            </div>
+          </motion.div>
+
+          {/* Right Floating Elements (Trust Card & Compatibility Card) */}
+          <div className="relative h-[400px] lg:h-[500px] hidden md:block">
             
-            <button
-              onClick={onExploreMatches}
-              className="bg-transparent border border-[#6E1231]/40 text-[#6E1231] font-semibold text-sm px-8 py-3.5 rounded-md hover:bg-[#6E1231]/5 transition-all flex items-center gap-2"
+            {/* Trust Card */}
+            <motion.div 
+              initial={{ opacity: 0, x: 30, y: 20 }}
+              animate={{ opacity: 1, x: 0, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
+              className="absolute top-10 left-10 lg:left-0 z-20"
             >
-              <Play className="w-4 h-4 fill-current text-[#6E1231]" />
-              <span>Explore Matches</span>
-            </button>
-          </div>
+              <div className="bg-white/80 backdrop-blur-xl border border-white/40 shadow-2xl rounded-2xl p-6 w-72 transform hover:-translate-y-2 transition-transform duration-500">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-deepBurgundy/10 flex items-center justify-center">
+                    <ShieldCheck className="w-5 h-5 text-deepBurgundy" />
+                  </div>
+                  <div>
+                    <h3 className="font-serif font-bold text-lg text-text leading-tight">JainSaathi</h3>
+                    <p className="text-xs text-muted uppercase tracking-wider">Verified Profiles</p>
+                  </div>
+                </div>
+                <ul className="space-y-3">
+                  <li className="flex items-center gap-2 text-sm text-text font-medium">
+                    <CheckCircle2 className="w-4 h-4 text-success" /> Identity Verification
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-text font-medium">
+                    <CheckCircle2 className="w-4 h-4 text-success" /> Jain Details Verified
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-text font-medium">
+                    <CheckCircle2 className="w-4 h-4 text-success" /> Privacy Protected
+                  </li>
+                </ul>
+              </div>
+            </motion.div>
 
-          {/* 4 Trust Badges Horizontal Strip */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-[#D6A24A]/20">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-[#3E8B68]/10 flex items-center justify-center text-[#3E8B68]">
-                <ShieldCheck className="w-4 h-4" />
+            {/* Profile Match Illustrative Visual */}
+            <motion.div 
+              initial={{ opacity: 0, x: -30, y: 50 }}
+              animate={{ opacity: 1, x: 0, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.9, ease: "easeOut" }}
+              className="absolute bottom-10 right-10 lg:right-0 z-30"
+            >
+              <div className="bg-deepBurgundy text-white shadow-2xl rounded-2xl p-6 w-64 transform hover:-translate-y-2 transition-transform duration-500 border border-white/10">
+                <div className="flex justify-between items-center mb-6">
+                  <div className="flex -space-x-3">
+                    <div className="w-12 h-12 rounded-full border-2 border-deepBurgundy bg-champagneGold flex items-center justify-center shadow-lg z-10">
+                      <span className="text-deepBurgundy font-serif font-bold">A</span>
+                    </div>
+                    <div className="w-12 h-12 rounded-full border-2 border-deepBurgundy bg-[#FFF9F4] flex items-center justify-center shadow-lg">
+                      <span className="text-deepBurgundy font-serif font-bold">B</span>
+                    </div>
+                  </div>
+                  <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-sm font-bold shadow-inner">
+                    92%
+                  </div>
+                </div>
+                <div className="flex items-center justify-center mb-4">
+                  <Heart className="w-6 h-6 text-champagneGold fill-champagneGold animate-pulse" />
+                </div>
+                <ul className="space-y-2">
+                  <li className="flex items-center justify-between text-xs text-white/80">
+                    <span>Community</span>
+                    <CheckCircle2 className="w-3 h-3 text-champagneGold" />
+                  </li>
+                  <li className="flex items-center justify-between text-xs text-white/80">
+                    <span>Education</span>
+                    <CheckCircle2 className="w-3 h-3 text-champagneGold" />
+                  </li>
+                  <li className="flex items-center justify-between text-xs text-white/80">
+                    <span>Lifestyle</span>
+                    <CheckCircle2 className="w-3 h-3 text-champagneGold" />
+                  </li>
+                </ul>
               </div>
-              <div>
-                <p className="text-xs font-bold text-[#100A18]">100%</p>
-                <p className="text-[10px] text-[#756B70]">Verified Profiles</p>
-              </div>
-            </div>
+            </motion.div>
 
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-[#6E1231]/10 flex items-center justify-center text-[#6E1231]">
-                <Lock className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-[#100A18]">Privacy</p>
-                <p className="text-[10px] text-[#756B70]">Protected</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-[#D6A24A]/10 flex items-center justify-center text-[#D6A24A]">
-                <Sparkles className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-[#100A18]">Smart</p>
-                <p className="text-[10px] text-[#756B70]">Matching</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-600">
-                <Building2 className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-[#100A18]">Jain Community</p>
-                <p className="text-[10px] text-[#756B70]">Focused</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN: Premium Indian Couple Portrait (5 Cols) */}
-        <div className="lg:col-span-5 relative flex items-center justify-center">
-          <div className="relative w-full max-w-md rounded-3xl overflow-hidden border border-[#D6A24A]/30 shadow-2xl bg-[#FFF9F1]">
-            <img
-              src="/mock.jpg"
-              alt="Jain Couple in Indian Wedding Attire"
-              className="w-full h-[500px] object-cover object-top transition-transform duration-700 hover:scale-[1.02]"
-            />
-            {/* Soft Gradient Bottom Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-          </div>
-
-          {/* Gold Statistics Badge Overlaid */}
-          <div className="absolute bottom-6 left-6 bg-white/95 backdrop-blur-md border border-[#D6A24A]/40 p-4 rounded-2xl shadow-xl flex items-center gap-3">
-            <div>
-              <p className="text-sm font-bold text-[#6E1231]">2,500+</p>
-              <p className="text-[10px] text-[#756B70] font-medium">Jain Profiles</p>
-              <div className="flex -space-x-1.5 overflow-hidden mt-1.5">
-                <img className="inline-block h-5 w-5 rounded-full ring-1 ring-white" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80" alt="" />
-                <img className="inline-block h-5 w-5 rounded-full ring-1 ring-white" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80" alt="" />
-                <img className="inline-block h-5 w-5 rounded-full ring-1 ring-white" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80" alt="" />
-              </div>
-            </div>
           </div>
         </div>
-
       </div>
     </section>
   );
-};
+}

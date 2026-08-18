@@ -1,0 +1,33 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "howItWorks": "How It Works",
+    "safety": "Safety",
+    "successStories": "Success Stories",
+    "pricing": "Pricing",
+    "help": "Help",
+    "login": "Login",
+    "createProfile": "Create Profile"
+  },
+  "hero": {
+    "title": "Find Your Jain Saathi",
+    "subtitle": "A trusted Jain matrimonial platform for meaningful relationships, family involvement and privacy.",
+    "trust": "Built for the Jain community • Privacy-first • Verified profiles"
+  },
+  "footer": {
+    "tagline": "Find Your Jain Saathi",
+    "platform": "Platform",
+    "account": "Account",
+    "legal": "Legal",
+    "support": "Support",
+    "privacy": "Privacy Policy",
+    "terms": "Terms & Conditions",
+    "refund": "Refund Policy",
+    "cookie": "Cookie Policy",
+    "helpCenter": "Help Center",
+    "contact": "Contact Support",
+    "report": "Report a Profile",
+    "rights": "Made for meaningful Jain connections."
+  }
+}

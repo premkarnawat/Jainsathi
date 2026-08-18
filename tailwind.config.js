@@ -8,24 +8,43 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: '#FFFDF8',
-        surface: '#FFFFFF',
-        surfaceWarm: '#FFF9F2',
-        cream: '#F8EFE5',
-        blush: '#F5E4E0',
-        burgundy: '#8B163A',
-        deepBurgundy: '#6D1733',
-        gold: '#D4A54A',
-        softGold: '#E7C982',
-        text: '#2D2025',
-        muted: '#766B70',
-        border: '#EDE1D7',
+        background: '#F7EFE8',
+        secondary: '#FFF9F4',
+        card: '#FFFDFC',
+        softRose: '#F3E0E3',
+        deepBurgundy: '#7A1235',
+        premiumBurgundy: '#8F173D',
+        darkBurgundy: '#4E0D25',
+        champagneGold: '#C99A45',
+        softGold: '#E3C47A',
+        text: '#2B2024',
+        muted: '#766A6E',
+        border: '#E8D8CE',
         success: '#5D7A61',
       },
       fontFamily: {
-        serif: ['Playfair Display', 'Cormorant Garamond', 'Georgia', 'serif'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        serif: ['"Playfair Display"', '"DM Serif Display"', 'Georgia', 'serif'],
+        sans: ['Inter', 'Manrope', 'system-ui', 'sans-serif'],
       },
+      animation: {
+        'fade-in': 'fadeIn 0.8s ease-out forwards',
+        'fade-up': 'fadeUp 0.8s ease-out forwards',
+        'float': 'float 6s ease-in-out infinite',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        fadeUp: {
+          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        }
+      }
     },
   },
   plugins: [],

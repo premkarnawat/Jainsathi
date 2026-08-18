@@ -2,7 +2,7 @@
    JAINSAATHI DESIGN SYSTEM & GLOBAL STYLES
    ======================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -10,23 +10,23 @@
 
 :root {
   /* Premium Matrimonial Color Tokens */
-  --background: #FFFDF8;
-  --surface: #FFFFFF;
-  --surface-warm: #FFF9F2;
-  --cream: #F8EFE5;
-  --blush: #F5E4E0;
-  --burgundy: #8B163A;
-  --deep-burgundy: #6D1733;
-  --gold: #D4A54A;
-  --soft-gold: #E7C982;
-  --text: #2D2025;
-  --muted: #766B70;
-  --border: #EDE1D7;
+  --background: #F7EFE8;
+  --secondary: #FFF9F4;
+  --card: #FFFDFC;
+  --soft-rose: #F3E0E3;
+  --deep-burgundy: #7A1235;
+  --premium-burgundy: #8F173D;
+  --dark-burgundy: #4E0D25;
+  --champagne-gold: #C99A45;
+  --soft-gold: #E3C47A;
+  --text: #2B2024;
+  --muted: #766A6E;
+  --border: #E8D8CE;
   --success: #5D7A61;
 
   /* Typography */
-  --font-serif: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Playfair Display', 'DM Serif Display', Georgia, serif;
+  --font-sans: 'Inter', 'Manrope', system-ui, -apple-system, sans-serif;
 }
 
 * {
@@ -73,10 +73,10 @@ html, body {
 
 /* Primary Burgundy Pill Button */
 .btn-ruby {
-  background: var(--burgundy);
+  background: var(--deep-burgundy);
   color: #FFFFFF;
   font-weight: 600;
-  border: 1px solid var(--gold);
+  border: 1px solid var(--champagne-gold);
   padding: 10px 20px;
   border-radius: 9999px;
   cursor: pointer;
@@ -88,16 +88,16 @@ html, body {
 }
 
 .btn-ruby:hover {
-  background: var(--deep-burgundy);
+  background: var(--dark-burgundy);
   transform: translateY(-1px);
 }
 
 /* Outline Gold Button */
 .btn-gold-outline {
   background: transparent;
-  color: var(--burgundy);
+  color: var(--deep-burgundy);
   font-weight: 600;
-  border: 1px solid var(--gold);
+  border: 1px solid var(--champagne-gold);
   padding: 10px 20px;
   border-radius: 9999px;
   cursor: pointer;
@@ -109,7 +109,7 @@ html, body {
 }
 
 .btn-gold-outline:hover {
-  background: var(--cream);
+  background: var(--soft-rose);
   transform: translateY(-1px);
 }
 
@@ -123,7 +123,7 @@ html, body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--cream);
+  background: var(--soft-rose);
   border-radius: 4px;
   border: 1.5px solid var(--background);
 }

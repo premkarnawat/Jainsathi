@@ -1,113 +1,104 @@
+'use client';
+
 import React from 'react';
-import { Lock, ShieldCheck, Sparkles, HeartHandshake } from 'lucide-react';
-import { JainSaathiLogo } from '@/components/ui/JainSaathiLogo';
-import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
+import Link from 'next/link';
+import { useTranslation } from '@/lib/i18n/TranslationContext';
 
-interface FooterProps {
-  currentLang?: 'en' | 'hi';
-  onLanguageChange?: (lang: 'en' | 'hi') => void;
-}
+export default function Footer() {
+  const { t, lang, setLang } = useTranslation();
 
-export const Footer: React.FC<FooterProps> = ({ currentLang = 'en', onLanguageChange }) => {
   return (
-    <footer className="bg-[#100A18] text-[#FFF9F1] border-t border-[#D6A24A]/20">
-      
-      {/* Top 4 Trust Icons Strip matching reference image */}
-      <div className="border-b border-[#D6A24A]/15 py-8 px-4 sm:px-6 lg:px-8 bg-[#6E1231]/20">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-[#D6A24A]/20">
-            <div className="w-10 h-10 rounded-full bg-[#9E183A]/30 text-[#F3D59B] border border-[#D6A24A]/30 flex items-center justify-center shrink-0">
-              <Lock className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="font-serif font-bold text-sm text-[#FFF9F1]">Secure & Private</h4>
-              <p className="text-xs text-[#F3D59B]/70">Your data is 100% safe</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-[#D6A24A]/20">
-            <div className="w-10 h-10 rounded-full bg-[#9E183A]/30 text-[#F3D59B] border border-[#D6A24A]/30 flex items-center justify-center shrink-0">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="font-serif font-bold text-sm text-[#FFF9F1]">Manual Verification</h4>
-              <p className="text-xs text-[#F3D59B]/70">Every profile verified</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-[#D6A24A]/20">
-            <div className="w-10 h-10 rounded-full bg-[#9E183A]/30 text-[#F3D59B] border border-[#D6A24A]/30 flex items-center justify-center shrink-0">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="font-serif font-bold text-sm text-[#FFF9F1]">Smart Matching</h4>
-              <p className="text-xs text-[#F3D59B]/70">Technology with tradition</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-[#D6A24A]/20">
-            <div className="w-10 h-10 rounded-full bg-[#9E183A]/30 text-[#F3D59B] border border-[#D6A24A]/30 flex items-center justify-center shrink-0">
-              <HeartHandshake className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="font-serif font-bold text-sm text-[#FFF9F1]">Trusted by Families</h4>
-              <p className="text-xs text-[#F3D59B]/70">Backed by Jain values</p>
+    <footer className="bg-[#FFF9F4] border-t border-[#E8D8CE] pt-20 pb-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8 mb-16">
+          {/* Brand Column */}
+          <div className="lg:col-span-2">
+            <Link href="/" className="flex items-center gap-2 mb-6">
+              <div className="relative w-12 h-12 rounded-full overflow-hidden flex items-center justify-center bg-deepBurgundy">
+                <span className="text-white font-serif italic text-2xl">JS</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="font-serif text-3xl font-bold text-deepBurgundy leading-none">JainSaathi</span>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-champagneGold font-semibold">{t('footer.tagline')}</span>
+              </div>
+            </Link>
+            <p className="text-muted leading-relaxed max-w-sm mb-8">
+              A trusted, privacy-first matrimonial platform designed specifically for Jain individuals, parents, and guardians to build meaningful connections.
+            </p>
+            
+            {/* Language Toggle */}
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-semibold text-text uppercase tracking-wider">Language:</span>
+              <div className="flex bg-white rounded-lg border border-border p-1">
+                <button 
+                  onClick={() => setLang('en')}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${lang === 'en' ? 'bg-deepBurgundy text-white' : 'text-muted hover:text-text'}`}
+                >
+                  English
+                </button>
+                <button 
+                  onClick={() => setLang('hi')}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${lang === 'hi' ? 'bg-deepBurgundy text-white' : 'text-muted hover:text-text'}`}
+                >
+                  हिन्दी
+                </button>
+              </div>
             </div>
           </div>
 
+          {/* Platform Links */}
+          <div>
+            <h4 className="font-serif font-bold text-lg text-text mb-6">{t('footer.platform')}</h4>
+            <ul className="space-y-4">
+              <li><Link href="#about" className="text-muted hover:text-deepBurgundy transition-colors">{t('nav.about')}</Link></li>
+              <li><Link href="#how-it-works" className="text-muted hover:text-deepBurgundy transition-colors">{t('nav.howItWorks')}</Link></li>
+              <li><Link href="#safety" className="text-muted hover:text-deepBurgundy transition-colors">{t('nav.safety')}</Link></li>
+              <li><Link href="#pricing" className="text-muted hover:text-deepBurgundy transition-colors">{t('nav.pricing')}</Link></li>
+              <li><Link href="#success-stories" className="text-muted hover:text-deepBurgundy transition-colors">{t('nav.successStories')}</Link></li>
+            </ul>
+          </div>
+
+          {/* Legal Links */}
+          <div>
+            <h4 className="font-serif font-bold text-lg text-text mb-6">{t('footer.legal')}</h4>
+            <ul className="space-y-4">
+              <li><Link href="/privacy" className="text-muted hover:text-deepBurgundy transition-colors">{t('footer.privacy')}</Link></li>
+              <li><Link href="/terms" className="text-muted hover:text-deepBurgundy transition-colors">{t('footer.terms')}</Link></li>
+              <li><Link href="/refund" className="text-muted hover:text-deepBurgundy transition-colors">{t('footer.refund')}</Link></li>
+              <li><Link href="/cookies" className="text-muted hover:text-deepBurgundy transition-colors">{t('footer.cookie')}</Link></li>
+            </ul>
+          </div>
+
+          {/* Support & Account */}
+          <div>
+            <h4 className="font-serif font-bold text-lg text-text mb-6">{t('footer.support')}</h4>
+            <ul className="space-y-4">
+              <li><Link href="/help" className="text-muted hover:text-deepBurgundy transition-colors">{t('footer.helpCenter')}</Link></li>
+              <li><Link href="/contact" className="text-muted hover:text-deepBurgundy transition-colors">{t('footer.contact')}</Link></li>
+              <li><Link href="/report" className="text-muted hover:text-deepBurgundy transition-colors">{t('footer.report')}</Link></li>
+              <li className="pt-4 mt-4 border-t border-border">
+                <Link href="/login" className="text-deepBurgundy font-semibold hover:text-premiumBurgundy transition-colors block mb-2">{t('nav.login')}</Link>
+                <Link href="/register" className="text-deepBurgundy font-semibold hover:text-premiumBurgundy transition-colors block">{t('nav.createProfile')}</Link>
+              </li>
+            </ul>
+          </div>
         </div>
-      </div>
 
-      {/* Main Footer Links & Copyright */}
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
-        
-        <div className="space-y-4">
-          <JainSaathiLogo variant="dark" size="md" />
-          <p className="text-xs text-[#F3D59B]/70 leading-relaxed">
-            JainSaathi is a verified, Jain-only matrimony platform designed to simplify traditional Jain matchmaking with modern technology, privacy safeguards, and family-centered respect.
+        <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-muted text-center md:text-left">
+            © {new Date().getFullYear()} JainSaathi. {t('footer.rights')}
           </p>
-          <LanguageSwitcher currentLang={currentLang} onLanguageChange={onLanguageChange} variant="dark" />
-        </div>
-
-        <div>
-          <h4 className="font-serif font-bold text-base text-[#F3D59B] mb-3">Explore</h4>
-          <ul className="space-y-2 text-xs text-[#FFF9F1]/80">
-            <li><a href="#about" className="hover:text-[#D6A24A] transition-colors">About JainSaathi</a></li>
-            <li><a href="#features" className="hover:text-[#D6A24A] transition-colors">Verified Jain Profiles</a></li>
-            <li><a href="#howitworks" className="hover:text-[#D6A24A] transition-colors">Digital Biodata Generator</a></li>
-            <li><a href="#pricing" className="hover:text-[#D6A24A] transition-colors">Membership Plans</a></li>
-            <li><a href="#stories" className="hover:text-[#D6A24A] transition-colors">Success Stories</a></li>
-          </ul>
-        </div>
-
-        <div>
-          <h4 className="font-serif font-bold text-base text-[#F3D59B] mb-3">Trust & Safety</h4>
-          <ul className="space-y-2 text-xs text-[#FFF9F1]/80">
-            <li><a href="#privacy" className="hover:text-[#D6A24A] transition-colors">Privacy Controls</a></li>
-            <li><a href="#terms" className="hover:text-[#D6A24A] transition-colors">Terms of Service</a></li>
-            <li><a href="#community" className="hover:text-[#D6A24A] transition-colors">Community Guidelines</a></li>
-            <li><a href="#refunds" className="hover:text-[#D6A24A] transition-colors">Refund Policy</a></li>
-            <li><a href="#safety" className="hover:text-[#D6A24A] transition-colors">Family Safety Tips</a></li>
-          </ul>
-        </div>
-
-        <div>
-          <h4 className="font-serif font-bold text-base text-[#F3D59B] mb-3">Contact Support</h4>
-          <p className="text-xs text-[#F3D59B]/70 mb-3">
-            Our family support desk is available to assist you in creating and managing your Jain matrimonial profile.
-          </p>
-          <div className="space-y-1.5 text-xs text-[#FFF9F1]">
-            <p>📧 support@jainsaathi.com</p>
-            <p>📞 +91 98765 43210 (Mon-Sat, 9AM-7PM)</p>
+          <div className="flex items-center gap-4 opacity-50">
+            {/* Soft decorative lotus motif */}
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 22C12 22 19 16 19 9C19 5.5 16.5 3 12 3C7.5 3 5 5.5 5 9C5 16 12 22 12 22Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M12 22V12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M9 14.5C9 14.5 9 9 12 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M15 14.5C15 14.5 15 9 12 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </div>
         </div>
-
-      </div>
-
-      <div className="border-t border-[#D6A24A]/15 py-4 px-4 text-center text-xs text-[#F3D59B]/60">
-        © 2026 JainSaathi Matrimony Platform. All rights reserved. "Find Your Jain Saathi."
       </div>
     </footer>
   );
-};
+}

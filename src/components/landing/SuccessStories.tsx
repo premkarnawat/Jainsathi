@@ -1,81 +1,95 @@
-import React from 'react';
+'use client';
 
-export const SuccessStories: React.FC = () => {
+import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Quote } from 'lucide-react';
+import { createBrowserClient } from '@supabase/ssr';
+
+export default function SuccessStories() {
+  const [stories, setStories] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Attempt to fetch actual success stories if table exists
+    const fetchStories = async () => {
+      try {
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+        // Assuming a success_stories table might exist in the future
+        const { data, error } = await supabase.from('success_stories').select('*').limit(3);
+        if (!error && data) {
+          setStories(data);
+        }
+      } catch (err) {
+        // Ignore error if table doesn't exist yet
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStories();
+  }, []);
+
   return (
-    <section id="stories" className="bg-[#F8F1E8] py-16 px-4 sm:px-6 lg:px-8 border-b border-[#D6A24A]/25">
-      <div className="max-w-7xl mx-auto space-y-12">
+    <section id="success-stories" className="py-24 bg-white border-t border-border">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Title */}
-        <div className="text-center">
-          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#100A18]">
-            Beautiful Beginnings
-          </h2>
-          <p className="text-xs font-semibold tracking-wider text-[#9E183A] uppercase mt-2">
-            Real stories. Real connections.
-          </p>
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="font-serif text-4xl font-bold text-text mb-6">
+              Meaningful <span className="italic text-deepBurgundy font-normal">Connections</span>
+            </h2>
+            <p className="text-lg text-muted">
+              Discover stories of families and individuals who found their perfect match through JainSaathi.
+            </p>
+          </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Testimonial Block (7 Cols) */}
-          <div className="lg:col-span-7 bg-[#FFF9F1] border border-[#D6A24A]/30 rounded-3xl p-8 shadow-sm flex flex-col md:flex-row gap-6 items-center">
-            <img
-              src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=400"
-              alt="Testimonial Couple"
-              className="w-32 h-32 rounded-2xl object-cover border border-[#D6A24A]/30 shrink-0"
-            />
-            <div className="space-y-4">
-              <p className="font-serif italic text-base text-[#100A18] leading-relaxed">
-                "We found not just each other, but also a family that shares our values and traditions."
-              </p>
-              <div>
-                <p className="font-bold text-sm text-[#6E1231]">- Riya & Meet, Mumbai</p>
-              </div>
-            </div>
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="w-8 h-8 rounded-full border-2 border-champagneGold border-t-deepBurgundy animate-spin" />
           </div>
-
-          {/* Stats Box (5 Cols) */}
-          <div className="lg:col-span-5 grid grid-cols-2 gap-4">
-            <div className="bg-white border border-[#D6A24A]/25 rounded-2xl p-4 text-center shadow-sm">
-              <p className="font-serif text-2xl font-bold text-[#6E1231]">25K+</p>
-              <p className="text-[10px] text-[#756B70] font-medium mt-1">Profiles Created</p>
-            </div>
-            <div className="bg-white border border-[#D6A24A]/25 rounded-2xl p-4 text-center shadow-sm">
-              <p className="font-serif text-2xl font-bold text-[#6E1231]">10K+</p>
-              <p className="text-[10px] text-[#756B70] font-medium mt-1">Successful Matches</p>
-            </div>
-            <div className="bg-white border border-[#D6A24A]/25 rounded-2xl p-4 text-center shadow-sm">
-              <p className="font-serif text-2xl font-bold text-[#6E1231]">15+</p>
-              <p className="text-[10px] text-[#756B70] font-medium mt-1">Jain Communities</p>
-            </div>
-            <div className="bg-white border border-[#D6A24A]/25 rounded-2xl p-4 text-center shadow-sm">
-              <p className="font-serif text-2xl font-bold text-[#6E1231]">24/7</p>
-              <p className="text-[10px] text-[#756B70] font-medium mt-1">Dedicated Support</p>
-            </div>
+        ) : stories.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {stories.map((story, i) => (
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="bg-secondary rounded-2xl p-8 border border-border"
+              >
+                <Quote className="w-8 h-8 text-champagneGold mb-4 opacity-50" />
+                <p className="text-text italic mb-6">"{story.quote}"</p>
+                <div>
+                  <p className="font-serif font-bold text-deepBurgundy">{story.couple_names}</p>
+                  <p className="text-xs text-muted uppercase tracking-wider">{story.wedding_date}</p>
+                </div>
+              </motion.div>
+            ))}
           </div>
-        </div>
-
-        {/* Search Subscription Banner */}
-        <div className="bg-gradient-to-r from-[#6E1231] to-[#100A18] rounded-3xl p-8 sm:p-10 border border-[#D6A24A]/30 text-center space-y-6 shadow-xl relative overflow-hidden mt-16">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(214,162,74,0.1),transparent_70%)] pointer-events-none" />
-          <h3 className="font-serif text-2xl sm:text-3xl font-bold text-white">
-            Your Search for the Right Jain Saathi Starts Here
-          </h3>
-          <p className="text-xs text-[#F3D59B] max-w-md mx-auto">
-            Join thousands of families who have found compatible matches based on values, traditions, and lifestyle.
-          </p>
-          <div className="max-w-md mx-auto flex flex-col sm:flex-row gap-2 pt-2">
-            <input
-              type="email"
-              placeholder="Enter your email address"
-              className="flex-1 bg-white/10 border border-[#D6A24A]/40 rounded-xl px-4 py-3 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-[#D6A24A]"
-            />
-            <button className="bg-[#9E183A] text-white text-xs font-semibold px-6 py-3 rounded-xl hover:bg-[#80122E] transition-all">
-              Get Started
-            </button>
-          </div>
-        </div>
+        ) : (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="bg-secondary rounded-2xl p-12 border border-border text-center max-w-3xl mx-auto flex flex-col items-center justify-center min-h-[300px]"
+          >
+            <Quote className="w-12 h-12 text-champagneGold mb-6 opacity-30" />
+            <h3 className="font-serif text-2xl font-bold text-text mb-4">Beautiful stories are being written.</h3>
+            <p className="text-muted max-w-md mx-auto">
+              As our platform brings Jain families together, verified success stories will appear here. Start your journey today to find your Jain Saathi.
+            </p>
+          </motion.div>
+        )}
 
       </div>
     </section>
   );
-};
+}

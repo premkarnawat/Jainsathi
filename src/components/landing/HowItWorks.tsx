@@ -1,80 +1,100 @@
+'use client';
+
 import React from 'react';
+import { motion } from 'framer-motion';
+import { UserPlus, FileText, Settings2, Search, Heart, UserCheck } from 'lucide-react';
 
-export const HowItWorks: React.FC = () => {
-  const steps = [
-    {
-      id: '01',
-      title: 'Create Profile',
-      desc: 'Create your profile or let your parents create for you.',
-    },
-    {
-      id: '02',
-      title: 'Tell Us About You',
-      desc: 'Fill in your details, Jain identity and lifestyle.',
-    },
-    {
-      id: '03',
-      title: 'Set Preferences',
-      desc: 'Set your partner preferences and expectations.',
-    },
-    {
-      id: '04',
-      title: 'Discover Matches',
-      desc: 'Get matched with compatible Jain profiles.',
-    },
-    {
-      id: '05',
-      title: 'Express Interest',
-      desc: 'Show interest in profiles you like.',
-    },
-    {
-      id: '06',
-      title: 'Connect & Plan',
-      desc: 'After mutual acceptance, connect and start your journey.',
-    },
-  ];
+const steps = [
+  {
+    num: '01',
+    title: 'Create Your Profile',
+    icon: UserPlus,
+    description: 'Sign up securely using your mobile number and basic details.'
+  },
+  {
+    num: '02',
+    title: 'Complete Jain & Personal Details',
+    icon: FileText,
+    description: 'Add your education, career, lifestyle, and Jain identity information.'
+  },
+  {
+    num: '03',
+    title: 'Set Partner Preferences',
+    icon: Settings2,
+    description: 'Define exactly what you are looking for in a life partner.'
+  },
+  {
+    num: '04',
+    title: 'Discover Compatible Profiles',
+    icon: Search,
+    description: 'Our smart matching algorithm recommends highly compatible matches.'
+  },
+  {
+    num: '05',
+    title: 'Express Interest',
+    icon: Heart,
+    description: 'Send interest requests to profiles you wish to connect with.'
+  },
+  {
+    num: '06',
+    title: 'Connect After Mutual Acceptance',
+    icon: UserCheck,
+    description: 'Once mutually accepted, securely exchange contact details and biodata.'
+  }
+];
 
+export default function HowItWorks() {
   return (
-    <section id="howitworks" className="py-20 bg-[#FFF9F1] px-4 sm:px-6 lg:px-8 border-b border-[#D6A24A]/25">
-      <div className="max-w-7xl mx-auto space-y-16">
-        
-        {/* Section Header */}
-        <div className="text-center space-y-3">
-          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#100A18]">
-            How JainSaathi Works
-          </h2>
-          <p className="text-xs font-semibold tracking-wider text-[#9E183A] uppercase">
-            A simple journey to meaningful connections
-          </p>
+    <section id="how-it-works" className="py-24 bg-white border-t border-border">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="font-serif text-4xl font-bold text-text mb-4"
+          >
+            The Journey to Your <span className="text-deepBurgundy italic">Jain Saathi</span>
+          </motion.h2>
         </div>
 
-        {/* Timeline Layout */}
         <div className="relative">
-          {/* Connecting Line */}
-          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-[#6E1231]/10 via-[#D6A24A]/30 to-[#6E1231]/10 -translate-y-1/2 hidden lg:block" />
+          {/* Progress Line */}
+          <div className="absolute left-8 lg:left-1/2 lg:-ml-px top-0 bottom-0 w-0.5 bg-gradient-to-b from-deepBurgundy/5 via-deepBurgundy/20 to-deepBurgundy/5 hidden sm:block" />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-8 relative z-10">
+          <div className="space-y-12">
             {steps.map((step, index) => (
-              <div key={step.id} className="flex flex-col items-center text-center space-y-4 group">
-                {/* Step Circle Badge */}
-                <div className="w-14 h-14 rounded-full bg-[#FFF9F1] border-2 border-[#D6A24A]/40 flex items-center justify-center font-serif text-lg font-bold text-[#6E1231] shadow-md group-hover:border-[#9E183A] group-hover:scale-105 transition-all duration-300">
-                  {step.id}
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className={`relative flex flex-col sm:flex-row gap-8 items-start ${index % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'}`}
+              >
+                {/* Visual side */}
+                <div className="flex-1 w-full lg:w-1/2 flex justify-center lg:justify-end lg:px-12">
+                  <div className={`w-full max-w-sm bg-secondary rounded-2xl border border-border p-6 shadow-lg shadow-deepBurgundy/5 flex flex-col items-center text-center ${index % 2 === 0 ? 'lg:items-end lg:text-right' : 'lg:items-start lg:text-left'}`}>
+                    <div className="w-16 h-16 rounded-full bg-white border border-champagneGold flex items-center justify-center mb-4">
+                      <step.icon className="w-7 h-7 text-deepBurgundy" />
+                    </div>
+                    <span className="font-serif text-4xl font-bold text-deepBurgundy/20 mb-2">{step.num}</span>
+                  </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <h3 className="font-serif font-bold text-base text-[#100A18] group-hover:text-[#6E1231] transition-colors">
-                    {step.title}
-                  </h3>
-                  <p className="text-[11px] text-[#756B70] leading-relaxed max-w-[160px] mx-auto font-medium">
-                    {step.desc}
-                  </p>
+                {/* Center Node */}
+                <div className="hidden sm:flex absolute left-8 lg:left-1/2 -ml-[11px] mt-8 w-6 h-6 rounded-full border-4 border-white bg-champagneGold shadow-md z-10" />
+
+                {/* Text side */}
+                <div className={`flex-1 w-full lg:w-1/2 flex flex-col justify-center sm:pl-16 lg:pl-12 pt-8 ${index % 2 === 0 ? 'lg:text-left' : 'lg:text-right lg:pr-12 lg:pl-0'}`}>
+                  <h3 className="font-serif font-bold text-2xl text-text mb-3">{step.title}</h3>
+                  <p className="text-muted leading-relaxed max-w-md inline-block">{step.description}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
-
       </div>
     </section>
   );
-};
+}
