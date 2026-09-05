@@ -9,11 +9,15 @@ import PricingSectionExact from '@/components/landing/PricingSectionExact';
 import FinalCTASection from '@/components/landing/FinalCTASection';
 import Footer from '@/components/landing/Footer';
 import UnboxingSection from '@/components/landing/UnboxingSection';
+import FloatingPetals from '@/components/landing/FloatingPetals';
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#FAF3ED] font-sans text-text selection:bg-deepBurgundy selection:text-white relative overflow-x-hidden">
       
+      {/* Real Lotus Petals Drifting Throughout Landing Page */}
+      <FloatingPetals />
+
       {/* Sticky Top Header */}
       <Header />
       
