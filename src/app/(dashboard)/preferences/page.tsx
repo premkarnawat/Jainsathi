@@ -27,7 +27,15 @@ export default function PreferencesPage() {
   // Update local form state when hook resolves
   useEffect(() => {
     if (preferences) {
-      setForm((prev: any) => ({ ...prev, ...preferences }));
+      setForm((prev: any) => ({
+        ...prev,
+        ...preferences,
+        _raw_allowed_marital: preferences.allowed_marital_statuses?.join(', ') || '',
+        _raw_states: preferences.preferred_states?.join(', ') || '',
+        _raw_cities: preferences.preferred_cities?.join(', ') || '',
+        _raw_sects: preferences.preferred_sects?.join(', ') || '',
+        _raw_communities: preferences.preferred_communities?.join(', ') || '',
+      }));
     }
   }, [preferences]);
 
@@ -38,6 +46,20 @@ export default function PreferencesPage() {
     try {
       const payload = { ...form };
       delete payload.id; // Prevent updating the ID column
+      
+      // Parse raw strings back to arrays
+      if (payload._raw_allowed_marital !== undefined) payload.allowed_marital_statuses = payload._raw_allowed_marital.split(',').map((s: string) => s.trim()).filter(Boolean);
+      if (payload._raw_states !== undefined) payload.preferred_states = payload._raw_states.split(',').map((s: string) => s.trim()).filter(Boolean);
+      if (payload._raw_cities !== undefined) payload.preferred_cities = payload._raw_cities.split(',').map((s: string) => s.trim()).filter(Boolean);
+      if (payload._raw_sects !== undefined) payload.preferred_sects = payload._raw_sects.split(',').map((s: string) => s.trim()).filter(Boolean);
+      if (payload._raw_communities !== undefined) payload.preferred_communities = payload._raw_communities.split(',').map((s: string) => s.trim()).filter(Boolean);
+      
+      // Clean up internal UI state before sending
+      delete payload._raw_allowed_marital;
+      delete payload._raw_states;
+      delete payload._raw_cities;
+      delete payload._raw_sects;
+      delete payload._raw_communities;
 
       const { error } = await supabase
         .from('partner_preferences')
@@ -143,8 +165,8 @@ export default function PreferencesPage() {
             <input 
               type="text" 
               placeholder="never_married, divorced, widowed"
-              value={(form.allowed_marital_statuses || []).join(', ')}
-              onChange={(e) => setForm({...form, allowed_marital_statuses: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+              value={form._raw_allowed_marital !== undefined ? form._raw_allowed_marital : (form.allowed_marital_statuses || []).join(', ')}
+              onChange={(e) => setForm({...form, _raw_allowed_marital: e.target.value})}
               className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]"
             />
           </div>
@@ -154,8 +176,8 @@ export default function PreferencesPage() {
             <input 
               type="text" 
               placeholder="Maharashtra, Gujarat..."
-              value={(form.preferred_states || []).join(', ')}
-              onChange={(e) => setForm({...form, preferred_states: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+              value={form._raw_states !== undefined ? form._raw_states : (form.preferred_states || []).join(', ')}
+              onChange={(e) => setForm({...form, _raw_states: e.target.value})}
               className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]"
             />
           </div>
@@ -165,8 +187,8 @@ export default function PreferencesPage() {
             <input 
               type="text" 
               placeholder="Pune, Mumbai..."
-              value={(form.preferred_cities || []).join(', ')}
-              onChange={(e) => setForm({...form, preferred_cities: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+              value={form._raw_cities !== undefined ? form._raw_cities : (form.preferred_cities || []).join(', ')}
+              onChange={(e) => setForm({...form, _raw_cities: e.target.value})}
               className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]"
             />
           </div>
@@ -181,8 +203,8 @@ export default function PreferencesPage() {
             <input 
               type="text" 
               placeholder="Shwetambar, Digambar..."
-              value={(form.preferred_sects || []).join(', ')}
-              onChange={(e) => setForm({...form, preferred_sects: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+              value={form._raw_sects !== undefined ? form._raw_sects : (form.preferred_sects || []).join(', ')}
+              onChange={(e) => setForm({...form, _raw_sects: e.target.value})}
               className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]"
             />
           </div>
@@ -192,8 +214,8 @@ export default function PreferencesPage() {
             <input 
               type="text" 
               placeholder="Oswal, Porwal..."
-              value={(form.preferred_communities || []).join(', ')}
-              onChange={(e) => setForm({...form, preferred_communities: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+              value={form._raw_communities !== undefined ? form._raw_communities : (form.preferred_communities || []).join(', ')}
+              onChange={(e) => setForm({...form, _raw_communities: e.target.value})}
               className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]"
             />
           </div>

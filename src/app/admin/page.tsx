@@ -1,11 +1,54 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { JainSaathiLogo } from '@/components/ui/JainSaathiLogo';
 import { ShieldCheck, Users, AlertTriangle, CreditCard, Settings, FileCheck } from 'lucide-react';
+import { supabase } from '@/lib/supabase/client';
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<'verifications' | 'taxonomy' | 'reports'>('verifications');
+  const [verifications, setVerifications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchVerifications();
+  }, []);
+
+  const fetchVerifications = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from('identity_verifications')
+      .select(`
+        id, status, submitted_at, document_path, selfie_path,
+        candidate_profiles (
+          id, first_name, last_name, current_city, current_state,
+          jain_identities ( sect, community )
+        )
+      `)
+      .eq('status', 'pending');
+    setVerifications(data || []);
+    setLoading(false);
+  };
+
+  const handleApprove = async (id: string, candidateId: string) => {
+    if (!confirm('Approve this profile?')) return;
+    await supabase.from('identity_verifications').update({ status: 'approved' }).eq('id', id);
+    await supabase.from('candidate_profiles').update({ verification_status: 'verified' }).eq('id', candidateId);
+    fetchVerifications();
+  };
+
+  const handleReject = async (id: string, candidateId: string) => {
+    if (!confirm('Reject this profile?')) return;
+    await supabase.from('identity_verifications').update({ status: 'rejected' }).eq('id', id);
+    await supabase.from('candidate_profiles').update({ verification_status: 'unverified' }).eq('id', candidateId);
+    fetchVerifications();
+  };
+
+  const getSectStr = (cand: any) => {
+    const j = Array.isArray(cand.jain_identities) ? cand.jain_identities[0] : cand.jain_identities;
+    if (!j) return 'N/A';
+    return `${j.sect || ''} • ${j.community || ''}`;
+  };
 
   return (
     <div className="min-h-screen bg-[#100A18] text-[#FFF9F1] flex flex-col md:flex-row">
@@ -56,20 +99,8 @@ export default function AdminPage() {
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           <div className="bg-[#6E1231]/30 border border-[#D6A24A]/30 p-4 rounded-2xl">
-            <p className="text-xs text-[#F3D59B]">Total Users</p>
-            <p className="font-serif text-3xl font-bold text-white mt-1">1,240</p>
-          </div>
-          <div className="bg-[#6E1231]/30 border border-[#D6A24A]/30 p-4 rounded-2xl">
             <p className="text-xs text-[#F3D59B]">Pending Verifications</p>
-            <p className="font-serif text-3xl font-bold text-[#D6A24A] mt-1">14</p>
-          </div>
-          <div className="bg-[#6E1231]/30 border border-[#D6A24A]/30 p-4 rounded-2xl">
-            <p className="text-xs text-[#F3D59B]">Active Subscriptions</p>
-            <p className="font-serif text-3xl font-bold text-emerald-400 mt-1">312</p>
-          </div>
-          <div className="bg-[#6E1231]/30 border border-[#D6A24A]/30 p-4 rounded-2xl">
-            <p className="text-xs text-[#F3D59B]">Open Reports</p>
-            <p className="font-serif text-3xl font-bold text-red-400 mt-1">2</p>
+            <p className="font-serif text-3xl font-bold text-[#D6A24A] mt-1">{verifications.length}</p>
           </div>
         </div>
 
@@ -85,25 +116,32 @@ export default function AdminPage() {
                     <th className="p-3">Candidate</th>
                     <th className="p-3">Sect / Community</th>
                     <th className="p-3">Location</th>
-                    <th className="p-3">Doc Submitted</th>
+                    <th className="p-3">Photo & ID</th>
                     <th className="p-3">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800">
-                  <tr>
-                    <td className="p-3 font-semibold text-white">Ritika Shah (ID: cand-001)</td>
-                    <td className="p-3">Shwetambar • Oswal</td>
-                    <td className="p-3">Mumbai, MH</td>
-                    <td className="p-3 text-emerald-400">Identity + Photo</td>
-                    <td className="p-3 flex gap-2">
-                      <button className="bg-emerald-700 text-white px-3 py-1 rounded font-bold hover:bg-emerald-600">
-                        Approve
-                      </button>
-                      <button className="bg-red-800 text-white px-3 py-1 rounded hover:bg-red-700">
-                        Reject
-                      </button>
-                    </td>
-                  </tr>
+                  {loading && <tr><td colSpan={5} className="p-4 text-center">Loading...</td></tr>}
+                  {!loading && verifications.length === 0 && <tr><td colSpan={5} className="p-4 text-center text-gray-500">No pending verifications.</td></tr>}
+                  {verifications.map((v) => (
+                    <tr key={v.id}>
+                      <td className="p-3 font-semibold text-white">
+                        {v.candidate_profiles?.first_name} {v.candidate_profiles?.last_name}
+                      </td>
+                      <td className="p-3">{getSectStr(v.candidate_profiles)}</td>
+                      <td className="p-3">{v.candidate_profiles?.current_city}, {v.candidate_profiles?.current_state}</td>
+                      <td className="p-3">
+                        <div className="flex gap-2">
+                          <a href={`https://hchxytnssymfobqohowk.supabase.co/storage/v1/object/public/verification-selfies/${v.selfie_path}`} target="_blank" className="text-[#D6A24A] hover:underline">Selfie</a>
+                          <a href={`https://hchxytnssymfobqohowk.supabase.co/storage/v1/object/public/verification-documents/${v.document_path}`} target="_blank" className="text-emerald-400 hover:underline">ID Doc</a>
+                        </div>
+                      </td>
+                      <td className="p-3 flex gap-2">
+                        <button onClick={() => handleApprove(v.id, v.candidate_profiles?.id)} className="bg-emerald-700 text-white px-3 py-1 rounded font-bold hover:bg-emerald-600">Approve</button>
+                        <button onClick={() => handleReject(v.id, v.candidate_profiles?.id)} className="bg-red-800 text-white px-3 py-1 rounded hover:bg-red-700">Reject</button>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>

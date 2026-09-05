@@ -330,14 +330,51 @@ function EducationCareerForm({ profile, onSaved }: any) {
   );
 }
 
+import { FamilySection } from '@/components/profile/ProfileSections';
+import { AddFamilyModal } from '@/components/profile/ProfileEditModals';
+
 function FamilyDetailsForm({ profile, onSaved }: any) {
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const { removeFamilyMember } = useProfileMutations(profile.id);
+
+  const handleRemove = async (id: string) => {
+    if (confirm('Are you sure you want to remove this family member?')) {
+      await removeFamilyMember(id);
+      onSaved();
+    }
+  };
+
   return (
-    <div className="bg-[#FFFDFB] border border-[#EBD9DC] rounded-[24px] shadow-sm overflow-hidden p-12 text-center space-y-3">
-      <UserCheck className="w-10 h-10 text-[#C99A3D] mx-auto opacity-50" />
-      <h3 className="font-serif font-bold text-lg text-[#241B20]">Family Lineage Management</h3>
-      <p className="text-xs text-[#75666D] font-semibold max-w-sm mx-auto leading-relaxed">
-        Family members and 4-Sakha detailed lineage input interface will be activated in the next schema update.
-      </p>
+    <div className="space-y-6">
+      <div className="bg-[#FFFDFB] border border-[#EBD9DC] rounded-[24px] shadow-sm overflow-hidden p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="font-serif text-xl font-bold text-[#8F0038]">Family Members</h2>
+          <button onClick={() => setIsAddOpen(true)} className="px-4 py-2 bg-[#F7E5EA] text-[#8F0038] hover:bg-[#EBD9DC] font-bold text-xs rounded-xl transition-colors">
+            + Add Member
+          </button>
+        </div>
+        
+        {(!profile.family || profile.family.length === 0) ? (
+          <div className="text-center py-10 opacity-60">
+            <UserCheck className="w-10 h-10 text-[#C99A3D] mx-auto mb-3" />
+            <p className="text-xs font-bold text-[#75666D]">No family members added yet.</p>
+          </div>
+        ) : (
+          <FamilySection 
+            familyMembers={profile.family} 
+            onAdd={() => setIsAddOpen(true)} 
+            onEdit={() => {}} 
+            onRemove={handleRemove} 
+          />
+        )}
+      </div>
+
+      <AddFamilyModal 
+        isOpen={isAddOpen} 
+        onClose={() => setIsAddOpen(false)} 
+        profileId={profile.id} 
+        onSaved={() => { setIsAddOpen(false); onSaved(); }} 
+      />
     </div>
   );
 }
@@ -345,15 +382,15 @@ function FamilyDetailsForm({ profile, onSaved }: any) {
 function LifestyleForm({ profile, onSaved }: any) {
   const { upsertLifestyle, saving, error } = useProfileMutations(profile.id);
   const [form, setForm] = useState({
-    diet: 'strict_jain',
-    smoking: false,
-    alcohol: false
+    diet: profile.lifestyle?.diet || 'strict_jain',
+    smoking: profile.lifestyle?.smoking || false,
+    alcohol: profile.lifestyle?.alcohol || false
   });
 
   const handleSave = async () => {
     const success = await upsertLifestyle(form);
     if (success) {
-      alert("Lifestyle Details Saved ✓");
+      alert("Lifestyle Details Saved");
       onSaved();
     }
   };
