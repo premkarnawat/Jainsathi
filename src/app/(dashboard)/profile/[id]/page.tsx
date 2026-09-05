@@ -262,9 +262,9 @@ export default function CandidateProfileView({ params }: { params: { id: string 
                     {candidate.height_cm} cm
                   </span>
                 )}
-                {candidate.jain_identities?.[0]?.sect && (
+                {(Array.isArray(candidate.jain_identities) ? candidate.jain_identities[0]?.sect : candidate.jain_identities?.sect) && (
                   <span className="text-xs font-bold text-[#75666D] bg-[#FFFDFB] px-3 py-1.5 rounded-lg border border-[#EBD9DC] uppercase tracking-wide">
-                    {candidate.jain_identities[0].sect}
+                    {Array.isArray(candidate.jain_identities) ? candidate.jain_identities[0].sect : candidate.jain_identities.sect}
                   </span>
                 )}
               </div>
@@ -306,7 +306,7 @@ export default function CandidateProfileView({ params }: { params: { id: string 
         {/* Left Column - Core Info */}
         <div className="lg:col-span-2 space-y-6">
           <PersonalDetails profile={candidate} onEdit={undefined as any} />
-          <JainIdentity identity={candidate.jain_identities?.[0]} onEdit={undefined as any} />
+          <JainIdentity identity={Array.isArray(candidate.jain_identities) ? candidate.jain_identities[0] : candidate.jain_identities} onEdit={undefined as any} />
           
           {candidate.education_records?.length > 0 && (
             <EducationSection 
@@ -329,7 +329,7 @@ export default function CandidateProfileView({ params }: { params: { id: string 
             />
           )}
 
-          <LifestyleSection lifestyle={candidate.lifestyle_profiles?.[0]} onEdit={undefined as any} />
+          <LifestyleSection lifestyle={Array.isArray(candidate.lifestyle_profiles) ? candidate.lifestyle_profiles[0] : candidate.lifestyle_profiles} onEdit={undefined as any} />
         </div>
 
         {/* Right Column - Privacy & Contact */}

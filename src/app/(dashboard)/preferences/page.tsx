@@ -97,7 +97,7 @@ export default function PreferencesPage() {
         <div className="bg-[#FFFDFB] p-6 rounded-[24px] border border-[#EBD9DC] shadow-sm space-y-5">
           <h2 className="font-serif text-xl font-bold text-[#8F0038] border-b border-[#EBD9DC]/50 pb-3">Basic Criteria</h2>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-[#75666D] uppercase">Min Age</label>
               <input 
@@ -137,11 +137,66 @@ export default function PreferencesPage() {
               className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]"
             />
           </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-[#75666D] uppercase">Allowed Marital Status (comma separated)</label>
+            <input 
+              type="text" 
+              placeholder="never_married, divorced, widowed"
+              value={(form.allowed_marital_statuses || []).join(', ')}
+              onChange={(e) => setForm({...form, allowed_marital_statuses: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+              className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-[#75666D] uppercase">Preferred States (comma separated)</label>
+            <input 
+              type="text" 
+              placeholder="Maharashtra, Gujarat..."
+              value={(form.preferred_states || []).join(', ')}
+              onChange={(e) => setForm({...form, preferred_states: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+              className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-[#75666D] uppercase">Preferred Cities (comma separated)</label>
+            <input 
+              type="text" 
+              placeholder="Pune, Mumbai..."
+              value={(form.preferred_cities || []).join(', ')}
+              onChange={(e) => setForm({...form, preferred_cities: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+              className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]"
+            />
+          </div>
         </div>
 
         {/* Jain Identity Preferences */}
         <div className="bg-[#FFFDFB] p-6 rounded-[24px] border border-[#EBD9DC] shadow-sm space-y-5">
           <h2 className="font-serif text-xl font-bold text-[#8F0038] border-b border-[#EBD9DC]/50 pb-3">Jain & Cultural Criteria</h2>
+          
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-[#75666D] uppercase">Preferred Sects (comma separated)</label>
+            <input 
+              type="text" 
+              placeholder="Shwetambar, Digambar..."
+              value={(form.preferred_sects || []).join(', ')}
+              onChange={(e) => setForm({...form, preferred_sects: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+              className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-[#75666D] uppercase">Preferred Communities (comma separated)</label>
+            <input 
+              type="text" 
+              placeholder="Oswal, Porwal..."
+              value={(form.preferred_communities || []).join(', ')}
+              onChange={(e) => setForm({...form, preferred_communities: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+              className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]"
+            />
+          </div>
           
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-[#75666D] uppercase">Dietary Preference</label>

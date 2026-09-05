@@ -132,22 +132,30 @@ function BasicInfoForm({ profile, onSaved }: any) {
     first_name: profile.first_name || '',
     last_name: profile.last_name || '',
     date_of_birth: profile.date_of_birth || '',
+    birth_time: profile.birth_time || '',
+    birth_place: profile.birth_place || '',
+    blood_group: profile.blood_group || 'B+',
+    mother_tongue: profile.mother_tongue || 'Hindi',
+    languages_known: profile.languages_known?.join(', ') || '',
     height_cm: profile.height_cm || 160,
     marital_status: profile.marital_status || 'never_married',
     about_me: profile.about_me || ''
   });
 
   const handleSave = async () => {
-    const success = await updateCandidateProfile(form);
+    const success = await updateCandidateProfile({
+      ...form,
+      languages_known: form.languages_known.split(',').map((l: string) => l.trim()).filter(Boolean)
+    });
     if (success) {
-      alert("Basic Details Saved ✓");
+      alert("Basic Details Saved");
       onSaved();
     }
   };
 
   return (
     <FormWrapper title="Basic Details" description="Your core personal information." onSave={handleSave} saving={saving} error={error}>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold uppercase text-[#75666D]">First Name</label>
           <input type="text" value={form.first_name} onChange={e => setForm({...form, first_name: e.target.value})} className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]" />
@@ -157,25 +165,61 @@ function BasicInfoForm({ profile, onSaved }: any) {
           <input type="text" value={form.last_name} onChange={e => setForm({...form, last_name: e.target.value})} className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]" />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold uppercase text-[#75666D]">Date of Birth</label>
           <input type="date" value={form.date_of_birth} onChange={e => setForm({...form, date_of_birth: e.target.value})} className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]" />
         </div>
         <div className="space-y-1.5">
+          <label className="text-[10px] font-bold uppercase text-[#75666D]">Birth Time</label>
+          <input type="time" value={form.birth_time} onChange={e => setForm({...form, birth_time: e.target.value})} className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-bold uppercase text-[#75666D]">Birth Place</label>
+          <input type="text" value={form.birth_place} onChange={e => setForm({...form, birth_place: e.target.value})} className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]" />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-bold uppercase text-[#75666D]">Blood Group</label>
+          <select value={form.blood_group} onChange={e => setForm({...form, blood_group: e.target.value})} className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]">
+            <option value="A+">A+</option><option value="A-">A-</option>
+            <option value="B+">B+</option><option value="B-">B-</option>
+            <option value="AB+">AB+</option><option value="AB-">AB-</option>
+            <option value="O+">O+</option><option value="O-">O-</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-1.5">
           <label className="text-[10px] font-bold uppercase text-[#75666D]">Height (cm)</label>
           <input type="number" value={form.height_cm} onChange={e => setForm({...form, height_cm: parseInt(e.target.value)})} className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]" />
         </div>
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-bold uppercase text-[#75666D]">Marital Status</label>
+          <select value={form.marital_status} onChange={e => setForm({...form, marital_status: e.target.value})} className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]">
+            <option value="never_married">Never Married</option>
+            <option value="divorced">Divorced</option>
+            <option value="widowed">Widowed</option>
+            <option value="separated">Separated</option>
+          </select>
+        </div>
       </div>
-      <div className="space-y-1.5">
-        <label className="text-[10px] font-bold uppercase text-[#75666D]">Marital Status</label>
-        <select value={form.marital_status} onChange={e => setForm({...form, marital_status: e.target.value})} className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]">
-          <option value="never_married">Never Married</option>
-          <option value="divorced">Divorced</option>
-          <option value="widowed">Widowed</option>
-          <option value="separated">Separated</option>
-        </select>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-bold uppercase text-[#75666D]">Mother Tongue</label>
+          <input type="text" value={form.mother_tongue} onChange={e => setForm({...form, mother_tongue: e.target.value})} className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]" />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-bold uppercase text-[#75666D]">Languages Known (comma separated)</label>
+          <input type="text" placeholder="Hindi, English..." value={form.languages_known} onChange={e => setForm({...form, languages_known: e.target.value})} className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]" />
+        </div>
       </div>
+
       <div className="space-y-1.5">
         <label className="text-[10px] font-bold uppercase text-[#75666D]">About Me</label>
         <textarea rows={4} value={form.about_me} onChange={e => setForm({...form, about_me: e.target.value})} placeholder="Write a brief introduction..." className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-3 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]" />
@@ -267,7 +311,7 @@ function EducationCareerForm({ profile, onSaved }: any) {
             <option value="Not Working">Not Working</option>
           </select>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold uppercase text-[#75666D]">Designation</label>
             <input type="text" placeholder="e.g. Software Engineer" value={form.designation} onChange={e => setForm({...form, designation: e.target.value})} className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]" />
@@ -360,7 +404,7 @@ function LocationForm({ profile, onSaved }: any) {
   return (
     <FormWrapper title="Location Details" description="Current residency and native place." onSave={handleSave} saving={saving} error={error}>
       <h3 className="text-xs font-bold text-[#8F0038] mb-3 border-b border-[#EBD9DC]/50 pb-2">Current Residence</h3>
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold uppercase text-[#75666D]">City</label>
           <input type="text" value={form.current_city} onChange={e => setForm({...form, current_city: e.target.value})} className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]" />
@@ -372,7 +416,7 @@ function LocationForm({ profile, onSaved }: any) {
       </div>
 
       <h3 className="text-xs font-bold text-[#8F0038] mb-3 border-b border-[#EBD9DC]/50 pb-2">Native Place</h3>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold uppercase text-[#75666D]">Native City</label>
           <input type="text" value={form.native_city} onChange={e => setForm({...form, native_city: e.target.value})} className="w-full bg-[#FDF9F4] border border-[#EBD9DC] rounded-xl px-4 py-2.5 text-sm font-semibold text-[#241B20] focus:outline-none focus:border-[#8F0038]" />
