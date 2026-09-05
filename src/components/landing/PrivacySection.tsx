@@ -2,13 +2,13 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Image, PhoneCall, ShieldCheck, Lock, ArrowRight } from 'lucide-react';
+import { Image as PhotoIcon, PhoneCall, ShieldCheck, Lock, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { LotusBlossom } from './LotusDecoration';
 
 const privacyCards = [
   {
-    icon: Image,
+    icon: PhotoIcon,
     title: 'Photo Privacy',
     desc: 'Control who can see your photos',
   },

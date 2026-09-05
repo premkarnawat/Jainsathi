@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Facebook, Instagram, Linkedin, Youtube, Globe } from 'lucide-react';
 import LanguageToggle from '@/components/ui/LanguageToggle';
 
