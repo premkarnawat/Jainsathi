@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ArrowRight, Bell, Globe } from 'lucide-react';
 import LanguageToggle from '@/components/ui/LanguageToggle';
@@ -32,28 +33,34 @@ export default function Header() {
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled
-            ? 'bg-[#FFFDFB]/95 backdrop-blur-md shadow-sm border-b border-[#EADBD1] py-3'
-            : 'bg-[#FFFDFB]/85 backdrop-blur-sm border-b border-[#F0E4DC]/80 py-4'
+            ? 'bg-[#FFFDFB]/95 backdrop-blur-md shadow-sm border-b border-[#EADBD1] py-2.5'
+            : 'bg-[#FFFDFB]/90 backdrop-blur-sm border-b border-[#F0E4DC]/80 py-3.5'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           
-          {/* Left Brand Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="relative w-9 h-9 rounded-full bg-gradient-to-br from-deepBurgundy to-[#550B24] border border-champagneGold/60 flex items-center justify-center shadow-md shadow-deepBurgundy/15 transition-transform group-hover:scale-105">
-              <span className="text-champagneGold font-serif italic text-lg font-bold tracking-tight">JS</span>
+          {/* Left Brand Logo (Real Official Logo) */}
+          <Link href="/" className="flex items-center gap-2.5 group py-0.5">
+            <div className="relative w-11 h-11 sm:w-12 sm:h-12 shrink-0 transition-transform group-hover:scale-105">
+              <Image
+                src="/images/logo.png"
+                alt="JainSaathi Official Logo"
+                fill
+                priority
+                className="object-contain"
+              />
             </div>
             <div className="flex flex-col">
               <span className="font-serif text-xl sm:text-2xl font-bold text-deepBurgundy tracking-tight leading-none">
                 JainSaathi
               </span>
-              <span className="text-[8px] uppercase tracking-[0.2em] text-champagneGold font-bold mt-1">
+              <span className="text-[7.5px] uppercase tracking-[0.22em] text-champagneGold font-bold mt-1">
                 FIND YOUR JAIN SAATHI
               </span>
             </div>
           </Link>
 
-          {/* Center Navigation Links (Exact to image) */}
+          {/* Center Navigation Links */}
           <nav className="hidden lg:flex items-center gap-7">
             {navLinks.map((link) => (
               <Link
@@ -138,9 +145,14 @@ export default function Header() {
               className="fixed top-0 right-0 w-[85%] max-w-sm h-full bg-[#FFFDFB] shadow-2xl z-50 flex flex-col lg:hidden border-l border-border"
             >
               <div className="flex items-center justify-between p-6 border-b border-border">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-deepBurgundy flex items-center justify-center">
-                    <span className="text-champagneGold font-serif italic text-base font-bold">JS</span>
+                <div className="flex items-center gap-2.5">
+                  <div className="relative w-10 h-10 shrink-0">
+                    <Image
+                      src="/images/logo.png"
+                      alt="JainSaathi"
+                      fill
+                      className="object-contain"
+                    />
                   </div>
                   <span className="font-serif text-xl font-bold text-deepBurgundy">JainSaathi</span>
                 </div>

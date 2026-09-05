@@ -26,15 +26,20 @@ export default function Footer() {
           
           {/* Brand Info (Col 1-4) */}
           <div className="lg:col-span-4 space-y-4">
-            <Link href="/" className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-deepBurgundy border border-champagneGold flex items-center justify-center">
-                <span className="text-champagneGold font-serif italic text-lg font-bold">JS</span>
+            <Link href="/" className="flex items-center gap-3">
+              <div className="relative w-12 h-12 bg-white/95 rounded-xl p-1 border border-champagneGold/60 shadow-md shrink-0">
+                <Image
+                  src="/images/logo.png"
+                  alt="JainSaathi Official Logo"
+                  fill
+                  className="object-contain"
+                />
               </div>
               <div>
                 <span className="font-serif text-2xl font-bold text-white tracking-tight leading-none block">
                   JainSaathi
                 </span>
-                <span className="text-[7.5px] uppercase tracking-[0.2em] text-champagneGold font-semibold">
+                <span className="text-[7.5px] uppercase tracking-[0.22em] text-champagneGold font-semibold">
                   FIND YOUR JAIN SAATHI
                 </span>
               </div>
