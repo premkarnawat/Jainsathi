@@ -95,9 +95,11 @@ export function useCandidateProfile(userId?: string) {
         if (profileData.photos && profileData.photos.length > 0) filledFields++;
         if (prefData) filledFields++;
 
-        if (profileData.jain_identities && profileData.jain_identities.length > 0) {
+        const getSingleRel = (rel: any) => rel ? (Array.isArray(rel) ? rel[0] || null : rel) : null;
+
+        const ji = getSingleRel(profileData.jain_identities);
+        if (ji) {
           totalFields++;
-          const ji = profileData.jain_identities[0];
           if (ji.sect && ji.community) filledFields++;
         }
 
@@ -111,14 +113,14 @@ export function useCandidateProfile(userId?: string) {
           currentState: profileData.current_state,
           email: userData?.email,
           phone: userData?.phone,
-          jainIdentity: profileData.jain_identities?.[0] || null,
-          lifestyle: profileData.lifestyle_profiles?.[0] || null,
-          privacy: profileData.profile_privacies?.[0] || null,
-          biodata: profileData.biodatas?.[0] || null,
-          education: profileData.education_records || [],
-          employment: profileData.employment_records || [],
-          family: profileData.family_members || [],
-          photos: profileData.photos || [],
+          jainIdentity: ji,
+          lifestyle: getSingleRel(profileData.lifestyle_profiles),
+          privacy: getSingleRel(profileData.profile_privacies),
+          biodata: getSingleRel(profileData.biodatas),
+          education: Array.isArray(profileData.education_records) ? profileData.education_records : (profileData.education_records ? [profileData.education_records] : []),
+          employment: Array.isArray(profileData.employment_records) ? profileData.employment_records : (profileData.employment_records ? [profileData.employment_records] : []),
+          family: Array.isArray(profileData.family_members) ? profileData.family_members : (profileData.family_members ? [profileData.family_members] : []),
+          photos: Array.isArray(profileData.photos) ? profileData.photos : (profileData.photos ? [profileData.photos] : []),
           completionPercentage,
           membershipTier: subData?.plan?.name || 'Free Member',
           isVerified: profileData.verification_status === 'verified',

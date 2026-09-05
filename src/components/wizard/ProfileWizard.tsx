@@ -17,6 +17,8 @@ interface ProfileWizardProps {
 }
 
 export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
+  // Session check loading state — prevents flash of wizard UI before redirect
+  const [sessionChecking, setSessionChecking] = useState(true);
   // Authentication states
   // Steps: 'welcome', 'otp', 'otp_verifying', 'otp_success', 'email', 'register_start', 1..10, 'photo_verification', 'review', 'plan'
   const [step, setStep] = useState<string | number>('welcome');
@@ -366,7 +368,10 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
             if (profile) {
               setProfileId(profile.id);
               if (profile.completion_percentage >= 100) {
+                // Clear wizard state from localStorage since registration is complete
+                localStorage.removeItem('jainsaathi_wizard_state');
                 window.location.href = '/dashboard';
+                return; // Don't set sessionChecking to false — we're redirecting
               } else {
                 setStep(1); // Continue registration
               }
@@ -386,6 +391,8 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
         }
       } catch (err) {
         console.error("Error checking session:", err);
+      } finally {
+        setSessionChecking(false);
       }
     }
     checkSession();
@@ -1233,6 +1240,16 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
       }
     };
   };
+
+  if (sessionChecking) {
+    return (
+      <div className="min-h-screen bg-[#FFFDFB] flex flex-col items-center justify-center">
+        <div className="w-16 h-16 bg-[#F7E5EA] rounded-full flex items-center justify-center mb-4">
+           <div className="w-8 h-8 border-4 border-[#8F0038] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 

@@ -19,14 +19,21 @@ export const PhotoManagementModal = ({ isOpen, onClose, profileId, photos, onSav
         return;
       }
 
+      // Get authenticated user ID for storage path (RLS requires auth.uid() as folder prefix)
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('You must be logged in to upload photos.');
+        return;
+      }
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${profileId}-${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const filePath = `${user.id}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage.from('photos').upload(filePath, file);
+      const { error: uploadError } = await supabase.storage.from('profile-photos').upload(filePath, file);
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage.from('photos').getPublicUrl(filePath);
+      const { data: { publicUrl } } = supabase.storage.from('profile-photos').getPublicUrl(filePath);
 
       await supabase.from('photos').insert({
         candidate_id: profileId,
@@ -59,7 +66,7 @@ export const PhotoManagementModal = ({ isOpen, onClose, profileId, photos, onSav
   const handleDelete = async (photoId: string, storagePath: string) => {
     if (!confirm('Are you sure you want to delete this photo?')) return;
     try {
-      await supabase.storage.from('photos').remove([storagePath]);
+      await supabase.storage.from('profile-photos').remove([storagePath]);
       await supabase.from('photos').delete().eq('id', photoId);
       onSaved();
     } catch (err) {

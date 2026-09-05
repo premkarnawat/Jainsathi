@@ -36,12 +36,15 @@ export default function PreferencesPage() {
     setSaving(true);
     setSuccessMsg('');
     try {
+      const payload = { ...form };
+      delete payload.id; // Prevent updating the ID column
+
       const { error } = await supabase
         .from('partner_preferences')
         .upsert({
           candidate_id: loggedInUser.id,
-          ...form
-        });
+          ...payload
+        }, { onConflict: 'candidate_id' });
 
       if (error) throw error;
       setSuccessMsg('Partner preferences successfully updated! The matchmaking engine has recalibrated your recommendations.');

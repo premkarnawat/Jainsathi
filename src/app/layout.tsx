@@ -8,10 +8,15 @@ export const metadata: Metadata = {
   description: 'Trusted Jain Matrimony Platform for Meaningful Relationships. Verified Jain profiles, 4-Gotra lineage details, digital biodata, and secure family matchmaking.',
   keywords: ['Jain Matrimony', 'JainSaathi', 'Jain Matrimonial', 'Shwetambar', 'Digambar', 'Oswal Matrimony', 'Porwal Matrimony', 'Jain Biodata'],
   authors: [{ name: 'JainSaathi Platform' }],
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=5',
   icons: {
     icon: '/favicon.ico',
   },
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({

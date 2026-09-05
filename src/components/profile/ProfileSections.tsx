@@ -54,7 +54,8 @@ export const PersonalDetails = ({ profile, onEdit }: { profile: any, onEdit: () 
         <DataRow label="Height" value={profile.height_cm ? `${profile.height_cm} cm` : ''} />
         <DataRow label="Weight" value={profile.weight_kg ? `${profile.weight_kg} kg` : ''} />
         <DataRow label="Marital Status" value={profile.marital_status?.replace('_', ' ')} />
-        <DataRow label="Mother Tongue" value={profile.languages_known?.join(', ')} />
+        <DataRow label="Mother Tongue" value={profile.mother_tongue} />
+        <DataRow label="Languages Known" value={profile.languages_known?.join(', ')} />
       </div>
     </div>
   );
@@ -118,6 +119,16 @@ export const EducationSection = ({ educationRecords, onAdd, onEdit, onRemove }: 
 };
 
 export const CareerSection = ({ employmentRecords, onAdd, onEdit, onRemove }: { employmentRecords: any[], onAdd: () => void, onEdit: (id: string) => void, onRemove: (id: string) => void }) => {
+  const formatEmploymentType = (type: string) => {
+    if (!type) return 'Professional';
+    return type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+  };
+
+  const isNotWorking = (type: string) => {
+    const t = (type || '').toLowerCase().replace(/[_\s]/g, '');
+    return t === 'notworking' || t === 'unemployed' || t === 'homemaker' || t === 'retired';
+  };
+
   return (
     <div className="bg-[#FFFDFB] border border-[#EBD9DC] rounded-[24px] p-6 shadow-sm mb-6">
       <SectionHeader title="Career & Professional" onAdd={onAdd} />
@@ -130,23 +141,29 @@ export const CareerSection = ({ employmentRecords, onAdd, onEdit, onRemove }: { 
             <div key={emp.id} className="p-4 bg-[#FDF9F4] rounded-xl border border-[#EBD9DC] flex justify-between items-start">
               <div>
                 <div className="inline-block px-2 py-0.5 rounded bg-[#F7E5EA] text-[#8F0038] text-[10px] font-bold uppercase tracking-wider mb-2">
-                  {emp.employment_type?.replace('_', ' ')}
+                  {formatEmploymentType(emp.employment_type)}
                 </div>
-                {emp.employment_type === 'business' || emp.employment_type === 'family_business' ? (
+                {isNotWorking(emp.employment_type) ? (
+                  <p className="text-sm text-[#75666D] font-medium">Currently not employed</p>
+                ) : emp.employment_type === 'business' || emp.employment_type === 'family_business' ? (
                   <>
-                    <h3 className="font-bold text-[#241B20] text-[15px]">{emp.company_name}</h3>
-                    <p className="text-sm text-[#75666D] font-medium">{emp.designation || 'Owner / Partner'} • {emp.industry}</p>
+                    {emp.company_name && <h3 className="font-bold text-[#241B20] text-[15px]">{emp.company_name}</h3>}
+                    <p className="text-sm text-[#75666D] font-medium">
+                      {[emp.designation || 'Owner / Partner', emp.industry].filter(Boolean).join(' • ')}
+                    </p>
                   </>
                 ) : (
                   <>
-                    <h3 className="font-bold text-[#241B20] text-[15px]">{emp.designation}</h3>
-                    <p className="text-sm text-[#75666D] font-medium">{emp.company_name}</p>
+                    {emp.designation && <h3 className="font-bold text-[#241B20] text-[15px]">{emp.designation}</h3>}
+                    {emp.company_name && <p className="text-sm text-[#75666D] font-medium">{emp.company_name}</p>}
                   </>
                 )}
-                <p className="text-xs text-[#75666D] mt-1 flex items-center gap-1">
-                  <MapPin className="w-3 h-3" /> {emp.work_city}, {emp.work_state}
-                </p>
-                {emp.annual_income_lakhs && (
+                {!isNotWorking(emp.employment_type) && (emp.work_city || emp.work_state) && (
+                  <p className="text-xs text-[#75666D] mt-1 flex items-center gap-1">
+                    <MapPin className="w-3 h-3" /> {[emp.work_city, emp.work_state].filter(Boolean).join(', ')}
+                  </p>
+                )}
+                {emp.annual_income_lakhs != null && emp.annual_income_lakhs > 0 && (
                   <p className="text-xs font-semibold text-[#241B20] mt-2 flex items-center gap-1">
                     <Lock className="w-3 h-3 text-[#C99A3D]" /> Income: ₹{emp.annual_income_lakhs} Lakhs/yr
                   </p>
@@ -264,7 +281,7 @@ export const BiodataSection = ({ biodata, onUpload, onGenerate }: { biodata: any
       </div>
       
       <div className="relative z-10">
-        {biodata?.pdf_url ? (
+        {biodata?.id ? (
           <div className="bg-white/10 border border-white/20 rounded-xl p-4 flex items-center justify-between backdrop-blur-sm">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
@@ -276,7 +293,7 @@ export const BiodataSection = ({ biodata, onUpload, onGenerate }: { biodata: any
               </div>
             </div>
             <div className="flex gap-2">
-              <a href={biodata.pdf_url} target="_blank" rel="noreferrer" className="p-2 bg-white text-[#8F0038] rounded-lg hover:bg-[#FDF9F4] transition-colors">
+              <a href={`/api/biodata/${biodata.id}`} target="_blank" rel="noreferrer" className="p-2 bg-white text-[#8F0038] rounded-lg hover:bg-[#FDF9F4] transition-colors">
                 <Eye className="w-4 h-4" />
               </a>
               <button onClick={onUpload} className="p-2 border border-white/30 rounded-lg hover:bg-white/10 transition-colors">

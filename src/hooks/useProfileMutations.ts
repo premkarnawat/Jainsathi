@@ -109,6 +109,40 @@ export function useProfileMutations(profileId: string) {
     }
   };
 
+  const updatePartnerPreferences = async (data: any) => {
+    try {
+      setSaving(true);
+      setError(null);
+      const { error: err } = await supabase
+        .from('partner_preferences')
+        .upsert({ candidate_id: profileId, ...data }, { onConflict: 'candidate_id' });
+      if (err) throw err;
+      return true;
+    } catch (err: any) {
+      setError(err.message);
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updatePrivacy = async (data: any) => {
+    try {
+      setSaving(true);
+      setError(null);
+      const { error: err } = await supabase
+        .from('profile_privacies')
+        .upsert({ candidate_id: profileId, ...data }, { onConflict: 'candidate_id' });
+      if (err) throw err;
+      return true;
+    } catch (err: any) {
+      setError(err.message);
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return {
     saving,
     error,
@@ -116,6 +150,8 @@ export function useProfileMutations(profileId: string) {
     upsertJainIdentity,
     addEducation,
     upsertEmployment,
-    upsertLifestyle
+    upsertLifestyle,
+    updatePartnerPreferences,
+    updatePrivacy
   };
 }

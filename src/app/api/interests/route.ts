@@ -1,8 +1,28 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: Request) {
   try {
+    const supabase = createServerSupabaseClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 });
+    }
+
+    const { data: dbUser } = await supabase.from('users').select('id').eq('auth_id', user.id).single();
+    const { data: candidateProfile } = await supabase.from('candidate_profiles').select('id').eq('user_id', dbUser?.id).single();
+
+    if (!dbUser || !candidateProfile) {
+      return NextResponse.json({ success: false, error: 'Profile not found' }, { status: 404 });
+    }
+
+    const clientIp = request.headers.get('x-forwarded-for') || 'anon';
+    const rateCheck = checkRateLimit(`interests:${clientIp}`, 10, 60);
+    if (!rateCheck.allowed) {
+      return NextResponse.json({ success: false, error: 'Rate limit exceeded' }, { status: 429 });
+    }
+
     const body = await request.json();
     const { senderId, receiverId, action = 'send' } = body;
 
@@ -13,7 +33,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabase = createServerSupabaseClient();
+    if (action === 'send' && senderId !== candidateProfile.id) {
+      return NextResponse.json({ success: false, error: 'Unauthorized sender' }, { status: 403 });
+    }
+    
+    if ((action === 'accept' || action === 'decline') && receiverId !== candidateProfile.id) {
+      return NextResponse.json({ success: false, error: 'Unauthorized receiver' }, { status: 403 });
+    }
+
 
     if (action === 'send') {
       // Create or update interest request

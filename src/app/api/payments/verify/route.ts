@@ -4,6 +4,14 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 export async function POST(request: Request) {
   try {
+    const supabase = createServerSupabaseClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 });
+    }
+
+    const { data: dbUser } = await supabase.from('users').select('id').eq('auth_id', user.id).single();
+
     const body = await request.json();
     const { userId, planId, razorpayOrderId, razorpayPaymentId, razorpaySignature } = body;
 
@@ -12,6 +20,10 @@ export async function POST(request: Request) {
         { success: false, error: 'Missing required payment verification tokens' },
         { status: 400 }
       );
+    }
+    
+    if (userId !== dbUser?.id) {
+      return NextResponse.json({ success: false, error: 'Unauthorized user' }, { status: 403 });
     }
 
     const secret = process.env.RAZORPAY_SECRET || 'dummy_razorpay_secret_key';
@@ -22,8 +34,7 @@ export async function POST(request: Request) {
       .update(`${razorpayOrderId}|${razorpayPaymentId}`)
       .digest('hex');
 
-    const isValidSignature =
-      generatedSignature === razorpaySignature || process.env.NODE_ENV !== 'production';
+    const isValidSignature = generatedSignature === razorpaySignature;
 
     if (!isValidSignature) {
       return NextResponse.json(
@@ -32,7 +43,19 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabase = createServerSupabaseClient();
+    // Idempotency Check
+    const { data: existingPayment } = await supabase
+      .from('payments')
+      .select('status')
+      .eq('provider_order_id', razorpayOrderId)
+      .single();
+
+    if (existingPayment?.status === 'success') {
+      return NextResponse.json({
+        success: true,
+        message: 'Payment already verified.',
+      });
+    }
 
     // 1. Update Payment record to Success
     await supabase
