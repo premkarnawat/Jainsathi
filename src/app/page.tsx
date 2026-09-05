@@ -1,18 +1,16 @@
 import React from 'react';
 import Header from '@/components/landing/Header';
 import HeroSection from '@/components/landing/HeroSection';
+import TrustRibbonStrip from '@/components/landing/TrustRibbonStrip';
 import WhyJainSaathi from '@/components/landing/WhyJainSaathi';
-import TrustSystem from '@/components/landing/TrustSystem';
-import AnimatedTrustMetrics from '@/components/landing/AnimatedTrustMetrics';
+import PlatformExperienceShowcase from '@/components/landing/PlatformExperienceShowcase';
+import BiodataFeatureBlock from '@/components/landing/BiodataFeatureBlock';
 import HowItWorksStickyCanvas from '@/components/landing/HowItWorksStickyCanvas';
-import MatchingEngineSection from '@/components/landing/MatchingEngineSection';
-import InterestFlowSection from '@/components/landing/InterestFlowSection';
 import PrivacySection from '@/components/landing/PrivacySection';
 import FamilyTrustSection from '@/components/landing/FamilyTrustSection';
 import JainCommunitySection from '@/components/landing/JainCommunitySection';
-import DigitalBiodataSection from '@/components/landing/DigitalBiodataSection';
 import SuccessStoriesSection from '@/components/landing/SuccessStoriesSection';
-import PricingSection from '@/components/landing/PricingSection';
+import CoverFlowPricingSection from '@/components/landing/CoverFlowPricingSection';
 import SafetyTransparencySection from '@/components/landing/SafetyTransparencySection';
 import FinalCTASection from '@/components/landing/FinalCTASection';
 import Footer from '@/components/landing/Footer';
@@ -22,60 +20,55 @@ import FloatingPetals from '@/components/landing/FloatingPetals';
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background font-sans text-text selection:bg-deepBurgundy selection:text-white relative overflow-x-hidden">
-      {/* Global Cinematic Floating Petals & Gold Glimmer Particles */}
+      {/* Global Cinematic Floating Petals & Gold Glimmer Particles (Drifting Across Full Viewport) */}
       <div className="fixed inset-0 pointer-events-none z-30">
         <FloatingPetals />
       </div>
+
       {/* 13-Step Cinematic Initial Entrance Sequencer */}
       <PageIntroLoader />
 
-      {/* Sticky Glassmorphism Header */}
+      {/* Sticky Elevated Glassmorphism Header */}
       <Header />
       
       <main>
-        {/* 1. Hero Section (Parallax, Masked Image, Floating Parallax Cards) */}
+        {/* 1. Hero Section (Reference 1 Composition: Left Editorial Typography, Right Angled Wedding Frame + Circular Aura + 4 Floating Parallax Cards) */}
         <HeroSection />
 
-        {/* 2. Dynamic Count-up Statistics & Verification Pipeline */}
-        <AnimatedTrustMetrics />
+        {/* 2. Trust Ribbon Strip (Reference 1 Dark Curved Banner Pill Strip with Partner Badges & Live Counters) */}
+        <TrustRibbonStrip />
 
-        {/* 3. Why JainSaathi Concept Canvas */}
+        {/* 3. "What We Provide?" (Reference 1: 4 Elongated Vertical Oval Pill Cards on Soft Curved Wave) */}
         <WhyJainSaathi />
 
-        {/* 4. Four Core Trust Pillars */}
-        <TrustSystem />
+        {/* 4. Platform Experience Showcase (Reference 1: Split Section with Floating Mobile Device Mockup) */}
+        <PlatformExperienceShowcase />
 
-        {/* 5. Cinematic Sticky Scroll Product Demonstration (6 Steps) */}
+        {/* 5. 4-Gotra Digital Biodata Block (Reference 1: Dark Contrast Rounded Block with Angled 3D Document) */}
+        <BiodataFeatureBlock />
+
+        {/* 6. Interactive 6-Step Matchmaking Workflow Simulation */}
         <HowItWorksStickyCanvas />
 
-        {/* 6. Matching Engine & UI Experience (92% Score Mockup) */}
-        <MatchingEngineSection />
-
-        {/* 7. Mutual Consent Interest Flow */}
-        <InterestFlowSection />
-
-        {/* 8. Privacy First Protected Controls */}
+        {/* 7. Privacy First & Photo Visibility Protection */}
         <PrivacySection />
 
-        {/* 9. Designed for Individuals, Trusted by Families */}
+        {/* 8. Built for Individuals, Designed for Families */}
         <FamilyTrustSection />
 
-        {/* 10. Exclusively Built for the Jain Community */}
+        {/* 9. Exclusively Built for the Jain Community */}
         <JainCommunitySection />
 
-        {/* 11. Digital Matrimonial Biodata Document Preview */}
-        <DigitalBiodataSection />
-
-        {/* 12. Success Stories & Real Unions */}
+        {/* 10. Heartfelt Success Stories (Reference 1: Clean Testimonial Review Cards Slider) */}
         <SuccessStoriesSection />
 
-        {/* 13. Transparent Pricing & Bride Offer Banner */}
-        <PricingSection />
+        {/* 11. 3D Cover-Flow Pricing Section (Reference 2: 3D Perspective Card Carousel + Details Modal + Bride Offer) */}
+        <CoverFlowPricingSection />
 
-        {/* 14. Safety & Moderation Safeguards */}
+        {/* 12. Safety, Moderation & Security Safeguards */}
         <SafetyTransparencySection />
 
-        {/* 15. Final Emotion-Driven Closing Section */}
+        {/* 13. Dramatic Closing Section (Parallax Wedding Artwork under Deep Burgundy Gradient) */}
         <FinalCTASection />
       </main>
 

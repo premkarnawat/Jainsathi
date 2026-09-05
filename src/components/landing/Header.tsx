@@ -47,8 +47,8 @@ export default function Header() {
               <span className="font-serif text-2xl font-bold text-deepBurgundy tracking-tight leading-none">
                 JainSaathi
               </span>
-              <span className="text-[9px] uppercase tracking-[0.2em] text-champagneGold font-semibold mt-1">
-                Find Your Jain Saathi
+              <span className="text-[8.5px] uppercase tracking-[0.22em] text-champagneGold font-semibold mt-1">
+                FIND YOUR JAIN SAATHI
               </span>
             </div>
           </Link>
@@ -59,7 +59,7 @@ export default function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-text/80 hover:text-deepBurgundy transition-colors hover:font-semibold"
+                className="text-sm font-medium text-text/80 hover:text-deepBurgundy transition-colors nav-link-hover py-1"
               >
                 {link.label}
               </Link>

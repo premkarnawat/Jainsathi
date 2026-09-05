@@ -1,23 +1,24 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
 import { Sparkles, ChevronRight, Heart } from 'lucide-react';
 
 export default function FinalCTASection() {
-  React.useEffect(() => {
+  useEffect(() => {
     // Parallax background zoom on scroll
     const gsap = (window as any).gsap;
     const ScrollTrigger = (window as any).ScrollTrigger;
     if (gsap && ScrollTrigger) {
       gsap.to('.cta-bg-zoom', {
-        scale: 1.1,
+        scale: 1.12,
         ease: 'none',
         scrollTrigger: {
           trigger: '#final-cta',
           start: 'top bottom',
           end: 'bottom top',
-          scrub: true,
+          scrub: 1,
         }
       });
     }
@@ -39,7 +40,7 @@ export default function FinalCTASection() {
       </div>
 
       {/* Decorative Golden Ring / Aura */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[450px] bg-gradient-to-tr from-champagneGold/20 via-softRose/10 to-transparent rounded-full blur-3xl pointer-events-none -z-0" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[680px] h-[480px] bg-gradient-to-tr from-champagneGold/20 via-softRose/10 to-transparent rounded-full blur-3xl pointer-events-none -z-0" />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex flex-col items-center">
@@ -51,12 +52,12 @@ export default function FinalCTASection() {
           <h2 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
             Your Jain Saathi Could Be <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-champagneGold via-softGold to-champagneGold italic font-normal">
-              Closer Than You Think.
+              One Profile Away.
             </span>
           </h2>
 
-          <p className="text-base sm:text-lg lg:text-xl text-white/80 max-w-2xl mb-10 leading-relaxed">
-            Create a trusted profile and begin your journey toward a meaningful Jain connection.
+          <p className="text-base sm:text-lg lg:text-xl text-white/80 max-w-2xl mb-10 leading-relaxed font-sans">
+            Create your verified profile and discover meaningful connections within the Jain community.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
@@ -69,10 +70,10 @@ export default function FinalCTASection() {
             </Link>
 
             <Link
-              href="/login"
+              href="#how-it-works"
               className="btn-gold-outline w-full sm:w-auto text-base sm:text-lg px-8 py-4 border-white/40 text-white hover:bg-white/10 shadow-sm transition-all"
             >
-              Login
+              Find Your Match
               <ChevronRight className="w-4 h-4 text-white" />
             </Link>
           </div>
