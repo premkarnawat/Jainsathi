@@ -1,79 +1,70 @@
 import React from 'react';
 import Header from '@/components/landing/Header';
 import HeroSection from '@/components/landing/HeroSection';
-import TrustRibbonStrip from '@/components/landing/TrustRibbonStrip';
 import WhyJainSaathi from '@/components/landing/WhyJainSaathi';
-import PlatformExperienceShowcase from '@/components/landing/PlatformExperienceShowcase';
-import BiodataFeatureBlock from '@/components/landing/BiodataFeatureBlock';
-import HowItWorksStickyCanvas from '@/components/landing/HowItWorksStickyCanvas';
+import HowItWorksSection from '@/components/landing/HowItWorksSection';
 import PrivacySection from '@/components/landing/PrivacySection';
-import FamilyTrustSection from '@/components/landing/FamilyTrustSection';
-import JainCommunitySection from '@/components/landing/JainCommunitySection';
-import SuccessStoriesSection from '@/components/landing/SuccessStoriesSection';
-import CoverFlowPricingSection from '@/components/landing/CoverFlowPricingSection';
-import SafetyTransparencySection from '@/components/landing/SafetyTransparencySection';
+import FamilyAndCommunitySection from '@/components/landing/FamilyAndCommunitySection';
+import PricingSectionExact from '@/components/landing/PricingSectionExact';
 import FinalCTASection from '@/components/landing/FinalCTASection';
 import Footer from '@/components/landing/Footer';
-import PageIntroLoader from '@/components/landing/PageIntroLoader';
+import UnboxingSection from '@/components/landing/UnboxingSection';
 import FloatingPetals from '@/components/landing/FloatingPetals';
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-background font-sans text-text selection:bg-deepBurgundy selection:text-white relative overflow-x-hidden">
-      {/* Global Cinematic Floating Petals & Gold Glimmer Particles (Drifting Across Full Viewport) */}
+    <div className="min-h-screen bg-[#FAF3ED] font-sans text-text selection:bg-deepBurgundy selection:text-white relative overflow-x-hidden">
+      
+      {/* Floating Lotus & Gold Petals across Viewport */}
       <div className="fixed inset-0 pointer-events-none z-30">
         <FloatingPetals />
       </div>
 
-      {/* 13-Step Cinematic Initial Entrance Sequencer */}
-      <PageIntroLoader />
-
-      {/* Sticky Elevated Glassmorphism Header */}
+      {/* Sticky Top Header */}
       <Header />
       
       <main>
-        {/* 1. Hero Section (Reference 1 Composition: Left Editorial Typography, Right Angled Wedding Frame + Circular Aura + 4 Floating Parallax Cards) */}
-        <HeroSection />
+        {/* 1. Hero Section (Full Panoramic Wedding Artwork + Editorial Copy + 3-Trust Pill) */}
+        <UnboxingSection>
+          <HeroSection />
+        </UnboxingSection>
 
-        {/* 2. Trust Ribbon Strip (Reference 1 Dark Curved Banner Pill Strip with Partner Badges & Live Counters) */}
-        <TrustRibbonStrip />
+        {/* 2. "Why JainSaathi?" Section (Left Title/Button + 4 White Cards) */}
+        <UnboxingSection>
+          <WhyJainSaathi />
+        </UnboxingSection>
 
-        {/* 3. "What We Provide?" (Reference 1: 4 Elongated Vertical Oval Pill Cards on Soft Curved Wave) */}
-        <WhyJainSaathi />
+        {/* 3. "How JainSaathi Works" Section (6-Step Pipeline + Dual Mobile Phones + Smart Matching) */}
+        <UnboxingSection>
+          <HowItWorksSection />
+        </UnboxingSection>
 
-        {/* 4. Platform Experience Showcase (Reference 1: Split Section with Floating Mobile Device Mockup) */}
-        <PlatformExperienceShowcase />
+        {/* 4. "Your Privacy Comes First" Section (4 Security Cards + 3D Metallic Shield) */}
+        <UnboxingSection>
+          <PrivacySection />
+        </UnboxingSection>
 
-        {/* 5. 4-Gotra Digital Biodata Block (Reference 1: Dark Contrast Rounded Block with Angled 3D Document) */}
-        <BiodataFeatureBlock />
+        {/* 5. "Built for Individuals. Designed for Families." & "Rooted in the Jain Community" */}
+        <UnboxingSection>
+          <FamilyAndCommunitySection />
+        </UnboxingSection>
 
-        {/* 6. Interactive 6-Step Matchmaking Workflow Simulation */}
-        <HowItWorksStickyCanvas />
+        {/* 6. "Choose Your JainSaathi Journey" (Deep Burgundy 4 Pricing Cards + Bride Offer) */}
+        <UnboxingSection>
+          <PricingSectionExact />
+        </UnboxingSection>
 
-        {/* 7. Privacy First & Photo Visibility Protection */}
-        <PrivacySection />
+        {/* NOTE: Success Stories section is omitted per user's explicit directive: "just dont add sucess stories section in that" */}
 
-        {/* 8. Built for Individuals, Designed for Families */}
-        <FamilyTrustSection />
-
-        {/* 9. Exclusively Built for the Jain Community */}
-        <JainCommunitySection />
-
-        {/* 10. Heartfelt Success Stories (Reference 1: Clean Testimonial Review Cards Slider) */}
-        <SuccessStoriesSection />
-
-        {/* 11. 3D Cover-Flow Pricing Section (Reference 2: 3D Perspective Card Carousel + Details Modal + Bride Offer) */}
-        <CoverFlowPricingSection />
-
-        {/* 12. Safety, Moderation & Security Safeguards */}
-        <SafetyTransparencySection />
-
-        {/* 13. Dramatic Closing Section (Parallax Wedding Artwork under Deep Burgundy Gradient) */}
-        <FinalCTASection />
+        {/* 7. "Your Jain Saathi Could Be Closer Than You Think." (Closing CTA + 4 Vertical Badges) */}
+        <UnboxingSection>
+          <FinalCTASection />
+        </UnboxingSection>
       </main>
 
-      {/* Comprehensive 4-Column Luxury Footer */}
+      {/* 8. Luxury 4-Column Maroon Footer with Lotus Motif */}
       <Footer />
+
     </div>
   );
 }

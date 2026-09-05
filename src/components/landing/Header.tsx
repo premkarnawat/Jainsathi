@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Sparkles } from 'lucide-react';
+import { Menu, X, ArrowRight, Bell, Globe } from 'lucide-react';
 import LanguageToggle from '@/components/ui/LanguageToggle';
 
 export default function Header() {
@@ -23,7 +23,6 @@ export default function Header() {
     { href: '#why-us', label: 'Why JainSaathi' },
     { href: '#how-it-works', label: 'How It Works' },
     { href: '#safety', label: 'Safety & Privacy' },
-    { href: '#success-stories', label: 'Success Stories' },
     { href: '#pricing', label: 'Pricing' },
     { href: '/help', label: 'Help' },
   ];
@@ -33,79 +32,94 @@ export default function Header() {
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled
-            ? 'bg-[#FFFDF9]/90 backdrop-blur-md shadow-sm border-b border-[#E8D8CE]/80 py-3.5'
-            : 'bg-transparent py-5'
+            ? 'bg-[#FFFDFB]/95 backdrop-blur-md shadow-sm border-b border-[#EADBD1] py-3'
+            : 'bg-[#FFFDFB]/85 backdrop-blur-sm border-b border-[#F0E4DC]/80 py-4'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          {/* Brand Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-deepBurgundy to-[#4E0D25] border border-champagneGold/60 flex items-center justify-center shadow-md shadow-deepBurgundy/15 transition-transform group-hover:scale-105">
-              <span className="text-champagneGold font-serif italic text-xl font-bold tracking-tight">JS</span>
+          
+          {/* Left Brand Logo */}
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="relative w-9 h-9 rounded-full bg-gradient-to-br from-deepBurgundy to-[#550B24] border border-champagneGold/60 flex items-center justify-center shadow-md shadow-deepBurgundy/15 transition-transform group-hover:scale-105">
+              <span className="text-champagneGold font-serif italic text-lg font-bold tracking-tight">JS</span>
             </div>
             <div className="flex flex-col">
-              <span className="font-serif text-2xl font-bold text-deepBurgundy tracking-tight leading-none">
+              <span className="font-serif text-xl sm:text-2xl font-bold text-deepBurgundy tracking-tight leading-none">
                 JainSaathi
               </span>
-              <span className="text-[8.5px] uppercase tracking-[0.22em] text-champagneGold font-semibold mt-1">
+              <span className="text-[8px] uppercase tracking-[0.2em] text-champagneGold font-bold mt-1">
                 FIND YOUR JAIN SAATHI
               </span>
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* Center Navigation Links (Exact to image) */}
           <nav className="hidden lg:flex items-center gap-7">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-text/80 hover:text-deepBurgundy transition-colors nav-link-hover py-1"
+                className="text-xs sm:text-sm font-medium text-text/80 hover:text-deepBurgundy transition-colors nav-link-hover py-1"
               >
                 {link.label}
               </Link>
             ))}
           </nav>
 
-          {/* Desktop Actions */}
+          {/* Right Action Controls */}
           <div className="hidden lg:flex items-center gap-4">
-            <div className="bg-white/80 border border-border/80 rounded-full px-3 py-1.5 shadow-sm">
+            
+            {/* Language Switcher Pill */}
+            <div className="flex items-center gap-1 bg-[#FDF7F2] border border-border px-3 py-1.5 rounded-full shadow-sm text-xs font-semibold text-deepBurgundy">
+              <Globe className="w-3.5 h-3.5 text-champagneGold" />
               <LanguageToggle className="text-xs font-semibold text-deepBurgundy" />
             </div>
 
-            <div className="h-5 w-px bg-border mx-1" />
+            {/* Notification Bell */}
+            <button
+              type="button"
+              aria-label="Notifications"
+              className="w-8 h-8 rounded-full bg-[#FDF7F2] border border-border flex items-center justify-center text-text/70 hover:text-deepBurgundy transition-colors"
+            >
+              <Bell className="w-3.5 h-3.5" />
+            </button>
 
+            {/* Login Link */}
             <Link
               href="/login"
-              className="text-sm font-bold text-deepBurgundy hover:text-darkBurgundy transition-colors px-2"
+              className="text-xs sm:text-sm font-bold text-deepBurgundy hover:text-darkBurgundy transition-colors px-2"
             >
               Login
             </Link>
+
+            {/* Create Profile Primary CTA Pill with Arrow */}
             <Link
               href="/register"
-              className="btn-ruby text-sm px-5 py-2.5 shadow-md shadow-deepBurgundy/20 hover:shadow-lg transition-all"
+              className="btn-ruby text-xs sm:text-sm px-5 py-2.5 shadow-md shadow-deepBurgundy/20 hover:shadow-lg transition-all"
             >
-              <Sparkles className="w-3.5 h-3.5 text-champagneGold" />
-              Create Profile
+              <span>Create Profile</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          {/* Mobile Actions */}
-          <div className="flex lg:hidden items-center gap-3">
-            <div className="bg-white/90 border border-border rounded-full px-2 py-1">
+          {/* Mobile Hamburger Menu Toggle */}
+          <div className="flex lg:hidden items-center gap-2.5">
+            <div className="bg-[#FDF7F2] border border-border rounded-full px-2 py-1">
               <LanguageToggle className="text-xs font-semibold text-deepBurgundy" />
             </div>
             <button
               aria-label="Open Navigation Menu"
               onClick={() => setMobileMenuOpen(true)}
-              className="p-2 rounded-xl bg-white/80 border border-border text-deepBurgundy shadow-sm"
+              className="p-2 rounded-xl bg-white border border-border text-deepBurgundy shadow-sm"
             >
               <Menu className="w-5 h-5" />
             </button>
           </div>
+
         </div>
       </header>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Menu Drawer */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
@@ -121,7 +135,7 @@ export default function Header() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="fixed top-0 right-0 w-[85%] max-w-sm h-full bg-[#FFFDF9] shadow-2xl z-50 flex flex-col lg:hidden border-l border-border"
+              className="fixed top-0 right-0 w-[85%] max-w-sm h-full bg-[#FFFDFB] shadow-2xl z-50 flex flex-col lg:hidden border-l border-border"
             >
               <div className="flex items-center justify-between p-6 border-b border-border">
                 <div className="flex items-center gap-2">
