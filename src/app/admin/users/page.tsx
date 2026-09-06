@@ -38,13 +38,7 @@ export default function AdminCandidatesPage() {
     try {
       let query = supabase
         .from('candidate_profiles')
-        .select(`
-          id, first_name, last_name, gender, date_of_birth, current_city, current_state,
-          verification_status, completion_percentage, photos, created_at,
-          users ( email, phone, role ),
-          jain_identities ( sect, community ),
-          subscriptions ( plan_id, status )
-        `)
+        .select(`*`)
         .order('created_at', { ascending: false });
 
       // Enforce strict SQL-level gender separation
@@ -82,8 +76,10 @@ export default function AdminCandidatesPage() {
           paidPct: 32,
         });
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching candidates:', err);
+      // Temporarily store the error so we can debug it on screen if it fails
+      setCandidates([{ id: 'ERROR_DEBUG', first_name: 'Error', last_name: err?.message || JSON.stringify(err) }]);
     } finally {
       setLoading(false);
     }
@@ -235,6 +231,11 @@ export default function AdminCandidatesPage() {
             <span className="text-black font-extrabold">{candidates.length}</span>
           </div>
         </div>
+      </div>
+
+      {/* DEBUG BLOCK TO HELP AGENT */}
+      <div className="bg-red-50 text-red-800 p-4 rounded-xl text-xs font-mono break-all mb-4">
+        <strong>DEBUG DATA:</strong> {JSON.stringify(candidates.length > 0 ? candidates : 'EMPTY')}
       </div>
 
       {/* 3. Floating Capsule Search & Filter Bar (Crextio Reference) */}
