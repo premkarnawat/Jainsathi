@@ -40,7 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="fixed inset-0 bg-black/60 z-40 md:hidden" onClick={() => setIsMobileOpen(false)} />
       )}
 
-      <aside className={ixed inset-y-0 left-0 z-50 w-64 bg-[#100A18] border-r border-[#8F0038]/30 flex flex-col transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:w-64 }>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#100A18] border-r border-[#8F0038]/30 flex flex-col transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:w-64 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-6 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <JainSaathiLogo variant="dark" size="sm" />
@@ -58,9 +58,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <a 
                 key={item.name}
                 href={item.href}
-                className={lex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 }
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${isActive ? 'bg-[#8F0038] text-white shadow-lg shadow-[#8F0038]/20' : 'text-[#F3D59B]/60 hover:bg-white/5 hover:text-[#F3D59B]'}`}
               >
-                <item.icon className={w-5 h-5 } />
+                <item.icon className={`w-5 h-5 ${isActive ? 'text-[#F3D59B]' : ''}`} />
                 {item.name}
               </a>
             );

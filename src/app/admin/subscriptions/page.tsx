@@ -16,10 +16,10 @@ export default function AdminSubscriptionsPage() {
     setLoading(true);
     const { data } = await supabase
       .from('subscriptions')
-      .select(\
+      .select(`
         *,
         users ( email, phone )
-      \)
+      `)
       .order('created_at', { ascending: false })
       .limit(100);
       

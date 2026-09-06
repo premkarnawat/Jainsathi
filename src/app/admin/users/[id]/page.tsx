@@ -23,7 +23,7 @@ export default function AdminUserProfileView() {
     try {
       const { data, error } = await supabase
         .from('candidate_profiles')
-        .select(\
+        .select(`
           *,
           users ( email, phone, role, created_at ),
           personal_details (*),
@@ -34,7 +34,7 @@ export default function AdminUserProfileView() {
           lifestyle_profiles (*),
           partner_preferences (*),
           biodatas (*)
-        \)
+        `)
         .eq('id', id)
         .single();
         
@@ -57,7 +57,7 @@ export default function AdminUserProfileView() {
         <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
         <h2 className="text-xl font-bold text-gray-800">Profile Not Found</h2>
         <p className="text-gray-500 mt-2">{error}</p>
-        <Link href="/admin/users" className="text-[#8F0038] font-bold mt-4 inline-block hover:underline">? Back to Directory</Link>
+        <Link href="/admin/users" className="text-[#8F0038] font-bold mt-4 inline-block hover:underline">← Back to Directory</Link>
       </div>
     );
   }
@@ -106,7 +106,7 @@ export default function AdminUserProfileView() {
           <div className="bg-[#FFFDFB] rounded-[24px] border border-[#EBD9DC] shadow-sm p-6 flex flex-col items-center text-center">
             <div className="w-24 h-24 rounded-full bg-gray-100 border-4 border-white shadow-lg overflow-hidden mb-4">
               {profile.photos?.[0] ? (
-                <img src={\https://hchxytnssymfobqohowk.supabase.co/storage/v1/object/public/profile-photos/\\} alt="Profile" className="w-full h-full object-cover" />
+                <img src={`https://hchxytnssymfobqohowk.supabase.co/storage/v1/object/public/profile-photos/${profile.photos[0]}`} alt="Profile" className="w-full h-full object-cover" />
               ) : (
                 <User className="w-12 h-12 text-gray-300 m-auto mt-5" />
               )}
@@ -142,7 +142,7 @@ export default function AdminUserProfileView() {
 
           <div className="bg-[#FFFDFB] rounded-[24px] border border-[#EBD9DC] shadow-sm p-6">
             <SectionTitle title="Location & Lifestyle" icon={MapPin} />
-            <DataRow label="Current City" value={\\, \\} />
+            <DataRow label="Current City" value={`${profile.current_city || '-'}, ${profile.current_state || '-'}`} />
             <DataRow label="Diet" value={lifestyle.diet?.replace('_', ' ')} />
             <DataRow label="Smoker" value={lifestyle.smoking ? 'Yes' : 'No'} />
             <DataRow label="Alcohol" value={lifestyle.alcohol ? 'Yes' : 'No'} />
@@ -158,7 +158,7 @@ export default function AdminUserProfileView() {
               <DataRow label="Birth Time" value={personal.birth_time} />
               <DataRow label="Birth Place" value={personal.birth_place} />
               <DataRow label="Marital Status" value={personal.marital_status} />
-              <DataRow label="Height" value={personal.height_cm ? \\ cm\ : '-'} />
+              <DataRow label="Height" value={personal.height_cm ? `${personal.height_cm} cm` : '-'} />
               <DataRow label="Blood Group" value={personal.blood_group} />
               <DataRow label="Mother Tongue" value={personal.mother_tongue} />
               <DataRow label="Languages" value={personal.languages_known?.join(', ')} />
@@ -196,8 +196,8 @@ export default function AdminUserProfileView() {
           <div className="bg-[#FFFDFB] rounded-[24px] border border-[#EBD9DC] shadow-sm p-6">
             <SectionTitle title="Partner Preferences" icon={Heart} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
-              <DataRow label="Age Range" value={\\ to \ yrs\} />
-              <DataRow label="Min Height" value={prefs.min_height_cm ? \\ cm\ : '-'} />
+              <DataRow label="Age Range" value={`${prefs.min_age || '-'} to ${prefs.max_age || '-'} yrs`} />
+              <DataRow label="Min Height" value={prefs.min_height_cm ? `${prefs.min_height_cm} cm` : '-'} />
               <DataRow label="Allowed Marital" value={prefs.allowed_marital_statuses?.join(', ')} />
               <DataRow label="Preferred Diet" value={prefs.preferred_diet?.replace('_', ' ')} />
               <DataRow label="Pref. Sects" value={prefs.preferred_sects?.join(', ')} />
@@ -209,7 +209,7 @@ export default function AdminUserProfileView() {
             <SectionTitle title="Uploaded Documents" icon={Briefcase} />
             {biodata?.file_path ? (
               <a 
-                href={\https://hchxytnssymfobqohowk.supabase.co/storage/v1/object/public/biodatas/\\} 
+                href={`https://hchxytnssymfobqohowk.supabase.co/storage/v1/object/public/biodatas/${biodata.file_path}`} 
                 target="_blank"
                 className="inline-flex items-center gap-2 px-4 py-2 bg-[#8F0038] text-white font-bold text-sm rounded-xl shadow-sm hover:bg-[#A30040] transition-colors"
               >

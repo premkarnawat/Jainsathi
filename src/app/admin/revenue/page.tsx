@@ -16,10 +16,10 @@ export default function AdminRevenuePage() {
     setLoading(true);
     const { data } = await supabase
       .from('payments')
-      .select(\
+      .select(`
         *,
         users ( email, phone )
-      \)
+      `)
       .order('created_at', { ascending: false })
       .limit(100);
       
@@ -46,7 +46,7 @@ export default function AdminRevenuePage() {
           </div>
           <div>
             <p className="text-xs font-bold text-[#75666D] uppercase tracking-wider">Total Revenue</p>
-            <p className="text-3xl font-serif font-bold text-[#241A20]">?{totalRevenue.toLocaleString()}</p>
+            <p className="text-3xl font-serif font-bold text-[#241A20]">₹{totalRevenue.toLocaleString()}</p>
           </div>
         </div>
       </div>
@@ -78,7 +78,7 @@ export default function AdminRevenuePage() {
                     <p className="text-[10px] text-[#75666D]">{payment.users?.phone}</p>
                   </td>
                   <td className="p-4 font-bold text-[#241A20]">
-                    ?{payment.amount_inr}
+                    ₹{payment.amount_inr}
                   </td>
                   <td className="p-4">
                     {payment.status === 'success' ? (

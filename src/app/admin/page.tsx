@@ -34,8 +34,8 @@ export default function AdminDashboardPage() {
     const { count: activeSubs } = await supabase.from('subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'active');
     
     // Revenue (Sum of successful payments)
-    const { data: payments } = await supabase.from('payments').select('amount').eq('status', 'success');
-    const totalRevenue = payments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+    const { data: payments } = await supabase.from('payments').select('amount_inr').eq('status', 'success');
+    const totalRevenue = payments?.reduce((sum, p) => sum + (p.amount_inr || 0), 0) || 0;
     
     // Pending Verifications
     const { count: pendingVerifications } = await supabase.from('identity_verifications').select('*', { count: 'exact', head: true }).eq('status', 'pending');
@@ -65,7 +65,6 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        {/* Stat Cards */}
         <div className="bg-[#FDF9F4] border border-[#EBD9DC] p-5 rounded-2xl shadow-sm">
           <p className="text-[10px] font-bold text-[#75666D] uppercase tracking-wider mb-1">Total Users</p>
           <p className="text-3xl font-serif font-bold text-[#8F0038]">{stats.totalUsers}</p>
@@ -84,7 +83,7 @@ export default function AdminDashboardPage() {
         </div>
         <div className="bg-[#FDF9F4] border border-[#EBD9DC] p-5 rounded-2xl shadow-sm">
           <p className="text-[10px] font-bold text-[#75666D] uppercase tracking-wider mb-1">Revenue (INR)</p>
-          <p className="text-3xl font-serif font-bold text-[#8F0038]">?{stats.totalRevenue.toLocaleString()}</p>
+          <p className="text-3xl font-serif font-bold text-[#8F0038]">₹{stats.totalRevenue.toLocaleString()}</p>
         </div>
         <div className="bg-[#FDF9F4] border border-[#EBD9DC] p-5 rounded-2xl shadow-sm">
           <p className="text-[10px] font-bold text-[#75666D] uppercase tracking-wider mb-1">Pending ID Verifications</p>

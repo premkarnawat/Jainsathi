@@ -15,13 +15,13 @@ export default function AdminVerificationsPage() {
     setLoading(true);
     const { data } = await supabase
       .from('identity_verifications')
-      .select(
+      .select(`
         id, status, submitted_at, document_path, selfie_path,
         candidate_profiles (
           id, first_name, last_name, current_city, current_state, gender,
           jain_identities ( sect, community )
         )
-      )
+      `)
       .eq('status', 'pending');
     setVerifications(data || []);
     setLoading(false);
@@ -45,7 +45,7 @@ export default function AdminVerificationsPage() {
     if (!cand || !cand.jain_identities) return 'N/A';
     const j = Array.isArray(cand.jain_identities) ? cand.jain_identities[0] : cand.jain_identities;
     if (!j) return 'N/A';
-    return ${j.sect || ''} • ;
+    return `${j.sect || ''} â€¢ ${j.community || ''}`;
   };
 
   return (
@@ -82,8 +82,8 @@ export default function AdminVerificationsPage() {
                   <td className="p-4 text-[#75666D]">{v.candidate_profiles?.current_city}, {v.candidate_profiles?.current_state}</td>
                   <td className="p-4">
                     <div className="flex gap-3">
-                      <a href={https://hchxytnssymfobqohowk.supabase.co/storage/v1/object/public/verification-selfies/} target="_blank" className="text-[#8F0038] font-bold text-xs hover:underline bg-[#FDF9F4] px-2 py-1 rounded">View Selfie</a>
-                      <a href={https://hchxytnssymfobqohowk.supabase.co/storage/v1/object/public/verification-documents/} target="_blank" className="text-[#C99A3D] font-bold text-xs hover:underline bg-[#FDF9F4] px-2 py-1 rounded">View ID Doc</a>
+                      <a href={`https://hchxytnssymfobqohowk.supabase.co/storage/v1/object/public/verification-selfies/${v.selfie_path}`} target="_blank" className="text-[#8F0038] font-bold text-xs hover:underline bg-[#FDF9F4] px-2 py-1 rounded">View Selfie</a>
+                      <a href={`https://hchxytnssymfobqohowk.supabase.co/storage/v1/object/public/verification-documents/${v.document_path}`} target="_blank" className="text-[#C99A3D] font-bold text-xs hover:underline bg-[#FDF9F4] px-2 py-1 rounded">View ID Doc</a>
                     </div>
                   </td>
                   <td className="p-4 flex gap-2">

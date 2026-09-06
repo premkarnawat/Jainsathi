@@ -26,7 +26,6 @@ export default function AdminLoginPage() {
 
       if (authError) throw authError;
 
-      // Check role
       if (data.user) {
         const { data: dbUser } = await supabase
           .from('users')
@@ -93,7 +92,7 @@ export default function AdminLoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-black/50 border border-gray-700 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-[#8F0038] transition-colors"
-                  placeholder="••••••••"
+                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                 />
               </div>
             </div>

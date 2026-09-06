@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/client';
-import { Search, Filter, MoreVertical, Eye, Ban, CheckCircle } from 'lucide-react';
+import { Search, Eye, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminUsersPage() {
@@ -20,10 +20,10 @@ export default function AdminUsersPage() {
     
     let query = supabase
       .from('candidate_profiles')
-      .select(\
+      .select(`
         id, first_name, last_name, gender, current_city, current_state, verification_status, created_at,
         users ( email, phone )
-      \)
+      `)
       .order('created_at', { ascending: false })
       .limit(50);
       
@@ -38,14 +38,13 @@ export default function AdminUsersPage() {
 
   const filteredUsers = users.filter(u => {
     const term = search.toLowerCase();
-    const name = \\ \\.toLowerCase();
+    const name = `${u.first_name || ''} ${u.last_name || ''}`.toLowerCase();
     return name.includes(term) || u.users?.email?.toLowerCase().includes(term) || u.users?.phone?.includes(term);
   });
 
   return (
     <div className="p-8 space-y-6">
       
-      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-serif font-bold text-[#241A20]">People Directory</h1>
@@ -53,32 +52,29 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      {/* Controls: Tabs & Search */}
       <div className="flex flex-col md:flex-row justify-between gap-4 items-center bg-[#FDF9F4] p-3 rounded-2xl border border-[#EBD9DC] shadow-sm">
         
-        {/* Tabs */}
         <div className="flex bg-white rounded-xl p-1 shadow-sm border border-[#EBD9DC]">
           <button 
             onClick={() => setActiveTab('all')}
-            className={\px-6 py-2 rounded-lg text-sm font-bold transition-colors \\}
+            className={`px-6 py-2 rounded-lg text-sm font-bold transition-colors ${activeTab === 'all' ? 'bg-[#8F0038] text-white shadow' : 'text-[#75666D] hover:bg-gray-50'}`}
           >
             All Candidates
           </button>
           <button 
             onClick={() => setActiveTab('male')}
-            className={\px-6 py-2 rounded-lg text-sm font-bold transition-colors \\}
+            className={`px-6 py-2 rounded-lg text-sm font-bold transition-colors ${activeTab === 'male' ? 'bg-[#8F0038] text-white shadow' : 'text-[#75666D] hover:bg-gray-50'}`}
           >
             Male
           </button>
           <button 
             onClick={() => setActiveTab('female')}
-            className={\px-6 py-2 rounded-lg text-sm font-bold transition-colors \\}
+            className={`px-6 py-2 rounded-lg text-sm font-bold transition-colors ${activeTab === 'female' ? 'bg-[#8F0038] text-white shadow' : 'text-[#75666D] hover:bg-gray-50'}`}
           >
             Female
           </button>
         </div>
 
-        {/* Search */}
         <div className="flex-1 max-w-md relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input 
@@ -91,7 +87,6 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      {/* Users Table */}
       <div className="bg-white border border-[#EBD9DC] rounded-[24px] shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
@@ -123,7 +118,7 @@ export default function AdminUsersPage() {
                     </div>
                   </td>
                   <td className="p-4 text-[#75666D] capitalize font-medium">{user.gender || 'N/A'}</td>
-                  <td className="p-4 text-[#75666D] font-medium">{user.current_city ? \\, \\ : 'Not specified'}</td>
+                  <td className="p-4 text-[#75666D] font-medium">{user.current_city ? `${user.current_city}, ${user.current_state}` : 'Not specified'}</td>
                   <td className="p-4">
                     <p className="text-xs font-semibold text-[#241A20]">{user.users?.phone || 'No phone'}</p>
                     <p className="text-[10px] text-[#75666D] truncate max-w-[150px]">{user.users?.email || 'No email'}</p>
@@ -146,7 +141,7 @@ export default function AdminUsersPage() {
                   <td className="p-4 pr-6 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Link 
-                        href={\/admin/users/\\}
+                        href={`/admin/users/${user.id}`}
                         className="p-2 text-gray-400 hover:text-[#8F0038] hover:bg-[#F7E5EA] rounded-lg transition-colors"
                         title="View Full Profile"
                       >
