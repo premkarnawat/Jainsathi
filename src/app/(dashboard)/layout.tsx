@@ -134,9 +134,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         <div className="pt-6">
-          <button className="w-full bg-[#8F0038] hover:bg-[#72002E] text-white font-bold py-3.5 rounded-2xl text-xs tracking-wider uppercase transition-all shadow-sm">
+          <Link
+            href="/pricing"
+            className="w-full bg-[#8F0038] hover:bg-[#72002E] text-white font-bold py-3.5 rounded-2xl text-xs tracking-wider uppercase transition-all shadow-sm flex items-center justify-center text-center"
+          >
             Upgrade Plan
-          </button>
+          </Link>
         </div>
       </aside>
 

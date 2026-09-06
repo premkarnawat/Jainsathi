@@ -216,7 +216,7 @@ export default function PricingSectionExact() {
             </p>
 
             <Link
-              href="/register"
+              href="/pricing"
               className="w-full py-2.5 rounded-full bg-white text-deepBurgundy text-xs font-bold hover:bg-[#FAF3ED] transition-all flex items-center justify-center gap-1 shadow-md"
             >
               <span>Check Eligibility</span>
@@ -280,11 +280,11 @@ export default function PricingSectionExact() {
               </div>
 
               <Link
-                href="/register"
+                href="/pricing"
                 onClick={() => setSelectedPlanForModal(null)}
                 className="btn-ruby w-full py-2.5 text-center text-xs font-bold block shadow-md mt-4"
               >
-                Proceed with {selectedPlanForModal.name}
+                Choose {selectedPlanForModal.name} Plan
               </Link>
             </motion.div>
           </div>
