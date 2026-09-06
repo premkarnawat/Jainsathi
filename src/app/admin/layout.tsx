@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { 
   LayoutDashboard, Users, CreditCard, ShieldCheck, 
   Settings, LogOut, Search, Bell, Menu, X, Receipt, Activity,
-  Sun, Moon, ChevronRight, UserCheck, Shield
+  Sun, Moon, ChevronRight, UserCheck, Shield, ChevronLeft
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 
@@ -60,9 +60,44 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   ];
 
   return (
-    <div className="min-h-screen bg-[#111114] text-[#E8E6E3] p-2 sm:p-3 md:p-4 font-sans flex items-center justify-center">
+    <div className={`min-h-screen bg-[#111114] text-[#E8E6E3] p-0 sm:p-3 md:p-4 font-sans flex items-center justify-center admin-root ${themeMode === 'dark' ? 'dark-mode' : ''}`}>
+      <style>{`
+        /* Global Admin Font Size Bump */
+        .admin-root .text-xs { font-size: 0.85rem !important; line-height: 1.3rem !important; }
+        .admin-root .text-\\[10px\\] { font-size: 0.75rem !important; }
+        .admin-root .text-sm { font-size: 0.95rem !important; }
+
+        /* Dark Mode Overrides for internal hardcoded colors */
+        .admin-root.dark-mode .bg-\\[\\#FFFDFB\\] { background-color: #121214 !important; }
+        .admin-root.dark-mode .bg-\\[\\#FFFDFB\\]\\/95 { background-color: rgba(18, 18, 20, 0.95) !important; border-color: #2A2A32 !important; }
+        .admin-root.dark-mode .bg-white { background-color: #1A1A1F !important; border-color: #2A2A32 !important; color: #F3F4F6 !important; }
+        .admin-root.dark-mode .bg-white\\/80 { background-color: rgba(26, 26, 31, 0.8) !important; border-color: #2A2A32 !important; }
+        .admin-root.dark-mode .bg-gray-50, .admin-root.dark-mode .bg-gray-100 { background-color: #24242A !important; border-color: #2A2A32 !important; color: #E5E7EB !important; }
+        .admin-root.dark-mode .text-\\[\\#19191D\\], .admin-root.dark-mode .text-\\[\\#1A1822\\], .admin-root.dark-mode .text-\\[\\#1F1D24\\] { color: #F9FAFB !important; }
+        .admin-root.dark-mode .text-gray-800, .admin-root.dark-mode .text-gray-700, .admin-root.dark-mode .text-gray-600 { color: #D1D5DB !important; }
+        .admin-root.dark-mode .text-gray-500, .admin-root.dark-mode .text-gray-400 { color: #9CA3AF !important; }
+        .admin-root.dark-mode .border-gray-100, .admin-root.dark-mode .border-gray-150, .admin-root.dark-mode .border-gray-200 { border-color: #2A2A32 !important; }
+        .admin-root.dark-mode .divide-gray-100 > :not([hidden]) ~ :not([hidden]) { border-color: #2A2A32 !important; }
+        .admin-root.dark-mode .border-b, .admin-root.dark-mode .border-t { border-color: #2A2A32 !important; }
+        .admin-root.dark-mode .bg-\\[\\#F8F4EC\\] { background-color: #18181D !important; border-color: #2A2A32 !important; }
+        .admin-root.dark-mode .bg-\\[\\#FAF8F5\\] { background-color: #1A1A1F !important; }
+        
+        /* Mobile fixes */
+        @media (max-width: 768px) {
+          .admin-root .w-full.max-w-\\[1720px\\] {
+            height: 100vh !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
+            border: none !important;
+          }
+          .admin-root .flex-1.flex.flex-col {
+            border-radius: 0 !important;
+            margin-left: 0 !important;
+          }
+        }
+      `}</style>
       {/* Outer App Frame matching PBD design */}
-      <div className="w-full max-w-[1720px] h-[calc(100vh-1rem)] sm:h-[calc(100vh-1.5rem)] md:h-[calc(100vh-2rem)] bg-[#141417] rounded-[28px] sm:rounded-[36px] p-2 sm:p-3 md:p-3.5 flex overflow-hidden shadow-2xl border border-white/5 relative">
+      <div className="w-full max-w-[1720px] h-[calc(100vh-1rem)] sm:h-[calc(100vh-1.5rem)] md:h-[calc(100vh-2rem)] bg-[#141417] rounded-[28px] sm:rounded-[36px] p-0 sm:p-3 md:p-3.5 flex overflow-hidden shadow-2xl border border-white/5 relative">
         
         {/* Mobile Backdrop */}
         {isMobileOpen && (
@@ -208,7 +243,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           {/* Main Scrollable Canvas */}
-          <main className="flex-1 overflow-y-auto overflow-x-hidden">
+          <main className="flex-1 overflow-y-auto overflow-x-hidden relative">
+            {/* Global Back Button (only shown on subpages) */}
+            {pathname !== '/admin' && (
+              <div className="sticky top-0 z-40 bg-[#FFFDFB]/95 border-b border-gray-150 backdrop-blur-md px-4 sm:px-6 py-2.5 flex items-center shadow-sm">
+                <button 
+                  onClick={() => router.back()}
+                  className="flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-[#C59A4E] transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Back
+                </button>
+              </div>
+            )}
             {children}
           </main>
         </div>
