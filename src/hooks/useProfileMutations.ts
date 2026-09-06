@@ -143,6 +143,25 @@ export function useProfileMutations(profileId: string) {
     }
   };
 
+  const removeFamilyMember = async (id: string) => {
+    try {
+      setSaving(true);
+      setError(null);
+      const { error: err } = await supabase
+        .from('family_members')
+        .delete()
+        .eq('id', id)
+        .eq('candidate_id', profileId); // ensure ownership
+      if (err) throw err;
+      return true;
+    } catch (err: any) {
+      setError(err.message);
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return {
     saving,
     error,
@@ -152,6 +171,7 @@ export function useProfileMutations(profileId: string) {
     upsertEmployment,
     upsertLifestyle,
     updatePartnerPreferences,
-    updatePrivacy
+    updatePrivacy,
+    removeFamilyMember
   };
 }
