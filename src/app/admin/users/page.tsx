@@ -36,9 +36,20 @@ export default function AdminCandidatesPage() {
   const fetchCandidates = async () => {
     setLoading(true);
     try {
+      // Force wait for the session to be fully loaded so auth.uid() isn't null for RLS!
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        console.warn("No active session found, query might fail RLS!");
+      }
+
       let query = supabase
         .from('candidate_profiles')
-        .select(`*`)
+        .select(`
+          id, first_name, last_name, gender, date_of_birth, current_city, current_state,
+          verification_status, completion_percentage, photos, created_at,
+          users ( email, phone, role ),
+          jain_identities ( sect, community )
+        `)
         .order('created_at', { ascending: false });
 
       // Enforce strict SQL-level gender separation
