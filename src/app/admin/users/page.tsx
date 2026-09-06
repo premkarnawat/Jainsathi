@@ -36,12 +36,9 @@ export default function AdminCandidatesPage() {
   const fetchCandidates = async () => {
     setLoading(true);
     try {
-      // Force wait for the session to be fully loaded so auth.uid() isn't null for RLS!
+      // Force wait for session to avoid race conditions
       const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData.session) {
-        console.warn("No active session found, query might fail RLS!");
-      }
-
+      
       let query = supabase
         .from('candidate_profiles')
         .select(`
@@ -52,14 +49,8 @@ export default function AdminCandidatesPage() {
         `)
         .order('created_at', { ascending: false });
 
-      // Enforce strict SQL-level gender separation
-      if (genderFilter !== 'all') {
-        query = query.eq('gender', genderFilter);
-      }
-
-      if (statusFilter !== 'all') {
-        query = query.eq('verification_status', statusFilter);
-      }
+      if (genderFilter !== 'all') query = query.eq('gender', genderFilter);
+      if (statusFilter !== 'all') query = query.eq('verification_status', statusFilter);
 
       const { data, error } = await query;
       if (error) throw error;
@@ -74,23 +65,22 @@ export default function AdminCandidatesPage() {
 
       setCandidates(filtered);
 
-      // Compute live proportions
       const total = filtered.length;
       if (total > 0) {
         const maleCount = filtered.filter(c => c.gender === 'male').length;
         const verifiedCount = filtered.filter(c => c.verification_status === 'verified').length;
         setMetrics({
           total,
-          malePct: Math.round((maleCount / total) * 100),
-          femalePct: Math.round(((total - maleCount) / total) * 100),
-          verifiedPct: Math.round((verifiedCount / total) * 100),
-          paidPct: 32,
+          malePct: Math.round((maleCount / total) * 100) || 0,
+          femalePct: Math.round(((total - maleCount) / total) * 100) || 0,
+          verifiedPct: Math.round((verifiedCount / total) * 100) || 0,
+          paidPct: 0,
         });
+      } else {
+        setMetrics({ total: 0, malePct: 0, femalePct: 0, verifiedPct: 0, paidPct: 0 });
       }
     } catch (err: any) {
       console.error('Error fetching candidates:', err);
-      // Temporarily store the error so we can debug it on screen if it fails
-      setCandidates([{ id: 'ERROR_DEBUG', first_name: 'Error', last_name: err?.message || JSON.stringify(err) }]);
     } finally {
       setLoading(false);
     }
@@ -242,11 +232,6 @@ export default function AdminCandidatesPage() {
             <span className="text-black font-extrabold">{candidates.length}</span>
           </div>
         </div>
-      </div>
-
-      {/* DEBUG BLOCK TO HELP AGENT */}
-      <div className="bg-red-50 text-red-800 p-4 rounded-xl text-xs font-mono break-all mb-4">
-        <strong>DEBUG DATA:</strong> {JSON.stringify(candidates.length > 0 ? candidates : 'EMPTY')}
       </div>
 
       {/* 3. Floating Capsule Search & Filter Bar (Crextio Reference) */}
