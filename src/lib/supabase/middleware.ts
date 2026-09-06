@@ -79,6 +79,30 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
+  // Protect Admin Routes
+  const isAdminRoute = pathname.startsWith('/admin') && pathname !== '/admin/login';
+  
+  if (isAdminRoute) {
+    if (!isActiveSession) {
+      const adminLoginUrl = request.nextUrl.clone();
+      adminLoginUrl.pathname = '/admin/login';
+      return NextResponse.redirect(adminLoginUrl);
+    }
+    
+    // Check if user has admin role in public.users
+    const { data: dbUser } = await supabase
+      .from('users')
+      .select('role')
+      .eq('auth_id', user.id)
+      .single();
+      
+    if (!dbUser || (dbUser.role !== 'admin' && dbUser.role !== 'super_admin')) {
+      const dashboardUrl = request.nextUrl.clone();
+      dashboardUrl.pathname = '/dashboard';
+      return NextResponse.redirect(dashboardUrl);
+    }
+  }
+
   // Redirect authenticated users away from login/register to dashboard
   if (isActiveSession && AUTH_ROUTES.some(route => pathname.startsWith(route))) {
     const dashboardUrl = request.nextUrl.clone();
