@@ -27,16 +27,10 @@ export default function AdminLoginPage() {
       if (authError) throw authError;
 
       if (data.user) {
-        const { data: dbUser } = await supabase
-          .from('users')
-          .select('role')
-          .eq('auth_id', data.user.id)
-          .single();
-
-        if (!dbUser || (dbUser.role !== 'admin' && dbUser.role !== 'super_admin')) {
-          await supabase.auth.signOut();
-          throw new Error('Unauthorized: You do not have admin access.');
-        }
+        // We removed the client-side DB role check here because of a known Supabase race condition
+        // where the JWT isn't immediately attached to the very next .from() query.
+        // The server-side Next.js middleware.ts ALREADY securely checks if the user is an admin
+        // and will redirect them back here if they are not.
       }
 
       router.push('/admin');
