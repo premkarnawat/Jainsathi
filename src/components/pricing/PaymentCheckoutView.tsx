@@ -18,11 +18,6 @@ interface PaymentCheckoutViewProps {
   isFemaleEligible?: boolean;
 }
 
-declare global {
-  interface Window {
-    Razorpay?: any;
-  }
-}
 
 export default function PaymentCheckoutView({
   plan,
@@ -33,14 +28,14 @@ export default function PaymentCheckoutView({
   const [selectedMethod, setSelectedMethod] = useState<'card' | 'upi' | 'netbanking'>('card');
 
   // Interactive Card Form States (Syncing Live to Flipping Card)
-  const [cardHolder, setCardHolder] = useState('');
-  const [cardNumber, setCardNumber] = useState('');
-  const [expiry, setExpiry] = useState('');
-  const [cvv, setCvv] = useState('');
+  const [cardHolder, setCardHolder] = useState('PREM KARNAWAT');
+  const [cardNumber, setCardNumber] = useState('4215 2154 2154 5487');
+  const [expiry, setExpiry] = useState('03/28');
+  const [cvv, setCvv] = useState('842');
   const [isFlipped, setIsFlipped] = useState(false);
 
   // UPI State
-  const [upiId, setUpiId] = useState('');
+  const [upiId, setUpiId] = useState('prem@okhdfcbank');
 
   // Net Banking State
   const [selectedBank, setSelectedBank] = useState('HDFC Bank');
@@ -72,119 +67,56 @@ export default function PaymentCheckoutView({
     setExpiry(raw);
   };
 
-  const loadRazorpayScript = (): Promise<boolean> => {
-    return new Promise((resolve) => {
-      if (typeof window !== 'undefined' && window.Razorpay) {
-        resolve(true);
-        return;
-      }
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
-
+  // 100% Mock Payment Handler (Zero external dependencies or gateway required)
   const handlePayNow = async () => {
     setIsProcessing(true);
     setErrorMessage(null);
 
     try {
-      // 1. Create Server Order (Authoritative Server-Side Price)
-      const res = await fetch('/api/payments/order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId: plan.id }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to initialize payment transaction.');
-      }
-
-      // If Zero-Cost Direct Activation
-      if (data.directActivation) {
-        setIsProcessing(false);
-        onPaymentSuccess({
-          invoiceNumber: `JS-INV-${Date.now().toString().slice(-6)}`,
-          orderId: `DIRECT-${Date.now().toString().slice(-8)}`,
-          paymentMethod: isFemaleEligible ? 'Female Privilege (Complimentary)' : 'Free Access',
-          amountInr: 0,
-          paymentDate: new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
+      // 1. If user is logged in, optionally persist mock subscription in database
+      try {
+        await fetch('/api/payments/order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ planId: plan.id, mockMode: true }),
         });
-        return;
+      } catch (_) {
+        // Ignored in mock mode
       }
 
-      // Paid Plan via Razorpay
-      const isScriptLoaded = await loadRazorpayScript();
-      if (!isScriptLoaded) {
-        throw new Error('Payment gateway failed to load. Please check your internet.');
+      // 2. Realistic Simulated Banking Processing Delay (1.2 seconds)
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+
+      // 3. Format Payment Method Description
+      const cleanDigits = (cardNumber || '').replace(/\D/g, '');
+      let methodLabel = 'CREDIT / DEBIT CARD';
+      if (selectedMethod === 'card') {
+        const last4 = cleanDigits.slice(-4) || '5487';
+        methodLabel = `Card ending in ${last4}`;
+      } else if (selectedMethod === 'upi') {
+        methodLabel = `UPI (${upiId.trim() || 'Instant QR'})`;
+      } else if (selectedMethod === 'netbanking') {
+        methodLabel = `Net Banking (${selectedBank})`;
       }
 
-      const order = data.order;
-      const options = {
-        key: order.keyId,
-        amount: order.amountInr * 100, // in paise
-        currency: order.currency || 'INR',
-        name: 'JainSaathi Matrimony',
-        description: `${plan.name} Membership (${plan.durationDays} Days)`,
-        image: '/logo.png',
-        order_id: order.orderId,
-        prefill: {
-          email: order.userEmail || '',
-          name: cardHolder.trim() || undefined,
-        },
-        theme: {
-          color: '#8F173D',
-        },
-        handler: async function (response: any) {
-          try {
-            const verifyRes = await fetch('/api/payments/verify', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                userId: order.userId,
-                planId: plan.id,
-                razorpayOrderId: response.razorpay_order_id,
-                razorpayPaymentId: response.razorpay_payment_id,
-                razorpaySignature: response.razorpay_signature,
-              }),
-            });
-            const verifyData = await verifyRes.json();
-            if (verifyData.success) {
-              onPaymentSuccess({
-                invoiceNumber: `JS-INV-${Date.now().toString().slice(-6)}`,
-                orderId: response.razorpay_order_id || order.orderId,
-                paymentMethod: selectedMethod.toUpperCase(),
-                amountInr: order.amountInr,
-                paymentDate: new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
-              });
-            } else {
-              throw new Error(verifyData.error || 'Server payment verification failed.');
-            }
-          } catch (vErr: any) {
-            setErrorMessage(vErr.message || 'Payment signature verification error.');
-          } finally {
-            setIsProcessing(false);
-          }
-        },
-        modal: {
-          ondismiss: function () {
-            setIsProcessing(false);
-          },
-        },
-      };
+      if (isZeroPrice) {
+        methodLabel = isFemaleEligible ? 'Female Privilege (Complimentary)' : 'Free Access';
+      }
 
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', function (resp: any) {
-        setErrorMessage(resp.error?.description || 'Payment was declined by your bank.');
-        setIsProcessing(false);
+      // 4. Navigate Directly to Success Screen / Invoice
+      setIsProcessing(false);
+      onPaymentSuccess({
+        invoiceNumber: `JS-INV-${Math.floor(100000 + Math.random() * 900000)}`,
+        orderId: `MOCK-${Date.now().toString().slice(-8)}`,
+        paymentMethod: methodLabel,
+        amountInr: isZeroPrice ? 0 : totalDue,
+        paymentDate: new Date().toLocaleString('en-IN', {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        }),
       });
-      rzp.open();
     } catch (err: any) {
-      setErrorMessage(err.message || 'Unable to process transaction.');
+      setErrorMessage(err.message || 'Unable to process mock transaction.');
       setIsProcessing(false);
     }
   };
@@ -208,8 +140,9 @@ export default function PaymentCheckoutView({
           <span className="font-serif font-black text-base text-[#8F173D]">
             JainSaathi
           </span>
-          <span className="text-[10px] font-bold text-[#9E6F18] uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#D9A441]/15 border border-[#D9A441]/30">
-            Secure Checkout
+          <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 flex items-center gap-1">
+            <ShieldCheck className="w-3 h-3 text-emerald-600" />
+            Mock Checkout
           </span>
         </div>
       </div>
@@ -450,14 +383,18 @@ export default function PaymentCheckoutView({
           )}
 
           {/* Primary Action Button */}
-          <div className="pt-2">
+          <div className="pt-2 space-y-1.5">
             <button
               type="button"
               disabled={isProcessing}
               onClick={handlePayNow}
-              className="w-full py-3.5 rounded-2xl bg-[#8F173D] hover:bg-[#6E1735] disabled:opacity-50 text-white text-xs font-bold tracking-wider uppercase shadow-md transition-all flex items-center justify-center gap-2 active:scale-[0.99]"
+              className="w-full py-3.5 rounded-2xl bg-[#8F173D] hover:bg-[#6E1735] disabled:opacity-75 text-white text-xs font-bold tracking-wider uppercase shadow-md transition-all flex items-center justify-center gap-2 active:scale-[0.99] cursor-pointer"
             >
-              <Lock className="w-3.5 h-3.5" />
+              {isProcessing ? (
+                <div className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+              ) : (
+                <Lock className="w-3.5 h-3.5" />
+              )}
               <span>
                 {isProcessing
                   ? 'Processing Securely...'
@@ -466,6 +403,9 @@ export default function PaymentCheckoutView({
                   : `Pay ₹${totalDue.toLocaleString('en-IN')}`}
               </span>
             </button>
+            <p className="text-[10px] text-center text-[#7A606E] font-medium flex items-center justify-center gap-1">
+              ✨ Demo Mock Gateway • No actual card charges
+            </p>
           </div>
         </div>
       </div>

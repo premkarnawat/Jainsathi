@@ -109,7 +109,7 @@ export default function ActivationZone({
           <p className="text-[10px] text-[#7A606E] font-medium mt-0.5">
             {isZeroPrice
               ? 'Instant direct membership activation'
-              : `Secure 256-bit Razorpay checkout • ${activePlan?.durationLabel || 'Instant access'}`}
+              : `Secure 256-bit checkout • ${activePlan?.durationLabel || 'Instant access'}`}
           </p>
         </div>
       </motion.div>
