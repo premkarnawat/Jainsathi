@@ -12,6 +12,8 @@ import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 import { useInterests } from '@/hooks/useInterests';
 import LanguageToggle from '@/components/ui/LanguageToggle';
+import NotificationCenter from '@/components/dashboard/NotificationCenter';
+import NotificationToast from '@/components/dashboard/NotificationToast';
 
 const FallbackAvatar = () => (
   <div className="w-full h-full bg-[#EDE1D7] flex items-center justify-center text-[#75666D]">
@@ -153,14 +155,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
         <div className="flex items-center gap-4">
           <LanguageToggle className="text-[#8F0038]" />
-          <Link href="/interests" className="text-[#8F0038] hover:opacity-85 relative">
-            <Bell className="w-6 h-6" />
-            {(!statsLoading && stats?.interests > 0) && (
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#8F0038] border border-[#FFFDFB]" />
-            )}
-          </Link>
+          <NotificationCenter userId={loggedInUser?.id} />
         </div>
       </header>
+
+      {/* In-App Floating Toast Notifications for Connection/Interest Requests */}
+      <NotificationToast />
 
       {/* ==========================================
           MAIN PAGE CONTENT WRAPPER
@@ -176,10 +176,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           
           <div className="flex items-center gap-5 text-[#8F0038]">
             <LanguageToggle className="text-[#8F0038] hover:opacity-80" />
-            <button className="p-2 hover:bg-[#F7E5EA]/40 rounded-full transition-colors relative">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#8F0038]" />
-            </button>
+            <NotificationCenter userId={loggedInUser?.id} />
             <Link href="/interests" className="p-2 hover:bg-[#F7E5EA]/40 rounded-full transition-colors relative inline-block">
               <Mail className="w-5 h-5" />
               {(!statsLoading && stats?.interests > 0) && (

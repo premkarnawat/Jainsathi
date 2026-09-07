@@ -11,6 +11,7 @@ import { useInterests } from '@/hooks/useInterests';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
+import BroadcastBanner from '@/components/dashboard/BroadcastBanner';
 
 const FallbackAvatar = () => (
   <div className="w-full h-full bg-[#F7E5EA] flex items-center justify-center text-[#75666D]">
@@ -196,6 +197,9 @@ export default function DashboardPage() {
           Find meaningful connections within the Jain community.
         </p>
       </div>
+
+      {/* Official Admin Broadcast Announcement Notice (Dismissible from screen, persistent in Notification Center) */}
+      <BroadcastBanner />
 
       {/* 2. Profile Completion blush pink card */}
       <div className="bg-[#F7E5EA] border border-[#EBD9DC] p-5 rounded-[28px] space-y-4 shadow-sm">

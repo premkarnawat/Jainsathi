@@ -1,16 +1,46 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Facebook, Instagram, Linkedin, Youtube, Globe } from 'lucide-react';
+import { Facebook, Instagram, Linkedin, Youtube, Globe, Mail, Phone, MapPin } from 'lucide-react';
 import LanguageToggle from '@/components/ui/LanguageToggle';
 
 export default function Footer() {
+  const [contact, setContact] = useState({
+    email: 'support@jainsaathi.com',
+    phone: '+91 98765 43210',
+    address: 'Nariman Point, Mumbai, Maharashtra 400021, India',
+    whatsapp: '+91 98765 43210',
+    facebookUrl: 'https://facebook.com',
+    linkedinUrl: 'https://linkedin.com',
+    instagramUrl: 'https://instagram.com',
+  });
+
+  useEffect(() => {
+    async function fetchContact() {
+      try {
+        const res = await fetch('/api/settings?key=contact_info');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.setting?.value) {
+            setContact(prev => ({
+              ...prev,
+              ...data.setting.value,
+            }));
+          }
+        }
+      } catch (_) {
+        // Fallback to defaults
+      }
+    }
+    fetchContact();
+  }, []);
+
   return (
-    <footer className="bg-[#24040E] text-white pt-20 pb-12 border-t border-[#3D0A1A] relative overflow-hidden">
+    <footer className="bg-[#24040E] text-white pt-16 pb-12 border-t border-[#3D0A1A] relative overflow-hidden">
       
-      {/* Decorative Gold Lotus Watermark Outline on Far Right (Exact to image) */}
+      {/* Decorative Gold Lotus Watermark Outline on Far Right */}
       <div className="absolute right-6 bottom-16 opacity-15 pointer-events-none select-none hidden lg:block">
         <svg width="180" height="180" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M100 25 C70 65, 30 110, 45 150 C60 185, 140 185, 155 150 C170 110, 130 65, 100 25 Z" stroke="#D4A64A" strokeWidth="2" />
@@ -23,9 +53,9 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Main Footer Columns */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 pb-16 border-b border-white/10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10 pb-12 border-b border-white/10">
           
-          {/* Brand Info (Col 1-4) */}
+          {/* Brand Info & Live Contact (Col 1-4) */}
           <div className="lg:col-span-4 space-y-4">
             <Link href="/" className="flex items-center gap-3">
               <div className="relative w-12 h-12 bg-white/95 rounded-xl p-1 border border-champagneGold/60 shadow-md shrink-0">
@@ -50,15 +80,37 @@ export default function Footer() {
               A modern matrimony platform for the Jain community. Built on trust, values and meaningful connections.
             </p>
 
+            {/* Live Contact Quick Snippets */}
+            <div className="space-y-1.5 text-xs text-white/75 pt-1">
+              <div className="flex items-center gap-2">
+                <Mail className="w-3.5 h-3.5 text-champagneGold shrink-0" />
+                <a href={`mailto:${contact.email}`} className="hover:text-champagneGold transition-colors truncate">
+                  {contact.email}
+                </a>
+              </div>
+              <div className="flex items-center gap-2">
+                <Phone className="w-3.5 h-3.5 text-champagneGold shrink-0" />
+                <a href={`tel:${contact.phone}`} className="hover:text-champagneGold transition-colors truncate">
+                  {contact.phone}
+                </a>
+              </div>
+              <div className="flex items-start gap-2 pt-0.5">
+                <MapPin className="w-3.5 h-3.5 text-champagneGold shrink-0 mt-0.5" />
+                <span className="text-[11px] text-white/60 leading-tight">
+                  {contact.address}
+                </span>
+              </div>
+            </div>
+
             {/* Social Icons */}
             <div className="flex items-center gap-3 pt-2">
-              <a href="#" aria-label="Facebook" className="w-8 h-8 rounded-full bg-white/10 hover:bg-champagneGold hover:text-deepBurgundy flex items-center justify-center text-white/80 transition-colors">
+              <a href={contact.facebookUrl || '#'} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-8 h-8 rounded-full bg-white/10 hover:bg-champagneGold hover:text-deepBurgundy flex items-center justify-center text-white/80 transition-colors">
                 <Facebook className="w-4 h-4" />
               </a>
-              <a href="#" aria-label="Instagram" className="w-8 h-8 rounded-full bg-white/10 hover:bg-champagneGold hover:text-deepBurgundy flex items-center justify-center text-white/80 transition-colors">
+              <a href={contact.instagramUrl || '#'} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-8 h-8 rounded-full bg-white/10 hover:bg-champagneGold hover:text-deepBurgundy flex items-center justify-center text-white/80 transition-colors">
                 <Instagram className="w-4 h-4" />
               </a>
-              <a href="#" aria-label="LinkedIn" className="w-8 h-8 rounded-full bg-white/10 hover:bg-champagneGold hover:text-deepBurgundy flex items-center justify-center text-white/80 transition-colors">
+              <a href={contact.linkedinUrl || '#'} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="w-8 h-8 rounded-full bg-white/10 hover:bg-champagneGold hover:text-deepBurgundy flex items-center justify-center text-white/80 transition-colors">
                 <Linkedin className="w-4 h-4" />
               </a>
               <a href="#" aria-label="YouTube" className="w-8 h-8 rounded-full bg-white/10 hover:bg-champagneGold hover:text-deepBurgundy flex items-center justify-center text-white/80 transition-colors">
@@ -73,12 +125,12 @@ export default function Footer() {
               Platforms
             </h4>
             <ul className="space-y-2 text-xs text-white/70">
-              <li><Link href="#home" className="hover:text-champagneGold transition-colors">Home</Link></li>
-              <li><Link href="#why-us" className="hover:text-champagneGold transition-colors">Why JainSaathi</Link></li>
-              <li><Link href="#how-it-works" className="hover:text-champagneGold transition-colors">How It Works</Link></li>
-              <li><Link href="#safety" className="hover:text-champagneGold transition-colors">Safety & Privacy</Link></li>
-              <li><Link href="#pricing" className="hover:text-champagneGold transition-colors">Pricing</Link></li>
-              <li><Link href="/help" className="hover:text-champagneGold transition-colors">Help</Link></li>
+              <li><Link href="/" className="hover:text-champagneGold transition-colors">Home</Link></li>
+              <li><Link href="/#why-us" className="hover:text-champagneGold transition-colors">Why JainSaathi</Link></li>
+              <li><Link href="/#how-it-works" className="hover:text-champagneGold transition-colors">How It Works</Link></li>
+              <li><Link href="/#safety" className="hover:text-champagneGold transition-colors">Safety & Privacy</Link></li>
+              <li><Link href="/pricing" className="hover:text-champagneGold transition-colors">Pricing Plans</Link></li>
+              <li><Link href="/contact" className="hover:text-champagneGold transition-colors">Help & Support</Link></li>
             </ul>
           </div>
 
@@ -88,10 +140,10 @@ export default function Footer() {
               Company
             </h4>
             <ul className="space-y-2 text-xs text-white/70">
-              <li><Link href="/about" className="hover:text-champagneGold transition-colors">About Us</Link></li>
-              <li><Link href="/careers" className="hover:text-champagneGold transition-colors">Careers</Link></li>
+              <li><Link href="/contact" className="hover:text-champagneGold transition-colors">About Us</Link></li>
+              <li><Link href="/contact" className="hover:text-champagneGold transition-colors">Careers</Link></li>
               <li><Link href="/contact" className="hover:text-champagneGold transition-colors">Contact Us</Link></li>
-              <li><Link href="/help" className="hover:text-champagneGold transition-colors">Help Center</Link></li>
+              <li><Link href="/contact" className="hover:text-champagneGold transition-colors">Support Desk</Link></li>
             </ul>
           </div>
 
@@ -103,9 +155,9 @@ export default function Footer() {
             <ul className="space-y-2 text-xs text-white/70">
               <li><Link href="/privacy" className="hover:text-champagneGold transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:text-champagneGold transition-colors">Terms & Conditions</Link></li>
-              <li><Link href="/refund" className="hover:text-champagneGold transition-colors">Refund Policy</Link></li>
-              <li><Link href="/cookies" className="hover:text-champagneGold transition-colors">Cookie Policy</Link></li>
-              <li><Link href="/guidelines" className="hover:text-champagneGold transition-colors">Community Guidelines</Link></li>
+              <li><Link href="/privacy" className="hover:text-champagneGold transition-colors">Refund Policy</Link></li>
+              <li><Link href="/privacy" className="hover:text-champagneGold transition-colors">Cookie Policy</Link></li>
+              <li><Link href="/terms" className="hover:text-champagneGold transition-colors">Community Guidelines</Link></li>
             </ul>
           </div>
 
@@ -122,10 +174,10 @@ export default function Footer() {
 
         </div>
 
-        {/* Bottom Bar (Exact to image) */}
+        {/* Bottom Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-[11px] text-white/60 gap-4">
           <div>
-            © 2024 JainSaathi. All rights reserved.
+            © 2026 JainSaathi. All rights reserved.
           </div>
           <div className="font-serif italic text-champagneGold">
             Jain Values. Modern Connections.

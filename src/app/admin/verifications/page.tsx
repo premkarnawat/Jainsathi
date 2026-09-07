@@ -26,22 +26,16 @@ export default function AdminVerificationsPage() {
   const fetchQueue = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('identity_verifications')
-        .select(`
-          id, status, submitted_at, document_path, selfie_path, notes,
-          candidate_profiles (
-            id, first_name, last_name, current_city, current_state, gender,
-            photos, jain_identities ( sect, community )
-          )
-        `)
-        .eq('status', activeFilter)
-        .order('submitted_at', { ascending: false });
-
-      if (error) throw error;
-      setVerifications(data || []);
+      const res = await fetch(`/api/admin/verifications?status=${activeFilter}`);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.verifications)) {
+        setVerifications(data.verifications);
+      } else {
+        setVerifications([]);
+      }
     } catch (err) {
       console.error('Failed to fetch verification queue:', err);
+      setVerifications([]);
     } finally {
       setLoading(false);
     }
@@ -50,17 +44,17 @@ export default function AdminVerificationsPage() {
   const handleApprove = async (item: any) => {
     setActionLoading(true);
     try {
-      await supabase
-        .from('identity_verifications')
-        .update({ status: 'approved', notes: 'Approved by administrator.' })
-        .eq('id', item.id);
-
-      if (item.candidate_profiles?.id) {
-        await supabase
-          .from('candidate_profiles')
-          .update({ verification_status: 'verified' })
-          .eq('id', item.candidate_profiles.id);
-      }
+      const res = await fetch('/api/admin/verifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          verificationId: item.id,
+          candidateId: item.candidate_profiles?.id,
+          action: 'approve',
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
 
       setInspectItem(null);
       fetchQueue();
@@ -79,17 +73,18 @@ export default function AdminVerificationsPage() {
 
     setActionLoading(true);
     try {
-      await supabase
-        .from('identity_verifications')
-        .update({ status: 'rejected', notes: rejectReason })
-        .eq('id', item.id);
-
-      if (item.candidate_profiles?.id) {
-        await supabase
-          .from('candidate_profiles')
-          .update({ verification_status: 'rejected' })
-          .eq('id', item.candidate_profiles.id);
-      }
+      const res = await fetch('/api/admin/verifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          verificationId: item.id,
+          candidateId: item.candidate_profiles?.id,
+          action: 'reject',
+          reason: rejectReason,
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
 
       setShowRejectInput(false);
       setRejectReason('');

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { supabase } from '@/lib/supabase/client';
+import { triggerNotificationToast } from '@/components/dashboard/NotificationToast';
 
 export function useRealtimeNotifications(profileId?: string, onInterestReceived?: () => void) {
   useEffect(() => {
@@ -17,9 +18,14 @@ export function useRealtimeNotifications(profileId?: string, onInterestReceived?
           filter: `receiver_id=eq.${profileId}`,
         },
         (payload) => {
-          console.log('Realtime payload:', payload);
-          // Assuming the UI will have a native bell or we just use alert for now
-          alert('❤️ Someone has sent you an interest request!');
+          console.log('[Realtime Notification] Incoming Interest:', payload);
+          triggerNotificationToast({
+            title: 'New Interest Received!',
+            message: 'A candidate has expressed interest in your profile.',
+            type: 'interest',
+            actionUrl: '/interests',
+            actionText: 'Review Interest',
+          });
           if (onInterestReceived) {
             onInterestReceived();
           }
@@ -34,8 +40,15 @@ export function useRealtimeNotifications(profileId?: string, onInterestReceived?
           filter: `sender_id=eq.${profileId}`,
         },
         (payload) => {
-          if (payload.new.status === 'accepted') {
-            alert('🎉 Your interest request was accepted!');
+          if (payload.new && payload.new.status === 'accepted') {
+            console.log('[Realtime Notification] Interest Accepted:', payload);
+            triggerNotificationToast({
+              title: 'Interest Request Accepted!',
+              message: 'Your interest was accepted! Mutual connection established.',
+              type: 'acceptance',
+              actionUrl: '/connections',
+              actionText: 'View Connection',
+            });
             if (onInterestReceived) {
               onInterestReceived();
             }

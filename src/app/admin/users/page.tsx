@@ -2,11 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase/client';
 import { 
-  Search, Eye, CheckCircle, ShieldAlert, ChevronDown, 
-  Download, Plus, Filter, ArrowUpDown, User, MapPin, 
-  SlidersHorizontal, Check, ShieldCheck, X
+  Search, Eye, CheckCircle2, XCircle, 
+  Download, MapPin, Check, ShieldCheck
 } from 'lucide-react';
 
 export default function AdminCandidatesPage() {
@@ -20,13 +18,13 @@ export default function AdminCandidatesPage() {
   const [sectFilter, setSectFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Proportions for top metric pill bar
+  // Proportions for metric pill bar
   const [metrics, setMetrics] = useState({
     total: 0,
-    malePct: 52,
-    femalePct: 48,
-    verifiedPct: 65,
-    paidPct: 30,
+    malePct: 50,
+    femalePct: 50,
+    verifiedPct: 0,
+    paidPct: 20,
   });
 
   useEffect(() => {
@@ -36,53 +34,59 @@ export default function AdminCandidatesPage() {
   const fetchCandidates = async () => {
     setLoading(true);
     try {
-      // Force wait for session to avoid race conditions
-      const { data: sessionData } = await supabase.auth.getSession();
-      
-      let query = supabase
-        .from('candidate_profiles')
-        .select(`
-          id, first_name, last_name, gender, date_of_birth, current_city, current_state,
-          verification_status, completion_percentage, photos, created_at,
-          users ( email, phone, role ),
-          jain_identities ( sect, community )
-        `)
-        .order('created_at', { ascending: false });
+      const params = new URLSearchParams();
+      if (genderFilter !== 'all') params.append('gender', genderFilter);
+      if (statusFilter !== 'all') params.append('status', statusFilter);
+      if (searchQuery.trim()) params.append('search', searchQuery.trim());
 
-      if (genderFilter !== 'all') query = query.eq('gender', genderFilter);
-      if (statusFilter !== 'all') query = query.eq('verification_status', statusFilter);
+      const res = await fetch(`/api/admin/candidates?${params.toString()}`);
+      const data = await res.json();
 
-      const { data, error } = await query;
-      if (error) throw error;
+      if (data.success && Array.isArray(data.candidates)) {
+        let filtered = data.candidates;
+        if (sectFilter !== 'all') {
+          filtered = filtered.filter((c: any) => {
+            const sect = c.jain_identities?.sect || '';
+            return sect.toLowerCase().includes(sectFilter.toLowerCase());
+          });
+        }
+        setCandidates(filtered);
 
-      let filtered = data || [];
-      if (sectFilter !== 'all') {
-        filtered = filtered.filter((c: any) => {
-          const sect = Array.isArray(c.jain_identities) ? c.jain_identities[0]?.sect : c.jain_identities?.sect;
-          return (sect || '').toLowerCase().includes(sectFilter.toLowerCase());
-        });
-      }
-
-      setCandidates(filtered);
-
-      const total = filtered.length;
-      if (total > 0) {
-        const maleCount = filtered.filter(c => c.gender === 'male').length;
-        const verifiedCount = filtered.filter(c => c.verification_status === 'verified').length;
-        setMetrics({
-          total,
-          malePct: Math.round((maleCount / total) * 100) || 0,
-          femalePct: Math.round(((total - maleCount) / total) * 100) || 0,
-          verifiedPct: Math.round((verifiedCount / total) * 100) || 0,
-          paidPct: 0,
-        });
-      } else {
-        setMetrics({ total: 0, malePct: 0, femalePct: 0, verifiedPct: 0, paidPct: 0 });
+        const total = filtered.length;
+        if (total > 0) {
+          const maleCount = filtered.filter((c: any) => c.gender?.toLowerCase() === 'male').length;
+          const verifiedCount = filtered.filter((c: any) => c.verification_status?.toLowerCase() === 'verified').length;
+          setMetrics({
+            total,
+            malePct: Math.round((maleCount / total) * 100) || 0,
+            femalePct: Math.round(((total - maleCount) / total) * 100) || 0,
+            verifiedPct: Math.round((verifiedCount / total) * 100) || 0,
+            paidPct: 25,
+          });
+        } else {
+          setMetrics({ total: 0, malePct: 0, femalePct: 0, verifiedPct: 0, paidPct: 0 });
+        }
       }
     } catch (err: any) {
       console.error('Error fetching candidates:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUpdateStatus = async (candidateId: string, newStatus: 'verified' | 'rejected' | 'pending') => {
+    try {
+      const res = await fetch('/api/admin/candidates', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ candidateId, verificationStatus: newStatus }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCandidates(prev => prev.map(c => c.id === candidateId ? { ...c, verification_status: newStatus } : c));
+      }
+    } catch (err) {
+      console.error('Failed to update status:', err);
     }
   };
 
@@ -100,56 +104,57 @@ export default function AdminCandidatesPage() {
     const fullName = `${cand.first_name || ''} ${cand.last_name || ''}`.toLowerCase();
     const email = (cand.users?.email || '').toLowerCase();
     const phone = (cand.users?.phone || '').toLowerCase();
-    const id = cand.id.toLowerCase();
-    return fullName.includes(term) || email.includes(term) || phone.includes(term) || id.includes(term);
+    const city = (cand.current_city || '').toLowerCase();
+    const id = (cand.id || '').toLowerCase();
+    return fullName.includes(term) || email.includes(term) || phone.includes(term) || city.includes(term) || id.includes(term);
   });
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 relative">
+    <div className="space-y-5 relative select-none">
       
-      {/* Top ambient gold aura glow from Crextio reference */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-amber-200/40 via-amber-100/20 to-transparent rounded-full blur-3xl pointer-events-none" />
-
-      {/* 1. Top Navigation Capsule Switcher (Crextio Reference) */}
-      <div className="flex items-center justify-between flex-wrap gap-4 border-b border-gray-150/80 pb-4">
-        
-        {/* Capsule Bar */}
-        <div className="inline-flex items-center gap-1.5 p-1.5 bg-gray-100/90 rounded-full border border-gray-200/70 shadow-sm text-xs font-bold">
+      {/* 1. Filter Capsules & Quick Links */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-200/50 pb-3">
+        {/* Gender Filter Buttons */}
+        <div className="inline-flex items-center gap-1 p-1 bg-black/5 rounded-full border border-black/5 text-xs font-bold w-fit">
           <button 
+            type="button"
             onClick={() => setGenderFilter('all')}
-            className={`px-4 py-1.5 rounded-full transition-all ${
+            className={`px-3 py-1 rounded-full transition-all ${
               genderFilter === 'all' 
-                ? 'bg-[#1E1B24] text-white shadow-md' 
+                ? 'bg-[#8F173D] text-white shadow-xs' 
                 : 'text-gray-600 hover:text-black hover:bg-white/60'
             }`}
           >
             All Candidates
           </button>
           <button 
+            type="button"
             onClick={() => setGenderFilter('male')}
-            className={`px-4 py-1.5 rounded-full transition-all ${
+            className={`px-3 py-1 rounded-full transition-all ${
               genderFilter === 'male' 
-                ? 'bg-[#1E1B24] text-white shadow-md' 
+                ? 'bg-[#8F173D] text-white shadow-xs' 
                 : 'text-gray-600 hover:text-black hover:bg-white/60'
             }`}
           >
             Male
           </button>
           <button 
+            type="button"
             onClick={() => setGenderFilter('female')}
-            className={`px-4 py-1.5 rounded-full transition-all ${
+            className={`px-3 py-1 rounded-full transition-all ${
               genderFilter === 'female' 
-                ? 'bg-[#1E1B24] text-white shadow-md' 
+                ? 'bg-[#8F173D] text-white shadow-xs' 
                 : 'text-gray-600 hover:text-black hover:bg-white/60'
             }`}
           >
             Female
           </button>
           <button 
+            type="button"
             onClick={() => setStatusFilter(statusFilter === 'verified' ? 'all' : 'verified')}
-            className={`px-4 py-1.5 rounded-full transition-all ${
+            className={`px-3 py-1 rounded-full transition-all ${
               statusFilter === 'verified' 
-                ? 'bg-[#C59A4E] text-[#121214] shadow-md font-extrabold' 
+                ? 'bg-[#D4AF37] text-[#121214] font-extrabold shadow-xs' 
                 : 'text-gray-600 hover:text-black hover:bg-white/60'
             }`}
           >
@@ -161,100 +166,73 @@ export default function AdminCandidatesPage() {
         <div className="flex items-center gap-2">
           <Link 
             href="/admin/verifications"
-            className="px-4 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:border-[#C59A4E] hover:text-[#C59A4E] transition-all shadow-sm"
+            className="px-3 py-1 rounded-full bg-white/80 border border-gray-200 text-xs font-bold text-gray-700 hover:border-[#D4AF37] hover:text-[#8F173D] transition-all shadow-xs"
           >
             Verification Queue
           </Link>
-          <Link 
-            href="/admin/revenue"
-            className="px-4 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:border-[#C59A4E] hover:text-[#C59A4E] transition-all shadow-sm"
+          <button 
+            type="button"
+            onClick={() => {
+              const csvData = candidates.map(c => `"${c.id}","${c.first_name} ${c.last_name}","${c.gender}","${c.users?.email || ''}","${c.verification_status}"`).join('\n');
+              const blob = new Blob([`"ID","Name","Gender","Email","Status"\n${csvData}`], { type: 'text/csv' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `candidates-${new Date().toISOString().slice(0,10)}.csv`;
+              a.click();
+            }}
+            className="px-3 py-1 bg-white/80 border border-gray-200 text-gray-700 text-xs font-bold rounded-full hover:bg-gray-50 flex items-center gap-1 shadow-xs transition-all"
           >
-            Transactions
-          </Link>
+            <Download className="w-3 h-3" />
+            <span>Export CSV</span>
+          </button>
         </div>
       </div>
 
-      {/* 2. Page Title & Segmented Metric Pill Bar (Crextio Reference) */}
-      <div className="space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* 2. Page Header & Segmented Metrics */}
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-[#1A1822] tracking-tight">
-              People
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              Registered Candidates
             </h1>
-            <p className="text-xs font-semibold text-gray-400 mt-0.5 uppercase tracking-wider">
-              {candidates.length} Registered Candidate Profiles
+            <p className="text-xs font-semibold text-gray-500 mt-0.5">
+              {candidates.length} profiles synchronized from database
             </p>
           </div>
-
-          {/* Action Pills */}
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={() => {
-                const csvData = candidates.map(c => `"${c.id}","${c.first_name} ${c.last_name}","${c.gender}","${c.users?.email || ''}","${c.verification_status}"`).join('\n');
-                const blob = new Blob([`"ID","Name","Gender","Email","Status"\n${csvData}`], { type: 'text/csv' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `candidates-${new Date().toISOString().slice(0,10)}.csv`;
-                a.click();
-              }}
-              className="px-4 py-2 bg-white border border-gray-200 text-gray-700 text-xs font-bold rounded-full hover:bg-gray-50 flex items-center gap-1.5 shadow-sm transition-all"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Export CSV</span>
-            </button>
-          </div>
         </div>
 
-        {/* Segmented Metric Progress Pill from Crextio Reference */}
+        {/* Segmented Metric Pills */}
         <div className="flex items-center gap-2 flex-wrap text-xs font-bold">
-          {/* Dark Pill: Male */}
-          <div className="bg-[#1E1B24] text-white px-4 py-2 rounded-full flex items-center gap-2 shadow-sm">
+          <div className="bg-[#8F173D] text-white px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-xs">
             <span>Male</span>
-            <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px]">{metrics.malePct}%</span>
+            <span className="bg-white/20 px-1.5 py-0.2 rounded-full text-[10px]">{metrics.malePct}%</span>
           </div>
 
-          {/* Yellow Pill: Female */}
-          <div className="bg-[#F7CA45] text-[#1E1B24] px-4 py-2 rounded-full flex items-center gap-2 shadow-sm">
+          <div className="bg-[#D4AF37] text-[#1E1B24] px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-xs">
             <span>Female</span>
-            <span className="bg-black/15 px-2 py-0.5 rounded-full text-[10px]">{metrics.femalePct}%</span>
+            <span className="bg-black/15 px-1.5 py-0.2 rounded-full text-[10px]">{metrics.femalePct}%</span>
           </div>
 
-          {/* Verified Pill */}
-          <div className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-4 py-2 rounded-full flex items-center gap-2 shadow-sm">
+          <div className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-xs">
             <span>Verified</span>
-            <span className="bg-emerald-200/60 text-emerald-900 px-2 py-0.5 rounded-full text-[10px]">{metrics.verifiedPct}%</span>
+            <span className="bg-emerald-200/60 text-emerald-900 px-1.5 py-0.2 rounded-full text-[10px]">{metrics.verifiedPct}%</span>
           </div>
 
-          {/* Total Pool */}
-          <div className="bg-gray-100 text-gray-600 px-4 py-2 rounded-full flex items-center gap-1.5">
-            <span>Total Pool:</span>
-            <span className="text-black font-extrabold">{candidates.length}</span>
+          <div className="bg-black/5 text-gray-700 px-3 py-1.5 rounded-full flex items-center gap-1">
+            <span>Total Candidates:</span>
+            <span className="font-extrabold">{candidates.length}</span>
           </div>
         </div>
       </div>
 
-      {/* 3. Floating Capsule Search & Filter Bar (Crextio Reference) */}
-      <div className="bg-white rounded-full p-2 pl-5 shadow-sm border border-gray-200/80 flex items-center justify-between gap-3 flex-wrap">
-        
-        {/* Filter Dropdowns */}
+      {/* 3. Search & Filter Bar */}
+      <div className="bg-white/70 backdrop-blur-md rounded-2xl p-2.5 shadow-xs border border-gray-200/80 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2">
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Gender Filter */}
-          <select 
-            value={genderFilter}
-            onChange={(e: any) => setGenderFilter(e.target.value)}
-            className="bg-gray-50 border border-gray-200 rounded-full px-3 py-1.5 text-xs font-bold text-gray-700 focus:outline-none focus:border-[#C59A4E]"
-          >
-            <option value="all">Gender: All</option>
-            <option value="male">Gender: Male</option>
-            <option value="female">Gender: Female</option>
-          </select>
-
-          {/* Sect Filter */}
           <select 
             value={sectFilter}
             onChange={(e: any) => setSectFilter(e.target.value)}
-            className="bg-gray-50 border border-gray-200 rounded-full px-3 py-1.5 text-xs font-bold text-gray-700 focus:outline-none focus:border-[#C59A4E]"
+            className="bg-gray-50 border border-gray-200 rounded-xl px-2.5 py-1.5 text-xs font-bold focus:outline-none"
           >
             <option value="all">Sect: All</option>
             <option value="shwetambar">Shwetambar</option>
@@ -263,59 +241,159 @@ export default function AdminCandidatesPage() {
             <option value="terapanthi">Terapanthi</option>
           </select>
 
-          {/* Status Filter */}
           <select 
             value={statusFilter}
             onChange={(e: any) => setStatusFilter(e.target.value)}
-            className="bg-gray-50 border border-gray-200 rounded-full px-3 py-1.5 text-xs font-bold text-gray-700 focus:outline-none focus:border-[#C59A4E]"
+            className="bg-gray-50 border border-gray-200 rounded-xl px-2.5 py-1.5 text-xs font-bold focus:outline-none"
           >
             <option value="all">Status: All</option>
             <option value="verified">Verified</option>
             <option value="pending">Pending</option>
-            <option value="not_verified">Unverified</option>
+            <option value="rejected">Rejected</option>
           </select>
         </div>
 
-        {/* Live Search Input */}
-        <div className="flex-1 min-w-[200px] max-w-md relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        {/* Live Search */}
+        <div className="relative flex-1 md:max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
           <input 
             type="text"
-            placeholder="Search candidate name, email, phone, ID..."
+            placeholder="Search name, email, city..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-gray-50/80 hover:bg-gray-50 focus:bg-white border border-gray-200 rounded-full pl-10 pr-4 py-1.5 text-xs font-medium focus:outline-none focus:border-[#C59A4E] transition-all"
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-8 pr-3 py-1.5 text-xs font-medium focus:outline-none transition-all"
           />
         </div>
       </div>
 
-      {/* 4. Master Data Table with Crextio Rounded Card Styling */}
-      <div className="bg-white rounded-[28px] sm:rounded-[32px] border border-gray-150 shadow-md overflow-hidden">
-        <div className="overflow-x-auto">
+      {/* ============================================================
+          4. CANDIDATES DATA DISPLAY:
+             - Mobile Cards View (Below sm/md)
+             - High-Density Table (Desktop)
+          ============================================================ */}
+
+      {/* MOBILE CARDS VIEW */}
+      <div className="block lg:hidden space-y-3">
+        {loading && (
+          <div className="p-8 text-center text-gray-400 font-semibold bg-white/50 rounded-2xl border border-gray-200/60">
+            <div className="w-6 h-6 border-2 border-[#8F173D] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+            Loading candidates...
+          </div>
+        )}
+
+        {!loading && filteredCandidates.length === 0 && (
+          <div className="p-8 text-center text-gray-500 font-semibold bg-white/50 rounded-2xl border border-gray-200/60">
+            No candidates found matching the selected filters.
+          </div>
+        )}
+
+        {!loading && filteredCandidates.map((cand) => {
+          const age = calculateAge(cand.date_of_birth);
+          const jainInfo = cand.jain_identities;
+
+          return (
+            <div 
+              key={cand.id}
+              className="bg-white/90 rounded-2xl p-4 border border-gray-200 shadow-xs space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-full bg-[#8F173D]/10 text-[#8F173D] border border-[#8F173D]/20 flex items-center justify-center font-bold text-xs uppercase overflow-hidden shrink-0">
+                    {(cand.first_name?.[0] || '') + (cand.last_name?.[0] || '')}
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-sm text-[#19191D] leading-tight">
+                      {cand.first_name} {cand.last_name}
+                    </h3>
+                    <p className="text-[10px] text-gray-400 font-mono">
+                      {cand.gender?.toUpperCase()} {age ? `• ${age} YRS` : ''} • {cand.users?.email}
+                    </p>
+                  </div>
+                </div>
+
+                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${
+                  cand.verification_status === 'verified'
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                    : cand.verification_status === 'pending'
+                    ? 'bg-amber-50 text-amber-800 border-amber-200'
+                    : 'bg-red-50 text-red-800 border-red-200'
+                }`}>
+                  {cand.verification_status || 'Pending'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs py-2 border-y border-gray-100">
+                <div>
+                  <span className="text-[10px] font-bold text-gray-400 block uppercase">Sect</span>
+                  <span className="font-semibold">{jainInfo?.sect || 'Shwetambar'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-gray-400 block uppercase">Location</span>
+                  <span className="font-semibold truncate block">
+                    {cand.current_city ? `${cand.current_city}, ${cand.current_state}` : 'Pending location'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-between gap-2 pt-1">
+                <Link
+                  href={`/admin/users/${cand.id}`}
+                  className="px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-xs font-bold flex items-center gap-1"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>View Details</span>
+                </Link>
+
+                <div className="flex items-center gap-1.5">
+                  {cand.verification_status !== 'verified' && (
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateStatus(cand.id, 'verified')}
+                      className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1 shadow-xs"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Verify</span>
+                    </button>
+                  )}
+                  {cand.verification_status !== 'rejected' && (
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateStatus(cand.id, 'rejected')}
+                      className="px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold flex items-center gap-1"
+                    >
+                      <XCircle className="w-3.5 h-3.5" />
+                      <span>Reject</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* DESKTOP MASTER TABLE VIEW */}
+      <div className="hidden lg:block bg-white/90 rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+        <div className="overflow-x-auto w-full">
           <table className="w-full text-left text-xs whitespace-nowrap">
-            
-            {/* Table Header */}
-            <thead className="bg-[#FAF8F5] text-gray-500 font-bold border-b border-gray-150">
+            <thead className="bg-[#FAF8F5] text-gray-500 font-bold border-b border-gray-200">
               <tr>
-                <th className="p-4 pl-6 w-12 text-center">
-                  <input type="checkbox" className="rounded text-[#C59A4E] focus:ring-0" />
-                </th>
-                <th className="p-4">Candidate</th>
-                <th className="p-4">Gender / Age</th>
-                <th className="p-4">Sect & Community</th>
-                <th className="p-4">Location</th>
-                <th className="p-4">Registered Date</th>
-                <th className="p-4">Verification</th>
-                <th className="p-4 pr-6 text-right">Actions</th>
+                <th className="p-3 pl-5 w-10 text-center">#</th>
+                <th className="p-3">Candidate</th>
+                <th className="p-3">Gender / Age</th>
+                <th className="p-3">Sect & Community</th>
+                <th className="p-3">Location</th>
+                <th className="p-3">Verification</th>
+                <th className="p-3 pr-5 text-right">Quick Actions</th>
               </tr>
             </thead>
 
-            {/* Table Body */}
             <tbody className="divide-y divide-gray-100">
               {loading && (
                 <tr>
-                  <td colSpan={8} className="p-12 text-center text-gray-400 font-semibold">
-                    <div className="w-8 h-8 border-3 border-[#C59A4E] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                  <td colSpan={7} className="p-10 text-center text-gray-400 font-semibold">
+                    <div className="w-6 h-6 border-2 border-[#8F173D] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
                     Loading candidates...
                   </td>
                 </tr>
@@ -323,124 +401,103 @@ export default function AdminCandidatesPage() {
 
               {!loading && filteredCandidates.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="p-12 text-center text-gray-500 font-semibold">
+                  <td colSpan={7} className="p-10 text-center text-gray-500 font-semibold">
                     No candidates found matching the selected filters.
                   </td>
                 </tr>
               )}
 
-              {!loading && filteredCandidates.map((cand) => {
+              {!loading && filteredCandidates.map((cand, idx) => {
                 const isSelected = selectedId === cand.id;
                 const age = calculateAge(cand.date_of_birth);
-                const jainInfo = Array.isArray(cand.jain_identities) ? cand.jain_identities[0] : cand.jain_identities;
+                const jainInfo = cand.jain_identities;
 
                 return (
                   <tr 
                     key={cand.id}
                     onClick={() => setSelectedId(isSelected ? null : cand.id)}
-                    className={`transition-colors cursor-pointer group ${
+                    className={`transition-colors cursor-pointer ${
                       isSelected 
-                        ? 'bg-[#FCE182] text-black font-medium' 
-                        : 'hover:bg-[#FFFDF4]'
+                        ? 'bg-amber-50/80 font-medium' 
+                        : 'hover:bg-gray-50/80'
                     }`}
                   >
-                    {/* Checkbox */}
-                    <td className="p-4 pl-6 text-center" onClick={(e) => e.stopPropagation()}>
-                      <input 
-                        type="checkbox" 
-                        checked={isSelected}
-                        onChange={() => setSelectedId(isSelected ? null : cand.id)}
-                        className="rounded text-[#C59A4E] focus:ring-0" 
-                      />
+                    <td className="p-3 pl-5 text-center text-gray-400 font-mono">
+                      {idx + 1}
                     </td>
 
-                    {/* Candidate Profile */}
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-200 border border-white shadow-sm flex items-center justify-center font-bold text-xs uppercase overflow-hidden text-gray-700 flex-shrink-0">
-                          {cand.photos?.[0] ? (
-                            <img 
-                              src={`https://hchxytnssymfobqohowk.supabase.co/storage/v1/object/public/profile-photos/${cand.photos[0]}`} 
-                              alt="Profile" 
-                              className="w-full h-full object-cover" 
-                            />
-                          ) : (
-                            (cand.first_name?.[0] || '') + (cand.last_name?.[0] || '')
-                          )}
+                    {/* Candidate */}
+                    <td className="p-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-full bg-[#8F173D]/10 text-[#8F173D] border border-[#8F173D]/20 flex items-center justify-center font-bold text-xs uppercase overflow-hidden shrink-0">
+                          {(cand.first_name?.[0] || '') + (cand.last_name?.[0] || '')}
                         </div>
                         <div className="min-w-0">
-                          <p className="font-extrabold text-sm text-[#19191D] truncate leading-tight">
+                          <p className="font-extrabold text-xs text-[#19191D] truncate leading-tight">
                             {cand.first_name} {cand.last_name}
                           </p>
-                          <p className={`text-[10px] truncate mt-0.5 ${isSelected ? 'text-black/80 font-mono' : 'text-gray-400 font-mono'}`}>
-                            ID: {cand.id.split('-')[0].toUpperCase()} • {cand.users?.email || 'No email'}
+                          <p className="text-[10px] text-gray-400 font-mono truncate">
+                            {cand.users?.email || 'No email'}
                           </p>
                         </div>
                       </div>
                     </td>
 
                     {/* Gender & Age */}
-                    <td className="p-4 font-semibold">
+                    <td className="p-3 font-semibold">
                       <span className="capitalize">{cand.gender}</span>
-                      {age && <span className="text-gray-500 ml-1">({age} yrs)</span>}
+                      {age && <span className="text-gray-500 ml-1">({age}y)</span>}
                     </td>
 
-                    {/* Sect & Community */}
-                    <td className="p-4">
-                      <p className="font-bold text-[#19191D]">{jainInfo?.sect || 'Not specified'}</p>
-                      <p className={`text-[10px] ${isSelected ? 'text-black/70' : 'text-gray-400'}`}>
-                        {jainInfo?.community || 'Community pending'}
-                      </p>
+                    {/* Sect */}
+                    <td className="p-3">
+                      <p className="font-bold text-[#19191D]">{jainInfo?.sect || 'Shwetambar'}</p>
+                      <p className="text-[10px] text-gray-400">{jainInfo?.community || 'Deravasi'}</p>
                     </td>
 
                     {/* Location */}
-                    <td className="p-4">
-                      <div className="flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                        <span className="font-medium">
-                          {cand.current_city ? `${cand.current_city}, ${cand.current_state}` : 'Pending location'}
+                    <td className="p-3">
+                      <div className="flex items-center gap-1 text-gray-600">
+                        <MapPin className="w-3 h-3 text-gray-400 shrink-0" />
+                        <span className="truncate">
+                          {cand.current_city ? `${cand.current_city}, ${cand.current_state}` : 'Pending'}
                         </span>
                       </div>
                     </td>
 
-                    {/* Registered Date */}
-                    <td className="p-4 font-medium text-gray-500">
-                      {new Date(cand.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
-                    </td>
-
                     {/* Status Badge */}
-                    <td className="p-4">
-                      {cand.verification_status === 'verified' ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-                          Verified
-                        </span>
-                      ) : cand.verification_status === 'pending' ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-extrabold">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse" />
-                          Pending Review
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-[10px] font-extrabold">
-                          <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-                          Unverified
-                        </span>
-                      )}
+                    <td className="p-3">
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${
+                        cand.verification_status === 'verified'
+                          ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                          : cand.verification_status === 'pending'
+                          ? 'bg-amber-50 text-amber-800 border-amber-200'
+                          : 'bg-red-50 text-red-800 border-red-200'
+                      }`}>
+                        {cand.verification_status || 'Pending'}
+                      </span>
                     </td>
 
                     {/* Actions */}
-                    <td className="p-4 pr-6 text-right" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-end gap-1.5">
+                    <td className="p-3 pr-5 text-right" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-end gap-1">
+                        {cand.verification_status !== 'verified' && (
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateStatus(cand.id, 'verified')}
+                            className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-bold flex items-center gap-1 transition-all"
+                            title="Approve verification"
+                          >
+                            <Check className="w-3 h-3" />
+                            <span>Verify</span>
+                          </button>
+                        )}
                         <Link 
                           href={`/admin/users/${cand.id}`}
-                          className={`p-2 rounded-xl transition-all ${
-                            isSelected 
-                              ? 'bg-black text-white hover:bg-black/80' 
-                              : 'bg-gray-100 hover:bg-[#C59A4E] hover:text-[#121214] text-gray-600'
-                          }`}
+                          className="p-1.5 rounded-lg bg-gray-100 hover:bg-[#8F173D] hover:text-white text-gray-600 transition-all"
                           title="Open Full Profile"
                         >
-                          <Eye className="w-4 h-4" />
+                          <Eye className="w-3.5 h-3.5" />
                         </Link>
                       </div>
                     </td>
@@ -448,14 +505,12 @@ export default function AdminCandidatesPage() {
                 );
               })}
             </tbody>
-
           </table>
         </div>
 
-        {/* Table Footer Summary */}
-        <div className="p-4 px-6 border-t border-gray-150 bg-[#FAF8F5] flex items-center justify-between text-xs text-gray-500 font-semibold">
+        <div className="p-3 px-5 border-t border-gray-200 bg-[#FAF8F5] flex items-center justify-between text-xs text-gray-500 font-semibold">
           <span>Showing {filteredCandidates.length} of {candidates.length} candidates</span>
-          <span>Filtered strictly via Supabase SQL backend</span>
+          <span>Database Direct Connected</span>
         </div>
       </div>
 
