@@ -233,8 +233,8 @@ export default function HorizontalRopePricingStage({
     if (onActivatePlan) {
       onActivatePlan(selected);
     } else if (typeof window !== 'undefined') {
-      // Default navigation to /pricing with selected plan
-      window.location.href = `/pricing?plan=${selected.id}`;
+      // Direct navigation to checkout with selected plan ID (Zero second drag!)
+      window.location.href = `/pricing?checkout=${selected.id}`;
     }
   };
 
