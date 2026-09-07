@@ -2,21 +2,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { ArrowLeft, RefreshCw, AlertCircle, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Sparkles, ShieldCheck, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 import BackgroundDecorations from '@/components/pricing/BackgroundDecorations';
-import PricingCardStack from '@/components/pricing/PricingCardStack';
-import ActivationZone from '@/components/pricing/ActivationZone';
-import PlanDetailSheet from '@/components/pricing/PlanDetailSheet';
+import HorizontalPricingCarousel from '@/components/pricing/HorizontalPricingCarousel';
+import ActivationSlot from '@/components/pricing/ActivationSlot';
+import InPlaceDetailCard from '@/components/pricing/InPlaceDetailCard';
 import { PlanItem } from '@/components/pricing/PricingCard';
 
-// Interaction State Machine
 type PricingState = 
-  | 'IDLE' 
   | 'LOADING' 
-  | 'PLAN_SELECTED' 
-  | 'DETAIL_OPEN' 
+  | 'READY' 
   | 'ACTIVATING' 
   | 'SUCCESS' 
   | 'ERROR';
@@ -30,24 +26,21 @@ declare global {
 export default function PricingPage() {
   const router = useRouter();
 
-  // State machine & data states
   const [pricingState, setPricingState] = useState<PricingState>('LOADING');
   const [plans, setPlans] = useState<PlanItem[]>([]);
-  const [activeIndex, setActiveIndex] = useState(1); // Default to Pro or Super
+  const [activeIndex, setActiveIndex] = useState(2); // Default to Super (Most Popular)
   const [detailPlan, setDetailPlan] = useState<PlanItem | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // User & eligibility info from backend
-  const [userData, setUserData] = useState<any>(null);
+  // User & eligibility
   const [currentSub, setCurrentSub] = useState<any>(null);
   const [isFemaleEligible, setIsFemaleEligible] = useState(false);
 
-  // Drag interaction states for Activation Zone
+  // Drag interaction states for Activation Slot
   const [dragProgress, setDragProgress] = useState(0);
   const [isThresholdReached, setIsThresholdReached] = useState(false);
 
-  // 1. Fetch Authoritative Database Plans on Mount
   useEffect(() => {
     fetchPlans();
   }, []);
@@ -64,15 +57,14 @@ export default function PricingPage() {
       }
 
       setPlans(data.plans);
-      setUserData(data.user);
       setCurrentSub(data.currentSubscription);
       setIsFemaleEligible(data.isFemaleEligibleForFreeYear);
 
-      // Default to "Super" or "Pro" for best user experience
+      // Default to "Super" if present, or index 1
       const superIndex = data.plans.findIndex((p: PlanItem) => p.code.includes('super'));
       setActiveIndex(superIndex !== -1 ? superIndex : Math.min(1, data.plans.length - 1));
 
-      setPricingState('PLAN_SELECTED');
+      setPricingState('READY');
     } catch (err: any) {
       console.error('Error fetching plans:', err);
       setErrorMessage(err.message || 'Unable to connect to JainSaathi servers.');
@@ -80,7 +72,6 @@ export default function PricingPage() {
     }
   };
 
-  // Helper to dynamically load Razorpay Checkout Script
   const loadRazorpayScript = (): Promise<boolean> => {
     return new Promise((resolve) => {
       if (typeof window !== 'undefined' && window.Razorpay) {
@@ -95,13 +86,11 @@ export default function PricingPage() {
     });
   };
 
-  // 2. Intentional Activation Trigger (From Drag-to-Activate or Details)
   const handleInitiateActivation = async (selectedPlan: PlanItem) => {
     setPricingState('ACTIVATING');
     setErrorMessage(null);
 
     try {
-      // Step A: Request authoritative order from server
       const res = await fetch('/api/payments/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -112,21 +101,20 @@ export default function PricingPage() {
 
       if (!res.ok || !data.success) {
         if (res.status === 401) {
-          // Unauthenticated user -> redirect to login with return path
           router.push(`/login?redirect=/pricing`);
           return;
         }
         throw new Error(data.error || 'Failed to prepare membership order.');
       }
 
-      // Step B: If direct activation (Free plan or Female 1-Year Free)
+      // If direct activation (Free plan or Female 1-Year Free)
       if (data.directActivation) {
         setSuccessMessage(data.message || `Your ${selectedPlan.name} membership has been activated!`);
         setPricingState('SUCCESS');
         return;
       }
 
-      // Step C: Paid Plan -> Launch Razorpay Gateway
+      // Paid Plan -> Launch Razorpay
       const isScriptLoaded = await loadRazorpayScript();
       if (!isScriptLoaded) {
         throw new Error('Could not load payment gateway. Please check your network.');
@@ -135,7 +123,7 @@ export default function PricingPage() {
       const order = data.order;
       const options = {
         key: order.keyId,
-        amount: order.amountInr * 100, // in paise
+        amount: order.amountInr * 100,
         currency: order.currency || 'INR',
         name: 'JainSaathi Matrimony',
         description: `${selectedPlan.name} Membership (${selectedPlan.durationDays} Days)`,
@@ -148,7 +136,6 @@ export default function PricingPage() {
           color: '#8F173D',
         },
         handler: async function (response: any) {
-          // Verify server-side
           try {
             const verifyRes = await fetch('/api/payments/verify', {
               method: 'POST',
@@ -170,12 +157,12 @@ export default function PricingPage() {
             }
           } catch (vErr: any) {
             setErrorMessage(vErr.message || 'Payment verification error.');
-            setPricingState('PLAN_SELECTED');
+            setPricingState('READY');
           }
         },
         modal: {
           ondismiss: function () {
-            setPricingState('PLAN_SELECTED');
+            setPricingState('READY');
           },
         },
       };
@@ -184,13 +171,13 @@ export default function PricingPage() {
       rzp.on('payment.failed', function (resp: any) {
         console.error('Payment failed:', resp.error);
         setErrorMessage(resp.error?.description || 'Payment was declined or cancelled.');
-        setPricingState('PLAN_SELECTED');
+        setPricingState('READY');
       });
       rzp.open();
     } catch (err: any) {
       console.error('Activation error:', err);
       setErrorMessage(err.message || 'Unable to initiate subscription.');
-      setPricingState('PLAN_SELECTED');
+      setPricingState('READY');
     }
   };
 
@@ -201,13 +188,13 @@ export default function PricingPage() {
       {/* 1. Subtle Background & Lotus Petals */}
       <BackgroundDecorations />
 
-      {/* 2. Mobile-Friendly Header */}
-      <header className="relative z-30 w-full max-w-lg mx-auto px-5 pt-4 sm:pt-6 flex items-center justify-between shrink-0">
+      {/* 2. Compact Minimal Header (Adhering to Section 3) */}
+      <header className="relative z-30 w-full max-w-lg mx-auto px-4 pt-3 sm:pt-4 flex items-center justify-between shrink-0">
         <button
           type="button"
           onClick={() => router.back()}
           aria-label="Go back"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/70 hover:bg-white/90 backdrop-blur-md border border-white/80 shadow-sm text-xs font-bold text-[#24131D] transition-all"
+          className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/70 hover:bg-white/90 backdrop-blur-md border border-white/80 shadow-sm text-xs font-bold text-[#24131D] transition-all"
         >
           <ArrowLeft className="w-3.5 h-3.5 stroke-[2.5]" />
           <span>Back</span>
@@ -215,41 +202,47 @@ export default function PricingPage() {
 
         {/* Brand Tagline */}
         <div className="flex flex-col items-center">
-          <div className="flex items-center gap-1.5">
-            <span className="font-serif font-black text-lg sm:text-xl text-[#8F173D] tracking-tight">
-              JainSaathi
-            </span>
-          </div>
-          <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-[#9E6F18]">
+          <span className="font-serif font-black text-lg sm:text-xl text-[#8F173D] tracking-tight leading-none">
+            JainSaathi
+          </span>
+          <span className="text-[8.5px] uppercase font-bold tracking-widest text-[#9E6F18] mt-0.5">
             Find Your Jain Saathi
           </span>
         </div>
 
-        {/* Plan Indicator (e.g. 2 / 4) */}
-        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/70 backdrop-blur-md border border-white/80 shadow-sm">
-          <span className="text-xs font-black text-[#8F173D]">
+        {/* Small Plan Counter Pill */}
+        <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/70 backdrop-blur-md border border-white/80 shadow-sm text-xs">
+          <span className="font-black text-[#8F173D]">
             {plans.length > 0 ? activeIndex + 1 : 0}
           </span>
           <span className="text-[10px] text-[#7A606E]">/</span>
-          <span className="text-xs font-bold text-[#7A606E]">
-            {plans.length}
-          </span>
+          <span className="font-bold text-[#7A606E]">{plans.length}</span>
         </div>
       </header>
 
-      {/* Active Subscription Notice Banner (if any) */}
+      {/* 3. Pricing Introduction (Compact, Section 4) */}
+      <div className="relative z-20 text-center px-4 pt-1 shrink-0">
+        <h1 className="font-serif text-lg sm:text-xl font-black text-[#24131D] tracking-tight">
+          Choose Your JainSaathi Plan
+        </h1>
+        <p className="text-[11px] sm:text-xs text-[#705662] font-medium leading-tight">
+          Choose the membership that fits your matrimonial journey.
+        </p>
+      </div>
+
+      {/* Active Subscription Banner (if user has an active/expired plan) */}
       {currentSub && (
-        <div className="relative z-30 max-w-sm mx-auto px-4 mt-1">
-          <div className={`px-3 py-1.5 rounded-full text-[11px] font-bold flex items-center justify-center gap-2 border shadow-sm ${
+        <div className="relative z-30 max-w-xs mx-auto px-4 mt-0.5">
+          <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center justify-center gap-1.5 border shadow-sm ${
             currentSub.isExpired
               ? 'bg-amber-50 text-amber-900 border-amber-200'
               : 'bg-emerald-50 text-emerald-900 border-emerald-200'
           }`}>
-            <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-            <span>
+            <ShieldCheck className="w-3 h-3 shrink-0" />
+            <span className="truncate">
               {currentSub.isExpired 
-                ? 'Your previous membership has expired. Choose a plan to renew.' 
-                : `Current Membership Active until ${new Date(currentSub.expires_at).toLocaleDateString('en-IN')}`}
+                ? 'Previous membership expired. Select a plan to renew.' 
+                : `Current plan active until ${new Date(currentSub.expires_at).toLocaleDateString('en-IN')}`}
             </span>
           </div>
         </div>
@@ -257,15 +250,15 @@ export default function PricingPage() {
 
       {/* Error Alert Display */}
       {errorMessage && (
-        <div className="relative z-40 max-w-sm mx-auto px-4 mt-2">
-          <div className="p-3 rounded-2xl bg-red-50/95 border border-red-200 text-red-800 text-xs font-semibold flex items-center justify-between gap-2 shadow-sm">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+        <div className="relative z-40 max-w-sm mx-auto px-4 mt-1">
+          <div className="p-2.5 rounded-2xl bg-red-50/95 border border-red-200 text-red-800 text-xs font-semibold flex items-center justify-between gap-2 shadow-sm">
+            <div className="flex items-center gap-1.5">
+              <AlertCircle className="w-3.5 h-3.5 text-red-600 shrink-0" />
               <span>{errorMessage}</span>
             </div>
             <button
               onClick={() => setErrorMessage(null)}
-              className="text-red-500 font-bold px-2"
+              className="text-red-500 font-bold px-1"
             >
               ✕
             </button>
@@ -273,77 +266,96 @@ export default function PricingPage() {
         </div>
       )}
 
-      {/* 3. Main Central 3D Card Stack Stage */}
+      {/* 4. Horizontal Interactive 3D Card Stage (Section 5 & 7) */}
       {pricingState === 'LOADING' ? (
         <div className="relative z-20 flex-1 flex flex-col items-center justify-center p-4">
-          <div className="w-[310px] sm:w-[350px] aspect-[1/1.3] rounded-[34px] bg-white/40 border border-white/60 animate-pulse flex flex-col justify-between p-7 backdrop-blur-xl">
-            <div className="space-y-3">
+          <div className="w-[280px] sm:w-[320px] aspect-[1/1.25] rounded-[34px] bg-white/40 border border-white/60 animate-pulse flex flex-col justify-between p-6 backdrop-blur-xl">
+            <div className="space-y-2">
               <div className="h-4 w-20 bg-black/10 rounded-full" />
-              <div className="h-9 w-40 bg-black/10 rounded-xl" />
-              <div className="h-4 w-48 bg-black/10 rounded-md" />
+              <div className="h-8 w-36 bg-black/10 rounded-xl" />
+              <div className="h-3 w-44 bg-black/10 rounded-md" />
             </div>
-            <div className="space-y-3">
-              <div className="h-10 w-32 bg-black/10 rounded-xl" />
-              <div className="h-4 w-full bg-black/10 rounded" />
-              <div className="h-4 w-3/4 bg-black/10 rounded" />
+            <div className="space-y-2">
+              <div className="h-8 w-28 bg-black/10 rounded-xl" />
+              <div className="h-3 w-full bg-black/10 rounded" />
+              <div className="h-3 w-3/4 bg-black/10 rounded" />
             </div>
-            <div className="h-9 w-28 bg-black/10 rounded-full" />
+            <div className="h-8 w-24 bg-black/10 rounded-full" />
           </div>
-          <p className="text-xs font-semibold text-[#7A606E] mt-4 flex items-center gap-2">
-            <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#8F173D]" />
+          <p className="text-[11px] font-semibold text-[#7A606E] mt-3 flex items-center gap-1.5">
+            <RefreshCw className="w-3 h-3 animate-spin text-[#8F173D]" />
             Loading JainSaathi Membership Plans...
           </p>
         </div>
       ) : pricingState === 'ERROR' ? (
-        <div className="relative z-20 flex-1 flex flex-col items-center justify-center p-6 text-center">
-          <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-3">
-            <AlertCircle className="w-6 h-6" />
+        <div className="relative z-20 flex-1 flex flex-col items-center justify-center p-4 text-center">
+          <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-2">
+            <AlertCircle className="w-5 h-5" />
           </div>
-          <h2 className="font-serif text-2xl font-extrabold text-[#24131D]">
+          <h2 className="font-serif text-xl font-extrabold text-[#24131D]">
             Unable to Load Plans
           </h2>
-          <p className="text-xs text-[#705662] max-w-xs mt-1 mb-5">
-            {errorMessage || 'A temporary connection error occurred while loading membership tiers.'}
+          <p className="text-[11px] text-[#705662] max-w-xs mt-1 mb-4">
+            {errorMessage || 'A temporary connection error occurred.'}
           </p>
           <button
             onClick={fetchPlans}
-            className="px-6 py-2.5 rounded-full bg-[#8F173D] text-white font-bold text-xs shadow-md hover:bg-[#6E1735] transition-all"
+            className="px-5 py-2 rounded-full bg-[#8F173D] text-white font-bold text-xs shadow-md hover:bg-[#6E1735] transition-all"
           >
             Try Again
           </button>
         </div>
       ) : (
-        <div className="relative z-20 flex-1 flex flex-col items-center justify-center overflow-hidden">
-          <PricingCardStack
-            plans={plans}
-            activeIndex={activeIndex}
-            onIndexChange={setActiveIndex}
-            onViewDetails={(plan) => setDetailPlan(plan)}
-            onActivate={handleInitiateActivation}
-            onDragProgress={(progress, isReached) => {
-              setDragProgress(progress);
-              setIsThresholdReached(isReached);
-            }}
-            isFemaleEligible={isFemaleEligible}
-            currentPlanId={currentSub?.plan_id}
-          />
-        </div>
+        <HorizontalPricingCarousel
+          plans={plans}
+          activeIndex={activeIndex}
+          onIndexChange={setActiveIndex}
+          onViewDetails={(plan) => setDetailPlan(plan)}
+          onActivate={handleInitiateActivation}
+          onDragProgress={(progress, isReached) => {
+            setDragProgress(progress);
+            setIsThresholdReached(isReached);
+          }}
+          isFemaleEligible={isFemaleEligible}
+          currentPlanId={currentSub?.plan_id}
+        />
       )}
 
-      {/* 4. Bottom Destination: Drag to Activate Zone */}
-      <footer className="relative z-30 pb-4 sm:pb-6 shrink-0">
-        <ActivationZone
+      {/* 5. Four Minimal Plan Indicators (Section 14) */}
+      <div className="relative z-20 flex items-center justify-center gap-2 py-1 shrink-0">
+        {plans.map((p, idx) => {
+          const isActive = idx === activeIndex;
+          return (
+            <button
+              key={p.id}
+              onClick={() => setActiveIndex(idx)}
+              aria-label={`Select ${p.name} plan`}
+              className={`transition-all flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                isActive
+                  ? 'bg-[#8F173D] text-white shadow-sm scale-105'
+                  : 'bg-white/60 text-[#7A606E] hover:bg-white/80'
+              }`}
+            >
+              <span>{p.name}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* 6. Dedicated Downward Activation Slot (Section 22 & Video Reference) */}
+      <footer className="relative z-30 pb-3 sm:pb-4 shrink-0">
+        <ActivationSlot
           activePlan={activePlan}
           dragProgress={dragProgress}
           isThresholdReached={isThresholdReached}
           isActivating={pricingState === 'ACTIVATING'}
-          onActivateClick={() => activePlan && handleInitiateActivation(activePlan)}
+          onSlotClick={() => activePlan && handleInitiateActivation(activePlan)}
           isFemaleEligible={isFemaleEligible}
         />
       </footer>
 
-      {/* 5. Expanding Glassmorphism Detail Sheet */}
-      <PlanDetailSheet
+      {/* 7. In-Place Glassmorphism Detail Card (Section 16, 17, 18) */}
+      <InPlaceDetailCard
         plan={detailPlan}
         isOpen={Boolean(detailPlan)}
         onClose={() => setDetailPlan(null)}
@@ -351,25 +363,25 @@ export default function PricingPage() {
         isFemaleEligible={isFemaleEligible}
       />
 
-      {/* 6. Success Celebration Modal */}
+      {/* 8. Success Celebration Screen */}
       <AnimatePresence>
         {pricingState === 'SUCCESS' && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/40 backdrop-blur-md">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-5 bg-black/40 backdrop-blur-md">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="relative w-full max-w-sm rounded-[32px] bg-white p-7 text-center shadow-2xl border border-white space-y-4"
+              className="relative w-full max-w-xs rounded-[32px] bg-white p-6 text-center shadow-2xl border border-white space-y-3"
             >
-              <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-8 h-8 stroke-[2.5]" />
+              <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+                <CheckCircle2 className="w-7 h-7 stroke-[2.5]" />
               </div>
 
               <div>
-                <h3 className="font-serif text-2xl font-black text-[#24131D]">
+                <h3 className="font-serif text-xl font-black text-[#24131D]">
                   Membership Activated!
                 </h3>
-                <p className="text-xs text-[#705662] mt-1">
+                <p className="text-[11px] text-[#705662] mt-1">
                   {successMessage || 'Welcome to JainSaathi Premium matrimonial privileges.'}
                 </p>
               </div>
@@ -377,7 +389,7 @@ export default function PricingPage() {
               <button
                 type="button"
                 onClick={() => router.push('/dashboard')}
-                className="w-full py-3.5 rounded-full bg-[#8F173D] text-white font-bold text-xs uppercase tracking-wider shadow-md hover:bg-[#6E1735] transition-all"
+                className="w-full py-3 rounded-full bg-[#8F173D] text-white font-bold text-xs uppercase tracking-wider shadow-md hover:bg-[#6E1735] transition-all"
               >
                 Go to Dashboard
               </button>
