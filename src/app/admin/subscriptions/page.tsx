@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase/client';
 import { CreditCard, CheckCircle, Clock, Search, Download, AlertCircle } from 'lucide-react';
 
 export default function AdminSubscriptionsPage() {
@@ -17,24 +16,16 @@ export default function AdminSubscriptionsPage() {
   const fetchSubscriptions = async () => {
     setLoading(true);
     try {
-      let query = supabase
-        .from('subscriptions')
-        .select(`
-          id, plan_id, status, starts_at, expires_at, created_at,
-          users ( email, phone ),
-          plans ( code, name, price_inr, duration_days )
-        `)
-        .order('created_at', { ascending: false });
-
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
+      const res = await fetch(`/api/admin/subscriptions?status=${statusFilter}`);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.subscriptions)) {
+        setSubscriptions(data.subscriptions);
+      } else {
+        setSubscriptions([]);
       }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      setSubscriptions(data || []);
     } catch (err) {
       console.error('Failed to load subscriptions:', err);
+      setSubscriptions([]);
     } finally {
       setLoading(false);
     }

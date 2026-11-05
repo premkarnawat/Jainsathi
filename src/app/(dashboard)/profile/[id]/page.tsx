@@ -8,6 +8,7 @@ import {
 import { supabase } from '@/lib/supabase/client';
 import { useCandidateProfile } from '@/hooks/useCandidateProfile';
 import { useRouter } from 'next/navigation';
+import { triggerNotificationToast } from '@/components/dashboard/NotificationToast';
 import { 
   PersonalDetails, 
   JainIdentity, 
@@ -38,32 +39,46 @@ export default function CandidateProfileView({ params }: { params: { id: string 
       try {
         setLoading(true);
         // 1. Fetch Candidate Profile Graph
-        const { data: candData, error: candError } = await supabase
-          .from('candidate_profiles')
-          .select(`
-            *,
-            jain_identities(*),
-            education_records(*),
-            employment_records(*),
-            lifestyle_profiles(*),
-            family_members(*),
-            profile_privacies(*),
-            biodatas(*),
-            photos(*)
-          `)
-          .eq('id', params.id)
-          .single();
-          
-        if (candError) throw candError;
+        let finalCandidate: any = null;
+        try {
+          const { data: candData, error: candError } = await supabase
+            .from('candidate_profiles')
+            .select(`
+              *,
+              jain_identities(*),
+              education_records(*),
+              employment_records(*),
+              lifestyle_profiles(*),
+              family_members(*),
+              profile_privacies(*),
+              biodatas(*),
+              photos(*)
+            `)
+            .eq('id', params.id)
+            .single();
 
-        // Fetch user data separately
-        const { data: userData } = await supabase
-          .from('users')
-          .select('email, phone')
-          .eq('id', candData.user_id)
-          .single();
-          
-        setCandidate({ ...candData, users: userData });
+          if (!candError && candData) {
+            const { data: userData } = await supabase
+              .from('users')
+              .select('email, phone')
+              .eq('id', candData.user_id)
+              .single();
+            finalCandidate = { ...candData, users: userData };
+          }
+        } catch (_) {}
+
+        // Fallback to server API if client RLS restricts access
+        if (!finalCandidate) {
+          const res = await fetch(`/api/candidates/${params.id}`);
+          if (res.ok) {
+            const apiData = await res.json();
+            if (apiData.success && apiData.candidate) {
+              finalCandidate = apiData.candidate;
+            }
+          }
+        }
+
+        setCandidate(finalCandidate);
 
         // 2. Fetch Relationship Status
         const { data: connData } = await supabase
@@ -130,6 +145,13 @@ export default function CandidateProfileView({ params }: { params: { id: string 
         status: 'pending'
       });
       setRelationshipStatus('interest_sent');
+      triggerNotificationToast({
+        title: 'Interest Sent!',
+        message: 'Your interest request has been sent to this candidate.',
+        type: 'interest',
+        actionUrl: '/interests',
+        actionText: 'View in Sent',
+      });
     } catch (err) {
       console.error(err);
     }
@@ -143,13 +165,19 @@ export default function CandidateProfileView({ params }: { params: { id: string 
         .eq('sender_id', params.id)
         .eq('receiver_id', loggedInUser.id);
         
-      // Connection row creates via DB trigger or insert manually
       await supabase.from('connections').insert({
         candidate_a: params.id,
         candidate_b: loggedInUser.id
       });
       
       setRelationshipStatus('connected');
+      triggerNotificationToast({
+        title: 'Interest Accepted!',
+        message: 'Mutual connection established! Contact details unlocked.',
+        type: 'acceptance',
+        actionUrl: '/connections',
+        actionText: 'View Connection',
+      });
     } catch (err) {
       console.error(err);
     }
@@ -163,12 +191,24 @@ export default function CandidateProfileView({ params }: { params: { id: string 
           .eq('candidate_id', loggedInUser.id)
           .eq('saved_candidate_id', params.id);
         setIsSaved(false);
+        triggerNotificationToast({
+          title: 'Removed from Saved',
+          message: 'Profile removed from your saved bookmarks.',
+          type: 'info',
+        });
       } else {
         await supabase.from('saved_profiles').insert({
           candidate_id: loggedInUser.id,
           saved_candidate_id: params.id
         });
         setIsSaved(true);
+        triggerNotificationToast({
+          title: 'Profile Saved',
+          message: 'Profile added to your saved bookmarks.',
+          type: 'info',
+          actionUrl: '/saved',
+          actionText: 'View Saved',
+        });
       }
     } catch (err) {
       console.error(err);

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase/client';
 import { 
   Receipt, TrendingUp, CheckCircle, XCircle, Clock, 
   Search, Download, ArrowUpRight, DollarSign, CreditCard
@@ -20,23 +19,16 @@ export default function AdminRevenuePage() {
   const fetchPayments = async () => {
     setLoading(true);
     try {
-      let query = supabase
-        .from('payments')
-        .select(`
-          id, amount_inr, currency, status, provider, provider_payment_id, created_at, plan_id,
-          users ( email, phone )
-        `)
-        .order('created_at', { ascending: false });
-
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
+      const res = await fetch(`/api/admin/revenue?status=${statusFilter}`);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.payments)) {
+        setPayments(data.payments);
+      } else {
+        setPayments([]);
       }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      setPayments(data || []);
     } catch (err) {
       console.error('Failed to load revenue:', err);
+      setPayments([]);
     } finally {
       setLoading(false);
     }

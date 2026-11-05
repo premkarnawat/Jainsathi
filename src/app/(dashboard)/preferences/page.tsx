@@ -61,12 +61,33 @@ export default function PreferencesPage() {
       delete payload._raw_sects;
       delete payload._raw_communities;
 
-      const { error } = await supabase
-        .from('partner_preferences')
-        .upsert({
-          candidate_id: loggedInUser.id,
-          ...payload
-        }, { onConflict: 'candidate_id' });
+      // Save via server API with direct database reliability
+      let saveOk = false;
+      try {
+        const res = await fetch('/api/preferences', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            candidate_id: loggedInUser.id,
+            ...payload,
+          }),
+        });
+        const data = await res.json();
+        if (data && data.success) {
+          saveOk = true;
+        }
+      } catch (_) {}
+
+      let error = null;
+      if (!saveOk) {
+        const res = await supabase
+          .from('partner_preferences')
+          .upsert({
+            candidate_id: loggedInUser.id,
+            ...payload
+          }, { onConflict: 'candidate_id' });
+        error = res.error;
+      }
 
       if (error) throw error;
       setSuccessMsg('Partner preferences successfully updated! The matchmaking engine has recalibrated your recommendations.');

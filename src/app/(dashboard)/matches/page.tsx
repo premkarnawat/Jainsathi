@@ -7,6 +7,7 @@ import { useMatches } from '@/hooks/useMatches';
 import { useInterests } from '@/hooks/useInterests';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
+import { triggerNotificationToast } from '@/components/dashboard/NotificationToast';
 
 const FallbackAvatar = () => (
   <div className="w-full h-full bg-[#EDE1D7] flex items-center justify-center text-[#766B70]">
@@ -24,7 +25,13 @@ export default function MatchesPage() {
     if (!loggedInUser) return;
     try {
       await sendInterest(loggedInUser.id, candidateId);
-      alert('Interest sent successfully!'); // In a real app, replace with toast
+      triggerNotificationToast({
+        title: 'Interest Sent!',
+        message: 'Your interest request has been delivered to the candidate.',
+        type: 'interest',
+        actionUrl: '/interests',
+        actionText: 'View in Sent',
+      });
     } catch (err) {
       console.error('Failed to send interest:', err);
     }
@@ -39,12 +46,24 @@ export default function MatchesPage() {
       });
       if (error) {
         if (error.code === '23505') {
-          alert('Profile is already saved.');
+          triggerNotificationToast({
+            title: 'Already Saved',
+            message: 'This candidate is already in your saved bookmarks.',
+            type: 'info',
+            actionUrl: '/saved',
+            actionText: 'Go to Saved',
+          });
         } else {
           throw error;
         }
       } else {
-        alert('Profile saved to your bookmarks!');
+        triggerNotificationToast({
+          title: 'Profile Saved',
+          message: 'Profile has been saved to your bookmarks.',
+          type: 'info',
+          actionUrl: '/saved',
+          actionText: 'View Saved',
+        });
       }
     } catch (err) {
       console.error('Failed to save profile:', err);

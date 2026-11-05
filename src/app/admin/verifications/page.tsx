@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase/client';
 import { 
   ShieldCheck, CheckCircle, XCircle, Eye, AlertTriangle, 
   Search, ArrowLeft, Camera, FileText, UserCheck, ShieldAlert
 } from 'lucide-react';
+import { getStorageUrl } from '@/lib/storage';
 
 export default function AdminVerificationsPage() {
   const [verifications, setVerifications] = useState<any[]>([]);
@@ -190,7 +190,7 @@ export default function AdminVerificationsPage() {
                         <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden font-bold text-xs flex items-center justify-center">
                           {cand?.photos?.[0] ? (
                             <img 
-                              src={`https://hchxytnssymfobqohowk.supabase.co/storage/v1/object/public/profile-photos/${cand.photos[0]}`} 
+                              src={getStorageUrl(typeof cand.photos[0] === 'string' ? cand.photos[0] : cand.photos[0]?.url, 'profile-photos')} 
                               alt="Profile" 
                               className="w-full h-full object-cover" 
                             />
@@ -289,7 +289,7 @@ export default function AdminVerificationsPage() {
                 <div className="w-full h-64 rounded-xl bg-gray-200 overflow-hidden flex items-center justify-center relative shadow-inner">
                   {inspectItem.selfie_path ? (
                     <img 
-                      src={`https://hchxytnssymfobqohowk.supabase.co/storage/v1/object/public/verification-selfies/${inspectItem.selfie_path}`} 
+                      src={getStorageUrl(inspectItem.selfie_path, 'verification-selfies')} 
                       alt="Selfie"
                       className="w-full h-full object-cover" 
                     />
@@ -307,7 +307,7 @@ export default function AdminVerificationsPage() {
                 <div className="w-full h-64 rounded-xl bg-gray-200 overflow-hidden flex items-center justify-center relative shadow-inner">
                   {inspectItem.document_path ? (
                     <img 
-                      src={`https://hchxytnssymfobqohowk.supabase.co/storage/v1/object/public/verification-documents/${inspectItem.document_path}`} 
+                      src={getStorageUrl(inspectItem.document_path, 'verification-documents')} 
                       alt="ID Document"
                       className="w-full h-full object-cover" 
                     />

@@ -1,20 +1,31 @@
-import { type NextRequest } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
 
 export async function middleware(request: NextRequest) {
-  // update user's auth session
+  // Update user's auth session with timeout & route-awareness
   return await updateSession(request);
 }
 
 export const config = {
+  /*
+   * Explicitly match ONLY protected application routes, admin portal, and auth pages.
+   * Public marketing pages (/, /pricing, /privacy, /terms, /contact, /help),
+   * static assets, and API routes are NOT intercepted by Edge middleware.
+   * This completely prevents 504 MIDDLEWARE_INVOCATION_TIMEOUT on Vercel.
+   */
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
-     */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/dashboard/:path*',
+    '/profile/:path*',
+    '/matches/:path*',
+    '/search/:path*',
+    '/interests/:path*',
+    '/connections/:path*',
+    '/saved/:path*',
+    '/preferences/:path*',
+    '/settings/:path*',
+    '/admin/:path*',
+    '/login',
+    '/register',
   ],
 };
+

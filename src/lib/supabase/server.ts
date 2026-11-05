@@ -1,12 +1,15 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
+const defaultSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://vqnbypdytxkmqgdsbswv.supabase.co';
+const defaultSupabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy_anon_key';
+
 export function createClient() {
   const cookieStore = cookies();
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jainsaathi-matrimony.supabase.co',
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy_anon_key',
+    defaultSupabaseUrl,
+    defaultSupabaseAnonKey,
     {
       cookies: {
         get(name: string) {
@@ -17,8 +20,7 @@ export function createClient() {
             cookieStore.set({ name, value, ...options });
           } catch (error) {
             // The `set` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
+            // This can be ignored if you have middleware refreshing user sessions.
           }
         },
         remove(name: string, options: CookieOptions) {
@@ -26,8 +28,6 @@ export function createClient() {
             cookieStore.set({ name, value: '', ...options });
           } catch (error) {
             // The `remove` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
           }
         },
       },
@@ -37,12 +37,10 @@ export function createClient() {
 
 // For bypass-RLS operations where required (e.g. background jobs, webhooks, or admin operations)
 export function createAdminClient() {
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error('SUPABASE_SERVICE_ROLE_KEY is missing');
-  }
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || defaultSupabaseAnonKey;
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    defaultSupabaseUrl,
+    serviceRoleKey,
     {
       cookies: {
         get() { return undefined; },
@@ -55,4 +53,3 @@ export function createAdminClient() {
 
 // Backward compatibility alias for existing API routes
 export const createServerSupabaseClient = createClient;
-

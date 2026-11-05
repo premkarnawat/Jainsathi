@@ -3,13 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
 import { 
   ArrowLeft, User, ShieldCheck, MapPin, Briefcase, 
   GraduationCap, Heart, Users, FileText, CheckCircle, 
   XCircle, AlertTriangle, Download, Phone, Mail, 
   Calendar, Clock, ShieldAlert, Sparkles, Ban
 } from 'lucide-react';
+import { getStorageUrl } from '@/lib/storage';
 
 export default function AdminCandidateProfileView() {
   const params = useParams();
@@ -32,27 +32,12 @@ export default function AdminCandidateProfileView() {
   const fetchCompleteProfile = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('candidate_profiles')
-        .select(`
-          *,
-          users ( id, email, phone, role, created_at ),
-          jain_identities (*),
-          lifestyle_profiles (*),
-          education_records (*),
-          employment_records (*),
-          family_members (*),
-          partner_preferences (*),
-          biodatas (*),
-          photos (*),
-          subscriptions (*),
-          identity_verifications (*)
-        `)
-        .eq('id', id)
-        .single();
-
-      if (error) throw error;
-      setProfile(data);
+      const res = await fetch(`/api/admin/candidates/${id}`);
+      const data = await res.json();
+      if (!data.success || !data.profile) {
+        throw new Error(data.error || 'Profile could not be loaded.');
+      }
+      setProfile(data.profile);
     } catch (err: any) {
       setError(err.message || 'Profile could not be loaded.');
     } finally {
@@ -64,16 +49,13 @@ export default function AdminCandidateProfileView() {
     if (!confirm(`Are you sure you want to mark this candidate as ${status}?`)) return;
     setActionLoading(true);
     try {
-      await supabase
-        .from('candidate_profiles')
-        .update({ verification_status: status })
-        .eq('id', id);
-
-      // Update any pending verification records
-      await supabase
-        .from('identity_verifications')
-        .update({ status: status === 'verified' ? 'approved' : 'rejected' })
-        .eq('candidate_id', id);
+      const res = await fetch(`/api/admin/candidates/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ verificationStatus: status }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Verification update failed');
 
       fetchCompleteProfile();
     } catch (err: any) {
@@ -87,10 +69,13 @@ export default function AdminCandidateProfileView() {
     setActionLoading(true);
     try {
       const newActiveState = !profile.is_active;
-      await supabase
-        .from('candidate_profiles')
-        .update({ is_active: newActiveState })
-        .eq('id', id);
+      const res = await fetch(`/api/admin/candidates/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: newActiveState }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Block status update failed');
 
       setIsBlockModalOpen(false);
       fetchCompleteProfile();
@@ -241,7 +226,7 @@ export default function AdminCandidateProfileView() {
             <div className="w-28 h-28 rounded-full bg-gray-100 border-4 border-white shadow-lg overflow-hidden mb-4 relative">
               {profile.photos?.[0] ? (
                 <img 
-                  src={`https://hchxytnssymfobqohowk.supabase.co/storage/v1/object/public/profile-photos/${profile.photos[0]}`} 
+                  src={getStorageUrl(typeof profile.photos[0] === 'string' ? profile.photos[0] : profile.photos[0]?.url, 'profile-photos')} 
                   alt="Candidate" 
                   className="w-full h-full object-cover" 
                 />
@@ -407,7 +392,7 @@ export default function AdminCandidateProfileView() {
                   <p className="text-xs text-gray-500">Stored in Supabase Secure Storage</p>
                 </div>
                 <a 
-                  href={`https://hchxytnssymfobqohowk.supabase.co/storage/v1/object/public/biodatas/${biodata.file_path}`} 
+                  href={getStorageUrl(biodata.file_path, 'biodatas')} 
                   target="_blank"
                   className="px-5 py-2 rounded-full bg-[#1E1B24] text-white font-bold text-xs flex items-center gap-1.5 shadow-md hover:bg-black transition-all"
                 >

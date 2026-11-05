@@ -5,6 +5,7 @@ import { Bookmark, User, MapPin } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { useCandidateProfile } from '@/hooks/useCandidateProfile';
 import Link from 'next/link';
+import { getStorageUrl } from '@/lib/storage';
 
 export default function SavedProfilesPage() {
   const { profile: loggedInUser } = useCandidateProfile();
@@ -105,7 +106,7 @@ export default function SavedProfilesPage() {
             <div key={profile.id} className="bg-[#FFFDFB] border border-[#EBD9DC] rounded-[24px] p-6 shadow-sm flex flex-col items-center text-center">
               <div className="w-24 h-24 rounded-full border-4 border-[#FDF9F4] shadow-md overflow-hidden relative bg-[#F7E5EA] mb-4">
                 {profile.photoUrl ? (
-                  <img src={profile.photoUrl} className="w-full h-full object-cover" alt="" />
+                  <img src={getStorageUrl(profile.photoUrl, 'profile-photos')} className="w-full h-full object-cover" alt="" />
                 ) : (
                   <User className="w-12 h-12 absolute top-6 left-6 text-[#75666D] opacity-40" />
                 )}

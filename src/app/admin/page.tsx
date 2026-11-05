@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase/client';
 import { 
   Users, UserCheck, ShieldCheck, CreditCard, TrendingUp, 
   ArrowUpRight, ArrowRight, ShieldAlert, Sparkles, CheckCircle, 
   Clock, MapPin, Heart, ChevronRight
 } from 'lucide-react';
+import { getStorageUrl } from '@/lib/storage';
 
 export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
@@ -499,7 +499,7 @@ export default function AdminDashboardPage() {
                     <div className="w-9 h-9 rounded-full bg-[#EBD9DC] text-[#8F0038] font-bold text-xs flex items-center justify-center overflow-hidden">
                       {cand.photos?.[0] ? (
                         <img 
-                          src={`https://hchxytnssymfobqohowk.supabase.co/storage/v1/object/public/profile-photos/${cand.photos[0]}`} 
+                          src={getStorageUrl(typeof cand.photos[0] === 'string' ? cand.photos[0] : cand.photos[0]?.url, 'profile-photos')} 
                           alt="Avatar" 
                           className="w-full h-full object-cover" 
                         />
