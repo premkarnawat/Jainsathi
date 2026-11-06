@@ -66,10 +66,11 @@ You retain full control over your privacy settings. Sensitive information like y
   try {
     const rows = await query(`SELECT value FROM site_settings WHERE key = 'privacy_policy' LIMIT 1;`);
     if (rows && rows.length > 0 && rows[0].value) {
+      const parsed = typeof rows[0].value === 'string' ? JSON.parse(rows[0].value) : rows[0].value;
       policyData = {
-        title: rows[0].value.title || policyData.title,
-        lastUpdated: rows[0].value.lastUpdated || policyData.lastUpdated,
-        content: rows[0].value.content || policyData.content,
+        title: parsed.title || policyData.title,
+        lastUpdated: parsed.lastUpdated || policyData.lastUpdated,
+        content: parsed.content || policyData.content,
       };
     }
   } catch (err) {

@@ -37,10 +37,19 @@ export async function sendInterest(targetCandidateId: string, message?: string) 
       }
     }
 
+    // Resolve internal user id from auth_id
+    const { data: dbUser } = await (await supabase)
+      .from('users')
+      .select('id')
+      .eq('auth_id', user.id)
+      .single();
+
+    const internalUserId = dbUser?.id || user.id;
+
     const { data: requesterProfile } = await (await supabase)
       .from('candidate_profiles')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', internalUserId)
       .single();
 
     if (!requesterProfile) return { success: false, error: 'User profile not found.' };
@@ -93,7 +102,9 @@ export async function acceptInterest(requestId: string) {
     const { data: { user } } = await (await supabase).auth.getUser();
     if (!user) return { success: false, error: 'Unauthorized.' };
 
-    const { data: requesterProfile } = await (await supabase).from('candidate_profiles').select('id').eq('user_id', user.id).single();
+    const { data: dbUser } = await (await supabase).from('users').select('id').eq('auth_id', user.id).single();
+    const internalUserId = dbUser?.id || user.id;
+    const { data: requesterProfile } = await (await supabase).from('candidate_profiles').select('id').eq('user_id', internalUserId).single();
     if (!requesterProfile) return { success: false, error: 'Profile not found.' };
 
     // Update the request securely using Admin Client

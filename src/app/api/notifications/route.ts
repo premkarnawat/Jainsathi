@@ -1,12 +1,24 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   try {
+    const supabase = createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    let targetUserId = searchParams.get('userId');
+
+    // If authenticated, always resolve to authenticated user's internal ID
+    if (user) {
+      const userRows = await query<{ id: string }>('SELECT id FROM users WHERE auth_id = $1 LIMIT 1;', [user.id]);
+      if (userRows.length > 0) {
+        targetUserId = userRows[0].id;
+      }
+    }
 
     let sql = `
       SELECT id, user_id, title, body, type, data, is_read, created_at
@@ -17,7 +29,7 @@ export async function GET(request: Request) {
     `;
 
     const dummyUuid = '00000000-0000-0000-0000-000000000000';
-    const notifications = await query(sql, [userId || dummyUuid]);
+    const notifications = await query(sql, [targetUserId || dummyUuid]);
 
     const unreadCount = notifications.filter((n: any) => !n.is_read).length;
 
@@ -33,8 +45,18 @@ export async function GET(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
+    const supabase = createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
     const body = await request.json();
-    const { notificationId, markAllRead, userId } = body;
+    let { notificationId, markAllRead, userId } = body;
+
+    if (user) {
+      const userRows = await query<{ id: string }>('SELECT id FROM users WHERE auth_id = $1 LIMIT 1;', [user.id]);
+      if (userRows.length > 0) {
+        userId = userRows[0].id;
+      }
+    }
 
     if (markAllRead && userId) {
       await query(`UPDATE notifications SET is_read = TRUE WHERE user_id = $1 OR user_id IS NULL;`, [userId]);

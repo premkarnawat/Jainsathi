@@ -23,10 +23,11 @@ export default function Footer() {
         const res = await fetch('/api/settings?key=contact_info');
         if (res.ok) {
           const data = await res.json();
-          if (data.success && data.setting?.value) {
+          const info = data.contact_info || data.setting?.value;
+          if (data.success && info) {
             setContact(prev => ({
               ...prev,
-              ...data.setting.value,
+              ...info,
             }));
           }
         }

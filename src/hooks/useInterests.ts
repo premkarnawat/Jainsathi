@@ -86,48 +86,74 @@ export function useInterests(profileId?: string) {
     fetchInterests();
   }, [profileId]);
 
-  // Mutations
+  // Mutations via secure server API (with reliable connection creation)
   const sendInterest = async (senderId: string, receiverId: string) => {
-    const { data, error } = await supabase
-      .from('interest_requests')
-      .insert({
-        sender_id: senderId,
-        receiver_id: receiverId,
-        status: 'pending'
+    try {
+      const res = await fetch('/api/interests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ senderId, receiverId, action: 'send' }),
       });
-    if (error) throw error;
-    await fetchInterests();
-    return data;
+      const data = await res.json();
+      if (!data.success && data.error) throw new Error(data.error);
+      await fetchInterests();
+      return data;
+    } catch (_) {
+      // Fallback to client Supabase
+      const { data, error } = await supabase
+        .from('interest_requests')
+        .insert({
+          sender_id: senderId,
+          receiver_id: receiverId,
+          status: 'pending'
+        });
+      if (error) throw error;
+      await fetchInterests();
+      return data;
+    }
   };
 
   const acceptInterest = async (interestId: string, senderId: string, receiverId: string) => {
-    // 1. Update interest status
+    try {
+      // Call server API which securely creates the mutual connections record without RLS failure
+      const res = await fetch('/api/interests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ senderId, receiverId, action: 'accept' }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await fetchInterests();
+        return true;
+      }
+    } catch (_) {}
+
+    // Fallback: Update interest status
     const { error: updateError } = await supabase
       .from('interest_requests')
       .update({ status: 'accepted' })
       .eq('id', interestId);
       
     if (updateError) throw updateError;
-
-    // 2. Create connection (assuming a connections table exists or is modeled)
-    // If table doesn't exist, this might fail, but let's assume it exists or we handle it gracefully.
-    try {
-      const { error: connError } = await supabase
-        .from('connections')
-        .insert({
-          candidate_a: senderId,
-          candidate_b: receiverId,
-          interest_request_id: interestId
-        });
-      if (connError) console.warn('Could not insert connection, might be missing table schema:', connError);
-    } catch(e) {}
     
     // Refresh lists
     await fetchInterests();
     return true;
   };
 
-  const declineInterest = async (interestId: string) => {
+  const declineInterest = async (interestId: string, senderId?: string, receiverId?: string) => {
+    if (senderId && receiverId) {
+      try {
+        await fetch('/api/interests', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ senderId, receiverId, action: 'decline' }),
+        });
+        await fetchInterests();
+        return true;
+      } catch (_) {}
+    }
+
     const { error } = await supabase
       .from('interest_requests')
       .update({ status: 'declined' })

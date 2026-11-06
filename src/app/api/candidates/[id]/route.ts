@@ -1,10 +1,18 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
+    const supabase = createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ success: false, error: 'Authentication required to view candidate profiles' }, { status: 401 });
+    }
+
     const candidateId = params.id;
     if (!candidateId) {
       return NextResponse.json({ success: false, error: 'Candidate ID is required' }, { status: 400 });

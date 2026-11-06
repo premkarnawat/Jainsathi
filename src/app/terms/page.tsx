@@ -66,10 +66,11 @@ All candidates undergo our verification process. Harassment, abuse, or unauthori
   try {
     const rows = await query(`SELECT value FROM site_settings WHERE key = 'terms_conditions' LIMIT 1;`);
     if (rows && rows.length > 0 && rows[0].value) {
+      const parsed = typeof rows[0].value === 'string' ? JSON.parse(rows[0].value) : rows[0].value;
       termsData = {
-        title: rows[0].value.title || termsData.title,
-        lastUpdated: rows[0].value.lastUpdated || termsData.lastUpdated,
-        content: rows[0].value.content || termsData.content,
+        title: parsed.title || termsData.title,
+        lastUpdated: parsed.lastUpdated || termsData.lastUpdated,
+        content: parsed.content || termsData.content,
       };
     }
   } catch (err) {

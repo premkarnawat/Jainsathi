@@ -42,10 +42,18 @@ export async function revealContact(targetCandidateId: string) {
 
     // Server-side Authorization Checks:
     // 1. Get the current user's profile ID
+    const { data: dbUser } = await (await supabase)
+      .from('users')
+      .select('id')
+      .eq('auth_id', user.id)
+      .single();
+
+    const internalUserId = dbUser?.id || user.id;
+
     const { data: requesterProfile, error: profileError } = await (await supabase)
       .from('candidate_profiles')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', internalUserId)
       .single();
 
     if (profileError || !requesterProfile) {
