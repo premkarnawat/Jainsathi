@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { requireAdminSession } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    const authResult = await requireAdminSession();
+    if (!authResult.authorized) {
+      return authResult.response;
+    }
+
     const broadcasts = await query(`
       SELECT id, title, message, priority, is_active, created_by, created_at, expires_at
       FROM broadcasts
@@ -22,6 +28,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const authResult = await requireAdminSession();
+    if (!authResult.authorized) {
+      return authResult.response;
+    }
+
     const body = await request.json();
     const { title, message, priority = 'info', createdBy = 'Super Admin' } = body;
 
@@ -60,6 +71,11 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const authResult = await requireAdminSession();
+    if (!authResult.authorized) {
+      return authResult.response;
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 

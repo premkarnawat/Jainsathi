@@ -588,30 +588,42 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
       }
 
       // Verify with Firebase
-      await confirmationResult.confirm(code);
+      const userCredential = await confirmationResult.confirm(code);
+      let idToken = '';
+      try {
+        if (userCredential?.user) {
+          idToken = await userCredential.user.getIdToken();
+        }
+      } catch (_) {}
 
-      // MOCK SUPABASE AUTHENTICATION
-      // Since we don't have a real SMS provider attached to Supabase, we create a session using a mock email.
-      const mockEmail = `${mobileNumber}@auth.jainsaathi.com`;
-      const mockPassword = `JainSathiAuth$${mobileNumber}`;
-
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: mockEmail,
-        password: mockPassword,
+      // SECURE SERVER-CONTROLLED AUTHENTICATION EXCHANGE
+      // Call server endpoint which establishes authenticated identity without deterministic credentials
+      const authRes = await fetch('/api/auth/phone-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mobileNumber,
+          idToken,
+        }),
       });
 
-      if (authError && authError.message.includes('Invalid login credentials')) {
-        // First time logging in with this number, sign them up
-        const { error: signUpError } = await supabase.auth.signUp({
-          email: mockEmail,
-          password: mockPassword,
-          options: {
-            data: { phone: '+91' + mobileNumber }
-          }
+      const authData = await authRes.json();
+      if (!authData.success) {
+        throw new Error(authData.error || 'Failed to establish authenticated session.');
+      }
+
+      if (authData.authType === 'magiclink' && authData.tokenHash) {
+        const { error: otpError } = await supabase.auth.verifyOtp({
+          token_hash: authData.tokenHash,
+          type: 'magiclink',
         });
-        if (signUpError) throw signUpError;
-      } else if (authError) {
-        throw authError;
+        if (otpError) throw otpError;
+      } else if (authData.exchangeSecret && authData.email) {
+        const { error: passError } = await supabase.auth.signInWithPassword({
+          email: authData.email,
+          password: authData.exchangeSecret,
+        });
+        if (passError) throw passError;
       }
 
       // Verify OTP Success - Let the rotation complete the 5 seconds interval
@@ -965,15 +977,14 @@ export const ProfileWizard: React.FC<ProfileWizardProps> = ({ onComplete }) => {
       const { error: uploadError } = await supabase.storage.from('biodata-pdfs').upload(filePath, file);
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage.from('biodata-pdfs').getPublicUrl(filePath);
-
+      // Sensitive document: Do NOT generate or store permanent public URLs.
+      // Access is strictly mediated via authorized, short-lived signed URLs from /api/biodata/[id]
       const { data: biodataRecord, error: insertError } = await supabase.from('biodatas').insert({
         candidate_id: profileId,
         file_path: filePath,
-        pdf_url: publicUrl,
+        pdf_url: null,
         visibility: 'interest_accepted_only'
       }).select().single();
-
       if (insertError) throw insertError;
       setBiodataPdf(biodataRecord);
     } catch (err: any) {

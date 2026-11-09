@@ -1,24 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { requireAdminSession } from '@/lib/admin-auth';
+import { createAdminClient } from '@/lib/supabase/server';
 
 export async function POST(req: Request) {
   try {
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookies().get(name)?.value;
-          }
-        }
-      }
-    );
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdminSession();
+    if (!authResult.authorized) {
+      return authResult.response;
     }
 
     const { otp } = await req.json();
@@ -26,7 +14,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'OTP is required' }, { status: 400 });
     }
 
-    const email = user.email;
+    const email = authResult.admin.email;
+    const supabase = createAdminClient();
 
     // Check DB for OTP
     const { data: otpRecords, error: dbError } = await supabase

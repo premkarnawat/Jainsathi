@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { requireAdminSession } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    const authResult = await requireAdminSession();
+    if (!authResult.authorized) {
+      return authResult.response;
+    }
+
     const tickets = await query(`
       SELECT 
         id, user_id, user_email, user_name, subject,
@@ -31,6 +37,11 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   try {
+    const authResult = await requireAdminSession();
+    if (!authResult.authorized) {
+      return authResult.response;
+    }
+
     const body = await request.json();
     const { ticketId, adminReply, status } = body;
 

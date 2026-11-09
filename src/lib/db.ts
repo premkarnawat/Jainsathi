@@ -1,37 +1,44 @@
 import { Pool } from 'pg';
 
-const connectionString = 
-  process.env.DATABASE_URL || 
-  'postgresql://postgres:JainSathi%2414532%23@db.vqnbypdytxkmqgdsbswv.supabase.co:5432/postgres';
-
-let pool: Pool;
-
-// Ensure pool is re-used in development and not exhausted across hot-reloads
 declare global {
   // eslint-disable-next-line no-var
   var __postgresPool: Pool | undefined;
 }
 
-if (process.env.NODE_ENV === 'production') {
-  pool = new Pool({
+function getPool(): Pool {
+  const connectionString = process.env.DATABASE_URL;
+
+  if (!connectionString) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'CRITICAL CONFIGURATION ERROR: DATABASE_URL environment variable is required in production but was not provided.'
+      );
+    }
+    // Fail-safe in local development if environment variable is missing
+    throw new Error('DATABASE_URL environment variable is missing. Please define it in your .env.local file.');
+  }
+
+  const poolConfig = {
     connectionString,
     ssl: { rejectUnauthorized: false },
-    max: 10,
+    max: process.env.NODE_ENV === 'production' ? 10 : 5,
     idleTimeoutMillis: 30000,
-  });
-} else {
-  if (!global.__postgresPool) {
-    global.__postgresPool = new Pool({
-      connectionString,
-      ssl: { rejectUnauthorized: false },
-      max: 10,
-      idleTimeoutMillis: 30000,
-    });
+    connectionTimeoutMillis: 10000,
+  };
+
+  if (process.env.NODE_ENV === 'production') {
+    return new Pool(poolConfig);
   }
-  pool = global.__postgresPool;
+
+  if (!global.__postgresPool) {
+    global.__postgresPool = new Pool(poolConfig);
+  }
+
+  return global.__postgresPool;
 }
 
 export async function query<T = any>(text: string, params?: any[]): Promise<T[]> {
+  const pool = getPool();
   const client = await pool.connect();
   try {
     const res = await client.query(text, params);
@@ -41,4 +48,4 @@ export async function query<T = any>(text: string, params?: any[]): Promise<T[]>
   }
 }
 
-export default pool;
+export default getPool;

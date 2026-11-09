@@ -1,28 +1,16 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { requireAdminSession } from '@/lib/admin-auth';
+import { createAdminClient } from '@/lib/supabase/server';
 import nodemailer from 'nodemailer';
 
 export async function POST(req: Request) {
   try {
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookies().get(name)?.value;
-          }
-        }
-      }
-    );
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    const authResult = await requireAdminSession();
+    if (!authResult.authorized) {
+      return authResult.response;
     }
 
-    const email = user.email;
+    const email = authResult.admin.email;
     if (!email) {
       return NextResponse.json({ success: false, error: 'No email associated with account' }, { status: 400 });
     }
@@ -30,6 +18,7 @@ export async function POST(req: Request) {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
+    const supabase = createAdminClient();
     const { error: dbError } = await supabase
       .from('admin_otps')
       .insert([{ email, otp, expires_at: expiresAt }]);

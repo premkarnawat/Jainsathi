@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { requireAdminSession } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
+    const authResult = await requireAdminSession();
+    if (!authResult.authorized) {
+      return authResult.response;
+    }
+
     const candidateId = params.id;
     if (!candidateId) {
       return NextResponse.json({ success: false, error: 'Candidate ID is required' }, { status: 400 });
@@ -85,6 +91,11 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   try {
+    const authResult = await requireAdminSession();
+    if (!authResult.authorized) {
+      return authResult.response;
+    }
+
     const candidateId = params.id;
     const body = await request.json();
     const { verificationStatus, isActive } = body;

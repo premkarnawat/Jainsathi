@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { requireAdminSession } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    const authResult = await requireAdminSession();
+    if (!authResult.authorized) {
+      return authResult.response;
+    }
+
     const [candCounts] = await query(`
       SELECT 
         count(*) as total,
